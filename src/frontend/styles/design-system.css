@@ -583,3 +583,149 @@ body, p, span, label, input, select, button,
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   SajhaBazaar Farmer-Simplified 3-Card System
+   ========================================================================== */
+.sajha-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.sajha-card {
+  background: #ffffff;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sajha-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.sajha-card-title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sajha-capacity-wrapper {
+  margin: var(--space-3) 0;
+}
+
+.sajha-capacity-track {
+  width: 100%;
+  height: 22px;
+  background: var(--color-bg-muted);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--color-border);
+}
+
+.sajha-capacity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.sajha-capacity-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.sajha-space-alert {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sajha-savings-hero {
+  background: linear-gradient(135deg, #052e16 0%, #14532d 100%);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.sajha-savings-val {
+  font-family: var(--font-family-numbers);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #4ade80;
+  line-height: 1;
+}
+
+.sajha-comparison-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.sajha-comparison-box {
+  background: var(--color-bg-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.sajha-farmer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  background: #ffffff;
+}
+
+.sajha-farmer-row.is-user {
+  background: var(--color-brand-primary-light);
+  border-color: var(--color-brand-primary);
+  font-weight: 700;
+}
+
+.sajha-farmer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--color-brand-primary);
+}
+

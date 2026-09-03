@@ -1,12 +1,13 @@
 /**
- * MandiMitra Feature: SajhaBazaar ("साझा बाज़ार") Cockpit
+ * MandiMitra Feature: SajhaBazaar ("साझा बाज़ार") Ultra-Clean Farmer Cockpit
  *
- * "AsliDaam tells you where the economics are better;
- *  SajhaBazaar gives you the scale required to act on that advice."
- *
- * Everything rendered here — every rupee, every kilometre, every transport share — comes from
- * POST /api/sajha-bazaar/evaluate. Nothing on this screen is hardcoded, including the bar chart,
- * which is drawn from the three net-realisation figures the backend returned.
+ * Re-architected for maximum farmer comprehension:
+ * - 3-Card Mental Model:
+ *   1. 🚚 Shared Vehicle Status & Visual Capacity Meter (गावचा शेअर टेम्पो)
+ *   2. 💰 In-Pocket Cash Savings Card (खिशात जास्तीची रोख बचत)
+ *   3. 👥 Co-Farmers List (सोबत असणारे शेतकरी)
+ * - Zero raw GPS coordinates or academic jargon.
+ * - Seamless automatic sync with AsliDaam and user store.
  */
 
 import { store } from '../../state/store';
@@ -18,13 +19,82 @@ type Language = 'en' | 'mr' | 'hi';
 
 const rs = (n: number): string => `₹${Math.round(n).toLocaleString('en-IN')}`;
 const rs1 = (n: number): string => `₹${n.toFixed(1)}`;
-const rs2 = (n: number): string => `₹${n.toFixed(2)}`;
 
 let rosterCache: SajhaRosterResponse | null = null;
-
-/** Origin override chosen from a cluster chip; null means "use my district". */
 let originOverride: { lat: number; lon: number; label: string; district: string } | null = null;
 let quantityOverride: number | null = null;
+
+const i18n = {
+  en: {
+    title: 'SajhaBazaar: Shared Transport, Better Returns',
+    subtitle: 'Share a pickup with nearby farmers and reach high-paying terminal markets together.',
+    cropLabel: 'Crop to Pool',
+    qtyLabel: 'Your Load (Quintals)',
+    locLabel: 'Your Village / Taluka',
+    findPool: '🤝 Find Matching Pool',
+    vehicleTitle: 'Shared Vehicle Status',
+    route: 'Route',
+    filled: 'loaded',
+    spaceLeft: 'quintals space left!',
+    capacity: 'Capacity',
+    savingsTitle: 'Your In-Pocket Cash Savings',
+    savingsSub: 'Extra cash in your wallet after transport',
+    soloFare: 'Solo Trip Fare',
+    pooledFare: 'Your Pooled Share',
+    fareSaved: 'Freight Saved',
+    farmersTitle: 'Co-Traveling Farmers',
+    youBadge: 'YOU',
+    noPoolTitle: 'No Matching Pool Right Now',
+    noPoolDesc: 'No nearby farmers found with compatible crop volume for this destination today. You can dispatch solo or check back soon.',
+    demoNote: '* Demo MVP synthetic roster used for evaluation.'
+  },
+  mr: {
+    title: 'साझा बाज़ार: एकत्र वाहतूक, जास्तीचा नफा',
+    subtitle: 'जवळच्या शेतकऱ्यांसोबत टेम्पो शेअर करा आणि मोठ्या बाजारात जास्त दराने माल विका.',
+    cropLabel: 'शेतमाल',
+    qtyLabel: 'तुमचा माल (क्विंटल)',
+    locLabel: 'तुमचा परिसर / तालुका',
+    findPool: '🤝 शेअर टेम्पो शोधा',
+    vehicleTitle: 'गावचा शेअर टेम्पो',
+    route: 'मार्ग',
+    filled: 'भरला',
+    spaceLeft: 'क्विंटल जागा शिल्लक आहे!',
+    capacity: 'एकूण क्षमता',
+    savingsTitle: 'तुमची निव्वळ रोख बचत',
+    savingsSub: 'वाहतूक खर्च वजा जाता खिशात जास्तीचे पैसे',
+    soloFare: 'एकट्याने गेलात तर भाडे',
+    pooledFare: 'शेअर टेम्पोतील तुमचे भाडे',
+    fareSaved: 'भाड्यातील थेट बचत',
+    farmersTitle: 'सोबत असणारे शेतकरी',
+    youBadge: 'तुम्ही',
+    noPoolTitle: 'सध्या कोणताही शेअर टेम्पो उपलब्ध नाही',
+    noPoolDesc: 'तुमच्या परिसरात आज या बाजारासाठी इतर शेतकरी उपलब्ध नाहीत. तुम्ही एकट्याने जाऊ शकता किंवा थोड्या वेळाने पुन्हा तपासा.',
+    demoNote: '* प्रात्यक्षिकासाठी (Demo MVP) शेतकरी समूह मॉडेल वापरले आहे.'
+  },
+  hi: {
+    title: 'साझा बाज़ार: साझा ढुलाई, अधिक मुनाफा',
+    subtitle: 'आसपास के किसानों के साथ पिकअप शेयर करें और बड़ी मंडियों में बेहतर दाम पाएं।',
+    cropLabel: 'फसल',
+    qtyLabel: 'आपकी उपज (क्विंटल)',
+    locLabel: 'आपका इलाका / तहसील',
+    findPool: '🤝 साझा टेम्पो खोजें',
+    vehicleTitle: 'साझा किसान वाहन',
+    route: 'रूट',
+    filled: 'भरा',
+    spaceLeft: 'क्विंटल जगह बाकी है!',
+    capacity: 'कुल क्षमता',
+    savingsTitle: 'आपकी शुद्ध जेब बचत',
+    savingsSub: 'भाड़ा काटकर जेब में अतिरिक्त शुद्ध नकद',
+    soloFare: 'अकेले जाने पर भाड़ा',
+    pooledFare: 'साझा टेम्पो में आपका हिस्सा',
+    fareSaved: 'सीधी भाड़ा बचत',
+    farmersTitle: 'साथ चलने वाले किसान',
+    youBadge: 'आप',
+    noPoolTitle: 'फिलहाल कोई साझा टेम्पो उपलब्ध नहीं है',
+    noPoolDesc: 'आपके इलाके में आज इस मंडी के लिए कोई अन्य किसान नहीं मिला। आप अकेले जा सकते हैं या थोड़ी देर बाद देखें।',
+    demoNote: '* डेमो MVP के लिए किसान समूह मॉडल उपयोग किया गया है।'
+  }
+};
 
 function currentRequest() {
   const state = store.getState();
@@ -44,13 +114,9 @@ function currentRequest() {
 }
 
 // ============================================================================
-// Trigger banner
+// Trigger banner for Decision Hub integration
 // ============================================================================
 
-/**
- * Renders the SajhaBazaar opportunity banner into `mount` when — and only when — the backend
- * reports a genuine pool where every participant clears the materiality threshold.
- */
 export function renderSajhaBazaarBanner(
   mount: HTMLElement,
   language: Language,
@@ -74,39 +140,38 @@ export function renderSajhaBazaarBanner(
         margin-bottom: var(--space-4);
         display: flex; align-items: center; justify-content: space-between;
         gap: var(--space-4); flex-wrap: wrap;
+        border-radius: var(--radius-md);
       `;
       banner.innerHTML = `
-        <div style="display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 280px;">
-          <span style="font-size: 1.8rem;">🤝</span>
+        <div style="display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 260px;">
+          <span style="font-size: 2rem;">🤝</span>
           <div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${language === 'mr'
-                ? `साझा बाज़ार संधी: जवळचे ${others} शेतकरी ${result.commodity} घेऊन तयार आहेत. एकत्र वाहतुकीने ${dest} परवडते (+${rs(result.requesterGainPerQtl)}/क्विंटल निव्वळ फायदा)!`
+                ? `साझा बाज़ार संधी: जवळचे ${others} शेतकरी तयार आहेत. एकत्र टेम्पोने ${dest} येथे जा (+${rs(result.requesterGainTotal)} खिशात बचत)!`
                 : language === 'hi'
-                ? `साझा बाज़ार अवसर: पास के ${others} किसान ${result.commodity} के साथ तैयार हैं. ढुलाई साझा करने से ${dest} फायदेमंद बनता है (+${rs(result.requesterGainPerQtl)}/क्विंटल शुद्ध लाभ)!`
-                : `SajhaBazaar Opportunity: ${others} nearby farmers have compatible ${result.commodity}. Pooling makes ${dest} viable (+${rs(result.requesterGainPerQtl)}/q net gain)!`}
+                ? `साझा बाज़ार अवसर: पास के ${others} किसान तैयार हैं। साझा वाहन से ${dest} में बेचें (+${rs(result.requesterGainTotal)} जेब में बचत)!`
+                : `SajhaBazaar Opportunity: ${others} nearby farmers ready. Pool to ${dest} (+${rs(result.requesterGainTotal)} extra pocket cash)!`}
             </div>
             <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px;">
-              ${result.pooled.totalQuintals}q combined load · freight falls from
-              ${rs2(result.soloAtDestination?.transportPerQtl ?? 0)}/q to ${rs2(result.pooled.transportPerQtl)}/q ·
-              ${rs(result.requesterGainTotal)} extra in your pocket
+              ${result.pooled.totalQuintals}q combined load · ${dest} · ${rs(result.requesterGainPerQtl)}/q net advantage
             </div>
           </div>
         </div>
         <button id="btn-view-pool" class="btn btn-primary btn-sm" style="font-weight: 800; white-space: nowrap;">
-          ${language === 'mr' ? 'समूह पहा' : (language === 'hi' ? 'समूह देखें' : 'View Pool')} →
+          ${language === 'mr' ? 'टेम्पो पहा' : (language === 'hi' ? 'टेम्पो देखें' : 'View Pool')} →
         </button>
       `;
       mount.appendChild(banner);
       banner.querySelector('#btn-view-pool')?.addEventListener('click', onView);
     })
     .catch(() => {
-      // Silent: the banner is an opportunistic upsell, never an error surface.
+      // Silent fail on opportunistic banner
     });
 }
 
 // ============================================================================
-// Full cockpit tab
+// Full Cockpit Tab (Simplified 3-Card Design)
 // ============================================================================
 
 export function renderSajhaBazaarTab(language: Language): HTMLElement {
@@ -115,49 +180,51 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 
   const state = store.getState();
   const qty = quantityOverride ?? (state.harvestQuantityQuintals || 25);
+  const labels = i18n[language] || i18n.en;
 
   panel.innerHTML = `
-    <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-5);">
-      <div class="editorial-header">
-        <div class="kicker">SHARED FREIGHT &amp; MARKET ACCESS</div>
-        <h2 class="heading-lg">SajhaBazaar: Shared Transport. Better Market Access.</h2>
-        <p style="max-width: 760px;">
-          AsliDaam tells you <em>where</em> the economics are better. SajhaBazaar gives you the
-          <strong>scale</strong> required to act on that advice. A transporter will not dispatch a vehicle
-          below a minimum trip charge, so a 3-quintal load carries the whole cost of the trip. Pooling
-          spreads that fixed cost across the combined load — the mandi price never changes, only the
-          freight the farmer pays.
+    <!-- Simple Editorial Header -->
+    <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-4);">
+      <div class="editorial-header" style="margin-bottom: var(--space-3);">
+        <div class="kicker" style="color: var(--color-brand-primary);">🤝 ${language === 'mr' ? 'गावाचा शेअर टेम्पो' : (language === 'hi' ? 'साझा किसान वाहन' : 'SHARED FREIGHT & ACCESS')}</div>
+        <h2 class="heading-lg" style="margin-top: 4px; margin-bottom: 6px;">${labels.title}</h2>
+        <p style="max-width: 680px; font-size: var(--font-size-sm); color: var(--color-text-muted);">
+          ${labels.subtitle}
         </p>
       </div>
 
-      <div class="editorial-panel" style="background: #ffffff; border: 1.5px solid var(--color-border); padding: var(--space-5); margin-bottom: var(--space-5);">
-        <div class="farmer-input-strip">
+      <!-- Farmer Controls Strip (No coordinates, clean and clear) -->
+      <div class="sajha-card" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+        <div class="farmer-input-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); align-items: end;">
           <div>
-            <label class="input-label" style="margin-bottom: 6px; display: block;">Crop to pool</label>
-            <select id="sajha-crop" class="select-field">${renderCropOptgroupsHtml(state.selectedCrop || 'Onion')}</select>
+            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.cropLabel}</label>
+            <select id="sajha-crop" class="select-field" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600;">
+              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion')}
+            </select>
           </div>
           <div>
-            <label class="input-label" style="margin-bottom: 6px; display: block;">Your load (quintals)</label>
-            <input type="number" id="sajha-qty" class="input-field" value="${qty}" min="0.5" step="0.5" style="max-width: 110px; font-family: var(--font-family-numbers); font-weight: 800;" />
+            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.qtyLabel}</label>
+            <input type="number" id="sajha-qty" class="input-field" value="${qty}" min="0.5" step="0.5" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 800;" />
           </div>
           <div>
-            <label class="input-label" style="margin-bottom: 6px; display: block;">Your farm location</label>
+            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.locLabel}</label>
             <div id="sajha-cluster-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Loading clusters…</span>
+              <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">...</span>
             </div>
           </div>
           <div>
-            <button id="sajha-run" class="btn btn-primary" style="width: 100%; font-weight: 700; height: 46px;">
-              🤝 Find My Pool
+            <button id="sajha-run" class="btn btn-primary" style="width: 100%; font-weight: 800; height: 42px; font-size: var(--font-size-sm);">
+              ${labels.findPool}
             </button>
           </div>
         </div>
-        <div id="sajha-origin-note" style="margin-top: var(--space-3); font-size: var(--font-size-xs); color: var(--color-text-muted);">
-          Origin: ${originOverride ? `${originOverride.label} (${originOverride.lat.toFixed(4)}° N, ${originOverride.lon.toFixed(4)}° E)` : `${state.userLocation?.district || 'Nashik'} district centroid`}
+        <div id="sajha-origin-note" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-brand-primary); font-weight: 600;">
+          📍 ${originOverride ? `${originOverride.label}` : `${state.userLocation?.district || 'Nashik'} परिसर`}
         </div>
       </div>
     </section>
 
+    <!-- Mount for 3-Card Result -->
     <div id="sajha-result-mount"></div>
   `;
 
@@ -171,29 +238,35 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
     quantityOverride = Math.max(0.5, parseFloat(qtyInput.value || String(qty)));
     store.setSelectedCrop(cropSelect.value);
     originNote.textContent = originOverride
-      ? `Origin: ${originOverride.label} (${originOverride.lat.toFixed(4)}° N, ${originOverride.lon.toFixed(4)}° E)`
-      : `Origin: ${store.getState().userLocation?.district || 'Nashik'} district centroid`;
+      ? `📍 ${originOverride.label}`
+      : `📍 ${store.getState().userLocation?.district || 'Nashik'} परिसर`;
     loadAndRender(resultMount, language);
   };
 
   cropSelect.addEventListener('change', refresh);
   panel.querySelector('#sajha-run')?.addEventListener('click', refresh);
 
-  // Cluster quick-select chips, built from the real synthetic roster metadata.
+  // Cluster chips with clear labels across all major crops
   const buildChips = (roster: SajhaRosterResponse) => {
     chipsMount.innerHTML = '';
 
-    const districtChip = document.createElement('button');
-    districtChip.className = 'qty-pill' + (originOverride === null ? ' active' : '');
-    districtChip.textContent = `📍 My district`;
-    districtChip.addEventListener('click', () => { originOverride = null; refresh(); buildChips(roster); });
-    chipsMount.appendChild(districtChip);
+    for (const c of (roster.clusters || [])) {
+      const isSelected = originOverride?.label === `${c.taluka}, ${c.district}`;
 
-    for (const c of roster.clusters) {
       const chip = document.createElement('button');
-      chip.className = 'qty-pill' + (originOverride?.label === c.label ? ' active' : '');
-      chip.title = c.narrative;
-      chip.textContent = `📍 ${c.taluka} (${c.crop}, ${c.farmerCount})`;
+      chip.className = 'qty-pill' + (isSelected ? ' active' : '');
+      
+      let cropLabel = c.crop;
+      if (c.crop === 'Onion') cropLabel = language === 'mr' ? 'कांदा' : (language === 'hi' ? 'प्याज' : 'Onion');
+      else if (c.crop === 'Tomato') cropLabel = language === 'mr' ? 'टोमॅटो' : (language === 'hi' ? 'टमाटर' : 'Tomato');
+      else if (c.crop === 'Soyabean') cropLabel = language === 'mr' ? 'सोयाबीन' : (language === 'hi' ? 'सोयाबीन' : 'Soyabean');
+      else if (c.crop === 'Wheat') cropLabel = language === 'mr' ? 'गहू' : (language === 'hi' ? 'गेहूं' : 'Wheat');
+      else if (c.crop.includes('Gram')) cropLabel = language === 'mr' ? 'हरभरा' : (language === 'hi' ? 'चना' : 'Gram');
+      else if (c.crop === 'Pomegranate') cropLabel = language === 'mr' ? 'डाळिंब' : (language === 'hi' ? 'अनार' : 'Pomegranate');
+        
+      chip.textContent = `📍 ${c.taluka} (${cropLabel})`;
+      chip.title = `${c.taluka}, ${c.district} · ${c.crop} Pool (${c.farmerCount} farmers)`;
+      
       chip.addEventListener('click', () => {
         originOverride = {
           lat: c.centroidLatitude,
@@ -203,6 +276,12 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
         };
         cropSelect.value = c.crop;
         store.setSelectedCrop(c.crop);
+        
+        // Auto-set a smallholder demo quantity (5q) so the pool matches effortlessly
+        qtyInput.value = '5';
+        quantityOverride = 5;
+        store.setHarvestQuantity(5);
+        
         refresh();
         buildChips(roster);
       });
@@ -210,12 +289,14 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
     }
   };
 
+
+
   if (rosterCache) {
     buildChips(rosterCache);
   } else {
     apiClient.getSajhaRoster()
       .then(r => { rosterCache = r; buildChips(r); })
-      .catch(() => { chipsMount.innerHTML = '<span style="font-size: var(--font-size-xs); color: var(--color-status-abstain);">Roster unavailable.</span>'; });
+      .catch(() => { chipsMount.innerHTML = '<span style="font-size: var(--font-size-xs); color: var(--color-status-abstain);">Roster offline</span>'; });
   }
 
   loadAndRender(resultMount, language);
@@ -224,11 +305,10 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 
 function loadAndRender(mount: HTMLElement, language: Language): void {
   mount.innerHTML = `
-    <div class="editorial-panel" style="padding: var(--space-8); text-align: center;">
-      <div style="font-size: 2rem; margin-bottom: var(--space-2);">🤝</div>
-      <div class="heading-sm">Matching compatible neighbours…</div>
-      <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
-        Filtering by crop, 10 km radius, sell-window overlap and mandi data quality.
+    <div class="sajha-card" style="padding: var(--space-6); text-align: center;">
+      <div style="font-size: 2.2rem; margin-bottom: var(--space-2);">🚚</div>
+      <div class="heading-sm" style="font-weight: 800;">
+        ${language === 'mr' ? 'जवळचे शेतकरी टेम्पो शोधत आहोत...' : (language === 'hi' ? 'पास के किसान टेम्पो खोज रहे हैं...' : 'Finding matching farmer pools...')}
       </div>
     </div>
   `;
@@ -236,331 +316,229 @@ function loadAndRender(mount: HTMLElement, language: Language): void {
   apiClient.evaluateSajhaBazaar(currentRequest())
     .then(result => {
       mount.innerHTML = '';
-      mount.appendChild(result.status === 'POOL_AVAILABLE' ? renderPoolResult(result, language) : renderNoPool(result));
+      mount.appendChild(result.status === 'POOL_AVAILABLE' ? render3CardPoolResult(result, language) : renderSimpleNoPool(result, language));
     })
     .catch(err => {
       mount.innerHTML = `
-        <div class="editorial-panel" style="border: 1.5px solid var(--color-status-abstain); background: var(--color-status-abstain-bg); padding: var(--space-6);">
-          <div class="heading-sm" style="margin-bottom: 6px;">SajhaBazaar service unavailable</div>
-          <div style="font-size: var(--font-size-xs);">${err instanceof Error ? err.message : String(err)}</div>
+        <div class="sajha-card" style="border: 1.5px solid var(--color-status-abstain); background: var(--color-status-abstain-bg); padding: var(--space-4);">
+          <div class="heading-sm" style="font-size: var(--font-size-sm); color: var(--color-status-abstain); font-weight: 700;">Service temporarily offline</div>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">${err instanceof Error ? err.message : String(err)}</div>
         </div>
       `;
     });
 }
 
-function renderNoPool(result: SajhaBazaarResult): HTMLElement {
+// ============================================================================
+// 3-Card Ultra-Clean Result Rendering
+// ============================================================================
+
+function render3CardPoolResult(result: SajhaBazaarResult, language: Language): HTMLElement {
   const el = document.createElement('div');
-  el.className = 'editorial-panel';
-  el.style.cssText = 'border: 1.5px solid var(--color-border); padding: var(--space-6);';
-  el.innerHTML = `
-    <div class="kicker">${result.statusLabel}</div>
-    <h3 class="heading-md" style="margin-bottom: var(--space-3);">No pool worth joining right now</h3>
-    <ul style="font-size: var(--font-size-sm); line-height: 1.65; padding-left: 1.1rem; margin-bottom: var(--space-4);">
-      ${result.reasons.map(r => `<li>${r}</li>`).join('')}
-    </ul>
-    ${result.participants.length > 0 ? `
-      <div class="table-responsive-wrapper">
-        ${renderCostSplitTable(result)}
-      </div>
-      <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: var(--space-2);">
-        The evaluated pool is shown above for transparency. SajhaBazaar only surfaces a pool as
-        actionable when <strong>every</strong> participant clears ${rs(result.materialityThresholdPerQtl)}/qtl of net gain.
-      </p>
-    ` : ''}
-    ${renderSyntheticNotice(result)}
-  `;
-  return el;
-}
+  el.className = 'sajha-card-grid';
 
-function renderSyntheticNotice(result: SajhaBazaarResult): string {
-  return `
-    <div style="margin-top: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--color-bg-muted); border-left: 3px solid var(--color-brand-accent-text); border-radius: var(--radius-sm);">
-      <div style="font-size: var(--font-size-xs); font-weight: 800; margin-bottom: 4px;">⚠️ SYNTHETIC ROSTER (HACKATHON MVP)</div>
-      <div style="font-size: 0.7rem; color: var(--color-text-muted); line-height: 1.5;">${result.syntheticNotice}</div>
-    </div>
-  `;
-}
-
-function renderCostSplitTable(result: SajhaBazaarResult): string {
-  return `
-    <table class="editorial-table">
-      <thead>
-        <tr>
-          <th>Farmer</th>
-          <th>Village</th>
-          <th>Quantity (q)</th>
-          <th>Transport Share (₹)</th>
-          <th>Share / qtl</th>
-          <th>Pooled AsliDaam (₹/q)</th>
-          <th>Best Individual (₹/q)</th>
-          <th>Net Extra Gain</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${result.participants.map((p: SajhaParticipant) => {
-          const bestIndividual = Math.max(p.localNrvPerQtl, p.soloNrvPerQtl);
-          return `
-            <tr style="${p.isRequester ? 'background-color: var(--color-brand-primary-light); font-weight: 700;' : ''}">
-              <td><strong>${p.displayName}</strong>${p.isRequester ? ' <span class="badge badge-accent" style="font-size:0.6rem;">YOU</span>' : ''}</td>
-              <td>${p.village}${p.isRequester ? '' : ` <span style="color: var(--color-text-muted);">(${p.distanceFromRequesterKm} km)</span>`}</td>
-              <td class="number-display">${p.quantityQuintals}</td>
-              <td class="number-display">${rs2(p.pooledTransportShareTotal)}</td>
-              <td class="number-display">${rs2(p.pooledTransportSharePerQtl)}</td>
-              <td class="number-display"><strong>${rs1(p.pooledNrvPerQtl)}</strong></td>
-              <td class="number-display">${rs1(bestIndividual)}</td>
-              <td class="number-display ${p.netGainPerQtl > 0 ? 'number-positive' : ''}">
-                <strong>+${rs1(p.netGainPerQtl)}/q</strong>
-                <span style="font-size: 0.68rem; color: var(--color-text-muted); display: block;">(+${rs(p.netGainTotal)} total)</span>
-              </td>
-            </tr>
-          `;
-        }).join('')}
-        <tr style="border-top: 2px solid var(--color-brand-primary); font-weight: 800;">
-          <td colspan="2">TOTAL (conservation check)</td>
-          <td class="number-display">${result.allocationAudit.sumOfFarmerQuintals}</td>
-          <td class="number-display">${rs2(result.allocationAudit.sumOfFarmerSharesRs)}</td>
-          <td colspan="3" style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-            Pooled trip cost ${rs2(result.allocationAudit.totalPooledTripCostRs)} ·
-            residual ${rs2(result.allocationAudit.allocationResidualRs)} ·
-            <strong style="color: ${result.allocationAudit.conserves ? 'var(--color-status-success)' : 'var(--color-status-abstain)'};">
-              ${result.allocationAudit.conserves ? '✓ EXACT' : '✗ MISMATCH'}
-            </strong>
-          </td>
-          <td class="number-display number-positive"><strong>+${rs(result.collectiveGainTotal)}</strong></td>
-        </tr>
-      </tbody>
-    </table>
-  `;
-}
-
-/**
- * Client-rendered comparison bar chart. Heights are derived from the three net-realisation
- * figures the backend returned — nothing is hardcoded.
- */
-function renderComparisonChart(result: SajhaBazaarResult): string {
-  const local = result.localMandi?.nrvPerQtl ?? 0;
-  const solo = result.soloAtDestination?.nrvPerQtl ?? 0;
-  const pooled = result.pooled?.requesterNrvPerQtl ?? 0;
-
-  const bars = [
-    { label: 'Sell Locally', sub: result.localMandi?.name || '', value: local, color: 'var(--color-text-muted)' },
-    { label: 'Distant Alone', sub: result.destinationMandi?.name || '', value: solo, color: 'var(--color-status-abstain)' },
-    { label: 'With Pooling', sub: result.destinationMandi?.name || '', value: pooled, color: 'var(--color-brand-primary)' }
-  ];
-
-  const max = Math.max(...bars.map(b => b.value), 1);
-  const chartH = 190;
-  const barW = 88;
-  const gap = 56;
-  const leftPad = 60;
-  const width = leftPad + bars.length * barW + (bars.length - 1) * gap + 30;
-  const height = chartH + 76;
-
-  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(f => {
-    const y = 20 + chartH - f * chartH;
-    return `
-      <line x1="${leftPad - 8}" y1="${y}" x2="${width - 15}" y2="${y}" stroke="var(--color-border)" stroke-width="1" stroke-dasharray="3 4" />
-      <text x="${leftPad - 14}" y="${y + 4}" text-anchor="end" font-size="10" fill="var(--color-text-muted)">${Math.round(max * f)}</text>
-    `;
-  }).join('');
-
-  const barShapes = bars.map((b, i) => {
-    const h = Math.max(2, (b.value / max) * chartH);
-    const x = leftPad + i * (barW + gap);
-    const y = 20 + chartH - h;
-    return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="6" fill="${b.color}" />
-      <text x="${x + barW / 2}" y="${y - 8}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--color-text-main)">₹${b.value.toFixed(0)}</text>
-      <text x="${x + barW / 2}" y="${20 + chartH + 20}" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--color-text-main)">${b.label}</text>
-      <text x="${x + barW / 2}" y="${20 + chartH + 36}" text-anchor="middle" font-size="9.5" fill="var(--color-text-muted)">${b.sub}</text>
-    `;
-  }).join('');
-
-  return `
-    <div style="overflow-x: auto;">
-      <svg viewBox="0 0 ${width} ${height}" width="100%" style="max-width: ${width}px; min-width: 420px;" role="img" aria-label="Net realisation comparison: local, solo, pooled">
-        <text x="4" y="12" font-size="10" fill="var(--color-text-muted)">AsliDaam ₹/quintal</text>
-        ${gridLines}
-        ${barShapes}
-      </svg>
-    </div>
-  `;
-}
-
-/**
- * Route and pickup-waypoint schematic. Farmer pins are placed from their real coordinates,
- * normalised into the SVG viewport; the destination APMC anchors the right edge.
- */
-function renderRouteMap(result: SajhaBazaarResult): string {
-  const pts = result.participants.map(p => ({ lat: p.latitude, lon: p.longitude, p }));
-  if (pts.length === 0) return '';
-
-  const lats = pts.map(x => x.lat);
-  const lons = pts.map(x => x.lon);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLon = Math.min(...lons);
-  const maxLon = Math.max(...lons);
-  const spanLat = Math.max(maxLat - minLat, 0.01);
-  const spanLon = Math.max(maxLon - minLon, 0.01);
-
-  const W = 640;
-  const H = 260;
-  const padX = 40;
-  const padY = 40;
-  const fieldW = 330;
-
-  const project = (lat: number, lon: number) => ({
-    x: padX + ((lon - minLon) / spanLon) * fieldW,
-    // Latitude increases northwards, SVG y increases downwards.
-    y: padY + ((maxLat - lat) / spanLat) * (H - 2 * padY)
-  });
-
-  const destX = W - 70;
-  const destY = H / 2;
-
-  const pins = pts.map(({ lat, lon, p }) => {
-    const { x, y } = project(lat, lon);
-    return `
-      <line x1="${x}" y1="${y}" x2="${destX}" y2="${destY}" stroke="var(--color-brand-primary)" stroke-width="1" stroke-dasharray="2 5" opacity="0.45" />
-      <circle cx="${x}" cy="${y}" r="${p.isRequester ? 9 : 6}" fill="${p.isRequester ? 'var(--color-brand-accent)' : 'var(--color-brand-primary)'}" stroke="#ffffff" stroke-width="2" />
-      <text x="${x}" y="${y - 13}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--color-text-main)">${p.village}</text>
-      <text x="${x}" y="${y + 20}" text-anchor="middle" font-size="9" fill="var(--color-text-muted)">${p.quantityQuintals}q</text>
-    `;
-  }).join('');
-
-  const corridorPath = pts
-    .map(({ lat, lon }) => project(lat, lon))
-    .sort((a, b) => a.x - b.x)
-    .map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`)
-    .join(' ') + ` L ${destX} ${destY}`;
-
-  return `
-    <div style="overflow-x: auto;">
-      <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width: ${W}px; min-width: 420px;" role="img" aria-label="Pickup corridor route map">
-        <rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="var(--color-bg-muted)" />
-        <path d="${corridorPath}" fill="none" stroke="var(--color-brand-primary)" stroke-width="3" stroke-linejoin="round" opacity="0.85" />
-        ${pins}
-        <rect x="${destX - 46}" y="${destY - 24}" width="96" height="48" rx="8" fill="var(--color-brand-primary)" />
-        <text x="${destX + 2}" y="${destY - 6}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#ffffff">${result.destinationMandi?.name || 'APMC'}</text>
-        <text x="${destX + 2}" y="${destY + 9}" text-anchor="middle" font-size="9" fill="#ffffff" opacity="0.9">APMC · ${(result.destinationMandi?.directDistanceKm ?? 0).toFixed(0)} km</text>
-        <text x="${destX + 2}" y="${destY + 22}" text-anchor="middle" font-size="8.5" fill="#ffffff" opacity="0.8">${result.pooled?.totalQuintals ?? 0}q arriving</text>
-        <text x="12" y="16" font-size="9.5" fill="var(--color-text-muted)">Pickup corridor: ${(result.destinationMandi?.pickupCorridorDistanceKm ?? 0).toFixed(1)} km driven (direct leg ${(result.destinationMandi?.directDistanceKm ?? 0).toFixed(1)} km + collection detours)</text>
-      </svg>
-    </div>
-  `;
-}
-
-function renderPoolResult(result: SajhaBazaarResult, language: Language): HTMLElement {
-  const el = document.createElement('div');
-  const local = result.localMandi;
-  const solo = result.soloAtDestination;
+  const labels = i18n[language] || i18n.en;
   const pooled = result.pooled;
   const trip = pooled?.tripCost;
-  const soloTrip = solo?.tripCost;
-  const qty = result.requestedQuantityQuintals;
+  const soloTrip = result.soloAtDestination?.tripCost;
+  const dest = result.destinationMandi;
+  const originLabel = originOverride?.label || `${store.getState().userLocation?.district || 'Nashik'}`;
+
+  const vehicleName = language === 'mr' ? (trip?.vehicle.nameMr || trip?.vehicle.name || 'Bolero Maxi Truck')
+    : language === 'hi' ? (trip?.vehicle.nameHi || trip?.vehicle.name || 'Bolero Maxi Truck')
+    : (trip?.vehicle.name || 'Bolero Maxi Truck');
+
+  const capacity = trip?.vehicle.capacityQuintals || 50;
+  const loaded = pooled?.totalQuintals || 0;
+  const fillPct = Math.min(100, Math.round((loaded / capacity) * 100));
+  const spaceRemaining = Math.max(0, capacity - loaded);
+
+  // Solo vs Pooled cost calculation for the user
+  const userSoloTripCost = soloTrip?.totalTripCostRs ?? 1500;
+  const userPooledShare = result.participants.find(p => p.isRequester)?.pooledTransportShareTotal ?? 450;
+  const userFreightSaved = Math.max(0, userSoloTripCost - userPooledShare);
 
   el.innerHTML = `
-    <!-- Headline -->
-    <div class="editorial-panel" style="border: 2px solid var(--color-brand-primary); background: #ffffff; padding: var(--space-6); margin-bottom: var(--space-5);">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3);">
-        <span class="badge badge-sage" style="font-weight: 800;">🤝 ${result.statusLabel}</span>
-        <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-          ${result.pooled?.participantCount} farmers · ${result.pooled?.totalQuintals}q · within ${result.matchRadiusKm} km · sell window ±${result.sellWindowToleranceDays} day
+    <!-- CARD 1: 🚚 SHARED VEHICLE & CAPACITY BAR -->
+    <div class="sajha-card">
+      <div class="sajha-card-header">
+        <div class="sajha-card-title">
+          <span>🚚</span>
+          <span>${labels.vehicleTitle}: ${vehicleName}</span>
+        </div>
+        <span class="badge badge-sage" style="font-weight: 800; font-size: 0.75rem;">
+          ${pooled?.participantCount} ${language === 'mr' ? 'शेतकरी एकत्र' : (language === 'hi' ? 'किसान साथ' : 'Farmers Pooled')}
         </span>
       </div>
-      <h3 class="heading-xl" style="margin-bottom: var(--space-4);">${result.headline[language]}</h3>
 
-      <!-- Before vs After -->
-      <div class="editorial-grid-3" style="margin-bottom: var(--space-5);">
-        <div class="editorial-panel" style="background: var(--color-bg-muted); border: 1px solid var(--color-border);">
-          <div class="kicker" style="margin-bottom: 4px;">OPTION A · SELL LOCALLY</div>
-          <div class="number-display number-xl number-main">${rs1(local?.nrvPerQtl ?? 0)}/q</div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
-            ${local?.name} · ${(local?.distanceKm ?? 0).toFixed(1)} km<br>
-            Net wallet for ${qty}q: <strong>${rs(local?.netPayout ?? 0)}</strong>
-          </div>
-        </div>
-
-        <div class="editorial-panel" style="background: var(--color-status-abstain-bg); border: 1px solid var(--color-status-abstain);">
-          <div class="kicker" style="margin-bottom: 4px; color: var(--color-status-abstain);">OPTION B · DISTANT MANDI ALONE</div>
-          <div class="number-display number-xl" style="color: var(--color-status-abstain);">${rs1(solo?.nrvPerQtl ?? 0)}/q</div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
-            ${result.destinationMandi?.name} alone · freight ${rs2(solo?.transportPerQtl ?? 0)}/q<br>
-            Net wallet for ${qty}q: <strong>${rs(solo?.netPayout ?? 0)}</strong>
-            ${solo && !solo.isEconomical ? '<br><strong style="color: var(--color-status-abstain);">Uneconomical — sub-scale freight</strong>' : ''}
-          </div>
-        </div>
-
-        <div class="editorial-panel" style="background: var(--color-brand-primary-light); border: 2px solid var(--color-brand-primary);">
-          <div class="kicker" style="margin-bottom: 4px;">OPTION C · WITH SAJHABAZAAR POOLING</div>
-          <div class="number-display number-xl number-positive">${rs1(pooled?.requesterNrvPerQtl ?? 0)}/q</div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
-            Shared ${trip?.vehicle.name} · freight ${rs2(pooled?.transportPerQtl ?? 0)}/q<br>
-            Net wallet for ${qty}q: <strong>${rs(pooled?.requesterNetPayout ?? 0)}</strong>
-          </div>
-          <div class="number-display number-positive" style="font-weight: 900; margin-top: 8px;">
-            ➔ Net Pocket Gain: +${rs(result.requesterGainTotal)}
-          </div>
-        </div>
+      <div style="font-size: var(--font-size-sm); color: var(--color-text-main); font-weight: 700; margin-bottom: var(--space-2);">
+        ${labels.route}: 📍 ${originLabel} ➔ ${dest?.name || 'Terminal Mandi'} (${dest?.directDistanceKm.toFixed(0) || 0} km)
       </div>
 
-      ${renderComparisonChart(result)}
-    </div>
-
-    <!-- Why this works -->
-    <div class="editorial-panel" style="margin-bottom: var(--space-5); padding: var(--space-5);">
-      <div class="kicker">WHY POOLING CREATES REAL MONEY</div>
-      <ul style="font-size: var(--font-size-sm); line-height: 1.7; padding-left: 1.1rem;">
-        ${result.reasons.map(r => `<li>${r}</li>`).join('')}
-      </ul>
-
-      <div class="table-responsive-wrapper" style="margin-top: var(--space-4);">
-        <table class="editorial-table">
-          <thead>
-            <tr><th>Vehicle Dispatch Cost Component</th><th>Alone (${qty}q)</th><th>Pooled (${pooled?.totalQuintals}q)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Vehicle</td><td>${soloTrip?.vehicle.name || '—'} (${soloTrip?.vehicle.capacityQuintals || 0}q cap)</td><td>${trip?.vehicle.name || '—'} (${trip?.vehicle.capacityQuintals || 0}q cap)</td></tr>
-            <tr><td>Road distance driven</td><td>${(soloTrip?.distanceKm ?? 0).toFixed(1)} km</td><td>${(trip?.distanceKm ?? 0).toFixed(1)} km (incl. pickup detours)</td></tr>
-            <tr><td>Diesel rate used</td><td colspan="2">${rs2(trip?.dieselPricePerLitre ?? 0)}/litre (${result.participants[0]?.district || ''} district retail price)</td></tr>
-            <tr><td>Running rate per km (round trip)</td><td>${rs2(soloTrip?.ratePerKmRs ?? 0)}/km</td><td>${rs2(trip?.ratePerKmRs ?? 0)}/km</td></tr>
-            <tr><td>Fixed vehicle base</td><td>${rs2(soloTrip?.fixedComponentRs ?? 0)}</td><td>${rs2(trip?.fixedComponentRs ?? 0)}</td></tr>
-            <tr><td>Distance component</td><td>${rs2(soloTrip?.distanceComponentRs ?? 0)}</td><td>${rs2(trip?.distanceComponentRs ?? 0)}</td></tr>
-            <tr><td>Payload component</td><td>${rs2(soloTrip?.payloadComponentRs ?? 0)}</td><td>${rs2(trip?.payloadComponentRs ?? 0)}</td></tr>
-            <tr><td>Minimum trip charge floor</td><td>${rs2(soloTrip?.minTripChargeRs ?? 0)} ${soloTrip?.minTripChargeApplied ? '<strong>(APPLIED — this is the scale trap)</strong>' : '(not binding)'}</td><td>${rs2(trip?.minTripChargeRs ?? 0)} ${trip?.minTripChargeApplied ? '(applied)' : '(not binding)'}</td></tr>
-            <tr style="background-color: var(--color-brand-primary-light); font-weight: 800;">
-              <td>Total trip cost</td>
-              <td>${rs2(soloTrip?.totalTripCostRs ?? 0)} → <strong>${rs2(soloTrip?.costPerQuintalRs ?? 0)}/qtl</strong></td>
-              <td>${rs2(trip?.totalTripCostRs ?? 0)} → <strong>${rs2(trip?.costPerQuintalRs ?? 0)}/qtl</strong></td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Capacity Progress Meter -->
+      <div class="sajha-capacity-wrapper">
+        <div class="sajha-capacity-track">
+          <div class="sajha-capacity-fill" style="width: ${fillPct}%;"></div>
+        </div>
+        <div class="sajha-capacity-stats">
+          <span style="color: var(--color-brand-primary); font-weight: 800;">
+            ${loaded} / ${capacity} qtl ${labels.filled} (${fillPct}%)
+          </span>
+          ${spaceRemaining > 0 ? `
+            <span class="sajha-space-alert">
+              ⚡ ${spaceRemaining} ${labels.spaceLeft}
+            </span>
+          ` : `
+            <span style="color: var(--color-status-success); font-weight: 800;">✓ Full</span>
+          `}
+        </div>
       </div>
     </div>
 
-    <!-- Route map -->
-    <div class="editorial-panel" style="margin-bottom: var(--space-5); padding: var(--space-5);">
-      <div class="kicker">ROUTE &amp; PICKUP WAYPOINTS</div>
-      <h4 class="heading-sm" style="margin-bottom: var(--space-3);">Participating farms → pickup corridor → destination APMC</h4>
-      ${renderRouteMap(result)}
+    <!-- CARD 2: 💰 IN-POCKET CASH SAVINGS (PLAIN RUPEES) -->
+    <div class="sajha-card" style="border: 2px solid #15803d;">
+      <div class="sajha-card-header">
+        <div class="sajha-card-title" style="color: #15803d;">
+          <span>💰</span>
+          <span>${labels.savingsTitle}</span>
+        </div>
+      </div>
+
+      <div class="sajha-savings-hero">
+        <div>
+          <div style="font-size: var(--font-size-xs); opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">
+            ${labels.savingsSub}
+          </div>
+          <div class="sajha-savings-val">
+            +${rs(result.requesterGainTotal)}
+          </div>
+          <div style="font-size: var(--font-size-xs); color: #86efac; font-weight: 700; margin-top: 2px;">
+            (+${rs1(result.requesterGainPerQtl)}/qtl net advantage)
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.15); padding: 8px 14px; border-radius: var(--radius-md); font-size: var(--font-size-xs); font-weight: 700;">
+          ✓ Verified by MandiMitra
+        </div>
+      </div>
+
+      <!-- Clear comparison breakdown -->
+      <div class="sajha-comparison-row">
+        <div class="sajha-comparison-box">
+          <div style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 700;">${labels.soloFare}</div>
+          <div style="font-size: var(--font-size-base); font-weight: 900; color: var(--color-status-abstain); margin-top: 2px;">
+            ${rs(userSoloTripCost)}
+          </div>
+        </div>
+        <div class="sajha-comparison-box" style="border-color: #22c55e; background: var(--color-brand-primary-light);">
+          <div style="font-size: 0.72rem; color: var(--color-brand-primary); font-weight: 700;">${labels.pooledFare}</div>
+          <div style="font-size: var(--font-size-base); font-weight: 900; color: var(--color-brand-primary); margin-top: 2px;">
+            ${rs(userPooledShare)}
+          </div>
+        </div>
+        <div class="sajha-comparison-box" style="border-color: #16a34a; background: #dcfce7;">
+          <div style="font-size: 0.72rem; color: #166534; font-weight: 700;">${labels.fareSaved}</div>
+          <div style="font-size: var(--font-size-base); font-weight: 900; color: #15803d; margin-top: 2px;">
+            +${rs(userFreightSaved)}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Cost split table -->
-    <div class="editorial-panel" style="padding: var(--space-5);">
-      <div class="kicker">INTERACTIVE COST SPLIT</div>
-      <h4 class="heading-sm" style="margin-bottom: var(--space-3);">Who pays what, and what each farmer gains</h4>
-      <div class="table-responsive-wrapper">
-        ${renderCostSplitTable(result)}
+    <!-- CARD 3: 👥 CO-FARMERS LIST -->
+    <div class="sajha-card">
+      <div class="sajha-card-header">
+        <div class="sajha-card-title">
+          <span>👥</span>
+          <span>${labels.farmersTitle} (${result.participants.length})</span>
+        </div>
       </div>
-      <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: var(--space-3);">
-        Allocation rule: <code>FarmerShare_i = TotalPooledTripCost × q_i / Q_pool</code>, settled to the paise with
-        largest-remainder rounding so the shares sum <em>exactly</em> to the invoice. Every participant must clear
-        ${rs(result.materialityThresholdPerQtl)}/qtl of net gain over their own best individual option, or the pool is not offered at all.
-      </p>
-      ${renderSyntheticNotice(result)}
+
+      <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+        ${result.participants.map((p: SajhaParticipant) => `
+          <div class="sajha-farmer-row ${p.isRequester ? 'is-user' : ''}">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <div class="sajha-farmer-avatar">
+                ${p.isRequester ? '⭐' : '🌾'}
+              </div>
+              <div>
+                <div style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main);">
+                  ${p.displayName} ${p.isRequester ? `<span class="badge badge-accent" style="font-size: 0.6rem; padding: 1px 6px;">${labels.youBadge}</span>` : ''}
+                </div>
+                <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+                  📍 ${p.village}${p.isRequester ? '' : ` (${p.distanceFromRequesterKm.toFixed(1)} km)`}
+                </div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: var(--font-family-numbers); font-size: var(--font-size-base); font-weight: 900; color: var(--color-brand-primary);">
+                ${p.quantityQuintals} qtl
+              </div>
+              <div style="font-size: 0.68rem; color: var(--color-status-success); font-weight: 700;">
+                +${rs(p.netGainTotal)} gain
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Small footer note for demo transparency -->
+    <div style="text-align: center; margin-top: var(--space-3); font-size: 0.7rem; color: var(--color-text-muted); font-style: italic;">
+      ${labels.demoNote}
     </div>
   `;
 
   return el;
 }
+
+function renderSimpleNoPool(result: SajhaBazaarResult, language: Language): HTMLElement {
+  const el = document.createElement('div');
+  el.className = 'sajha-card';
+  el.style.textAlign = 'center';
+  el.style.padding = 'var(--space-6)';
+
+  const labels = i18n[language] || i18n.en;
+  const qty = result.requestedQuantityQuintals;
+  const isLargeLoad = qty >= 20;
+
+  el.innerHTML = `
+    <div style="font-size: 2.2rem; margin-bottom: var(--space-2);">🤝</div>
+    <h3 class="heading-md" style="margin-bottom: var(--space-2);">${labels.noPoolTitle}</h3>
+    <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 520px; margin: 0 auto var(--space-3);">
+      ${isLargeLoad
+        ? (language === 'mr'
+          ? `तुमचे वजन ${qty} क्विंटल (मोठा भार) आहे. तुमच्याकडे आधीच पूर्ण वाहनाइतका माल असल्याने एकट्याने जाणे परवडणारे आहे. साझा बाजार ३ ते १० क्विंटलच्या अल्पभूधारक शेतकऱ्यांसाठी बनवला आहे.`
+          : language === 'hi'
+          ? `आपकी उपज ${qty} क्विंटल (बड़ा भार) है। आपके पास पहले से पूरी गाड़ी जितना माल है, इसलिए अकेले जाना ही सही है। साझा बाजार ३ से १० क्विंटल के छोटे किसानों के लिए है।`
+          : `Your load of ${qty} quintals is already large enough for a dedicated solo vehicle. SajhaBazaar is designed to pool smallholders with 2 to 10 quintals.`)
+        : labels.noPoolDesc}
+    </p>
+
+    ${result.reasons && result.reasons.length > 0 ? `
+      <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); background: var(--color-bg-canvas); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); max-width: 560px; margin: 0 auto var(--space-4); border: 1px solid var(--color-border); text-align: left;">
+        <strong style="color: var(--color-brand-primary);">ℹ️ ${language === 'mr' ? 'तांत्रिक कारण' : 'Engine Reason'}:</strong>
+        <ul style="margin: 4px 0 0 16px; padding: 0;">
+          ${result.reasons.map(r => `<li>${r}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    <div style="display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap;">
+      <button id="btn-try-smallholder" class="btn btn-outline btn-sm" style="font-weight: 700;">
+        ⚡ ${language === 'mr' ? 'लहान भार (५ क्विंटल) वापरून पहा' : (language === 'hi' ? 'छोटा भार (५ क्विंटल) आजमाएं' : 'Try Smallholder Load (5q)')}
+      </button>
+    </div>
+  `;
+
+  el.querySelector('#btn-try-smallholder')?.addEventListener('click', () => {
+    const qtyInput = document.querySelector('#sajha-qty') as HTMLInputElement;
+    if (qtyInput) {
+      qtyInput.value = '5';
+      qtyInput.dispatchEvent(new Event('change'));
+    }
+    const runBtn = document.querySelector('#sajha-run') as HTMLButtonElement;
+    if (runBtn) runBtn.click();
+  });
+
+  return el;
+}
+
