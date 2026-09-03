@@ -29,10 +29,6 @@ export function renderAppShell(): HTMLElement {
             <li><a href="#/hub" class="nav-link active" data-route="/hub">Decision Hub</a></li>
             <li><a href="#/entry" class="nav-link" data-route="/entry">Voice Entry</a></li>
             <li><a href="#/sajha" class="nav-link" data-route="/sajha">🤝 SajhaBazaar</a></li>
-            <li><a href="#/markets" class="nav-link" data-route="/markets">Markets Radar</a></li>
-            <li><a href="#/evidence" class="nav-link" data-route="/evidence">Evidence & Why</a></li>
-            <li><a href="#/backtest" class="nav-link" data-route="/backtest">Backtest</a></li>
-            <li><a href="#/settings" class="nav-link" data-route="/settings">Cost Settings</a></li>
           </ul>
         </div>
 
