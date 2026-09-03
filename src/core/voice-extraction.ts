@@ -32,11 +32,11 @@ export const UNIT_TO_QUINTALS: Record<AgrarianUnit, number> = {
 
 /** Spoken unit tokens across Marathi, Hindi and English. */
 const UNIT_TOKENS: Array<{ unit: AgrarianUnit; tokens: string[] }> = [
-  { unit: 'Bags', tokens: ['गोणी', 'गोण्या', 'गोणि', 'बोरी', 'बोरे', 'बोरा', 'बोर्या', 'बोरीया', 'बोरियां', 'कट्टा', 'कट्टे', 'कट्टी', 'पोते', 'पोती', 'पैकेट', 'पैकेट्स', 'bag', 'bags', 'goni', 'goniya', 'bori', 'bora', 'borey', 'boriyan', 'katta', 'katte', 'katti', 'packet', 'packets', 'sack', 'sacks'] },
-  { unit: 'Crates', tokens: ['क्रेट', 'क्रेटस', 'क्रेट्स', 'पेटी', 'पेट्या', 'पेटियां', 'पेटियाँ', 'डब्बा', 'डब्बे', 'कार्टन', 'crate', 'crates', 'peti', 'pethi', 'petya', 'petiyan', 'box', 'boxes', 'carton', 'cartons'] },
-  { unit: 'Trolley', tokens: ['ट्रॉली', 'ट्राली', 'ट्रॅक्टर', 'ट्रैक्टर', 'ट्रॅक्टरभर', 'ट्रैक्टरभर', 'ट्रालीभर', 'ट्रॉलीभर', 'trolley', 'trolly', 'tractor', 'trali'] },
-  { unit: 'Tempo', tokens: ['टेम्पो', 'टेंपो', 'छोटा हत्ती', 'छोटा हाथी', 'छोटाहाथी', 'पिकअप', 'लोडर', 'tempo', 'chhota hathi', 'chota hathi', 'pickup', 'loader'] },
-  { unit: 'Quintals', tokens: ['क्विंटल', 'क्विंटल्स', 'कुंटल', 'कुंतल', 'कुन्तल', 'क्वि.', 'quintal', 'quintals', 'qtl', 'quintaal', 'kuintal', 'kvintal', 'kuntal'] }
+  { unit: 'Bags', tokens: ['गोणी', 'गोण्या', 'गोणि', 'गोनी', 'गोली', 'बोनी', 'बोनि', 'बोरी', 'बोरे', 'बोरा', 'बोर्या', 'बोरीया', 'बोरियां', 'कट्टा', 'कट्टे', 'कट्टी', 'पोते', 'पोती', 'पैकेट', 'पैकेट्स', 'bag', 'bags', 'goni', 'goniya', 'bori', 'bora', 'borey', 'boriyan', 'katta', 'katte', 'katti', 'packet', 'packets', 'sack', 'sacks', 'बैग', 'बैग्स', 'बॅग', 'बॅग्ज'] },
+  { unit: 'Crates', tokens: ['क्रेट', 'क्रेटस', 'क्रेट्स', 'पेटी', 'पेट्या', 'पेटियां', 'पेटियाँ', 'डब्बा', 'डब्बे', 'कार्टन', 'crate', 'crates', 'peti', 'pethi', 'petya', 'petiyan', 'box', 'boxes', 'carton', 'cartons', 'क्रेटा', 'क्रेटे'] },
+  { unit: 'Trolley', tokens: ['ट्रॉली', 'ट्राली', 'ट्रोली', 'ट्रॅक्टर', 'ट्रैक्टर', 'ट्रॅक्टरभर', 'ट्रैक्टरभर', 'ट्रालीभर', 'ट्रॉलीभर', 'trolley', 'trolly', 'tractor', 'trali'] },
+  { unit: 'Tempo', tokens: ['टेम्पो', 'टेंपो', 'छोटा हत्ती', 'छोटा हाथी', 'छोटाहाथी', 'पिकअप', 'लोडर', 'tempo', 'chhota hathi', 'chota hathi', 'pickup', 'loader', 'हाथी', 'पिकप'] },
+  { unit: 'Quintals', tokens: ['क्विंटल', 'क्विंटल्स', 'कुंटल', 'कुंतल', 'कुन्तल', 'क्वि.', 'quintal', 'quintals', 'qtl', 'quintaal', 'kuintal', 'kvintal', 'kuntal', 'कुंतल्स'] }
 ];
 
 /** Spoken numerals, Marathi and Hindi (including standard, colloquial, and vowel-normalized spellings). */
@@ -102,30 +102,38 @@ const WORD_NUMBERS: Record<string, number> = {
 
   // Colloquial spoken fractions / amounts
   'डेढ़': 1.5, 'देढ़': 1.5, 'dedh': 1.5,
-  'ढाई': 2.5, 'dhai': 2.5
+  'ढाई': 2.5, 'dhai': 2.5,
+
+  // English number words
+  'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+  'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+  'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
+  'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
+  'twenty-five': 25, 'thirty': 30, 'thirty-five': 35, 'forty': 40, 'forty-five': 45,
+  'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90, 'hundred': 100
 };
 
 /** Additional colloquial crop names not present in the catalogue's own Marathi/Hindi labels. */
 const CROP_SYNONYMS: Record<string, string[]> = {
-  'Onion': ['kanda', 'kandaa', 'pyaz', 'pyaaz', 'pyaaj', 'कांदे', 'कांद्या', 'कांद्याचा', 'प्याज़', 'प्याज', 'कान्दा', 'लाल प्याज', 'लाल कांदा'],
-  'Tomato': ['tamatar', 'tomato', 'टमाटे', 'टोमेटो', 'टमाटर', 'टमाटा', 'tamata', 'लाल टमाटर'],
-  'Soyabean': ['soyabean', 'soybean', 'soya', 'सोयाबिन', 'सोयबीन', 'सोयाबीनचा', 'soybin', 'सोयाबीन', 'सोया'],
-  'Wheat': ['gehu', 'gehun', 'gahu', 'gahun', 'गेहूं', 'गेहू', 'गव्हा', 'गहु', 'गव्ह', 'कनक'],
-  'Potato': ['batata', 'aalu', 'alu', 'aaloo', 'बटाटे', 'बटाट्या', 'बटाटा', 'आलू', 'आलु'],
-  'Bengal Gram(Gram)(Whole)': ['chana', 'harbara', 'हरभरा', 'चना', 'चने', 'काला चना', 'काबुली चना', 'छोला', 'bengal gram', 'gram', 'हरभऱ्या', 'चणा', 'chanaa'],
-  'Pomegranate': ['dalimb', 'anar', 'डाळींब', 'डाळिंब', 'अनार', 'दाड़िम'],
-  'Grapes': ['draksha', 'angur', 'द्राक्ष', 'द्राक्षे', 'अंगूर', 'angoor', 'अंगुर'],
-  'Maize': ['makka', 'maka', 'मक्याचे', 'मक्का', 'मका', 'मक्याच', 'मक्के', 'भुट्टा', 'मकई', 'bhutta'],
-  'Turmeric': ['halad', 'haldi', 'हळद', 'हल्दी', 'हळदी'],
-  'Green Chilli': ['mirchi', 'mirch', 'hirvi mirchi', 'मिर्ची', 'हिरवी मिरची', 'मिरच्या', 'हरी मिर्च', 'हरी मिर्ची', 'मिर्च', 'hari mirch'],
+  'Onion': ['kanda', 'kandaa', 'pyaz', 'pyaaz', 'pyaaj', 'कांदे', 'कांद्या', 'कांद्याचा', 'प्याज़', 'प्याज', 'कान्दा', 'लाल प्याज', 'लाल कांदा', 'कंधा', 'कांधा', 'कंदा', 'कादा', 'कांधे', 'कंधे', 'onion', 'onions', 'ओनियन'],
+  'Tomato': ['tamatar', 'tomato', 'tomatoes', 'टमाटे', 'टोमेटो', 'टमाटर', 'टमाटा', 'tamata', 'लाल टमाटर', 'तमतर', 'तमातर', 'टोमाटो', 'टोमॅटो', 'टोमैटो'],
+  'Soyabean': ['soyabean', 'soybean', 'soya', 'सोयाबिन', 'सोयबीन', 'सोयाबीनचा', 'soybin', 'सोयाबीन', 'सोया', 'सोयाबिन'],
+  'Wheat': ['gehu', 'gehun', 'gahu', 'gahun', 'गेहूं', 'गेहू', 'गव्हा', 'गहु', 'गव्ह', 'कनक', 'wheat'],
+  'Potato': ['batata', 'aalu', 'alu', 'aaloo', 'बटाटे', 'बटाट्या', 'बटाटा', 'आलू', 'आलु', 'बताता', 'बताते', 'potato', 'potatoes'],
+  'Bengal Gram(Gram)(Whole)': ['chana', 'harbara', 'हरभरा', 'चना', 'चने', 'काला चना', 'काबुली चना', 'छोला', 'bengal gram', 'gram', 'हरभऱ्या', 'चणा', 'chanaa', 'हरबरा', 'हरबरे', 'हरबऱ्या'],
+  'Pomegranate': ['dalimb', 'anar', 'डाळींब', 'डाळिंब', 'अनार', 'दाड़िम', 'दालिंब', 'डालीम', 'डालिम', 'दालिम', 'अणार', 'pomegranate'],
+  'Grapes': ['draksha', 'angur', 'द्राक्ष', 'द्राक्षे', 'अंगूर', 'angoor', 'अंगुर', 'grapes'],
+  'Maize': ['makka', 'maka', 'मक्याचे', 'मक्का', 'मका', 'मक्याच', 'मक्के', 'भुट्टा', 'मकई', 'bhutta', 'maize', 'corn'],
+  'Turmeric': ['halad', 'haldi', 'हळद', 'हल्दी', 'हळदी', 'turmeric'],
+  'Green Chilli': ['mirchi', 'mirch', 'hirvi mirchi', 'मिर्ची', 'हिरवी मिरची', 'मिरच्या', 'हरी मिर्च', 'हरी मिर्ची', 'मिर्च', 'hari mirch', 'green chilli', 'chilli'],
   'Red gram/Arhar/Tur(whole)': ['तूर', 'तुर', 'तूरडाळ', 'toor', 'turdal', 'arhar', 'tur', 'अरहर', 'तुअर', 'अरहर दाल'],
   'Jowar(Sorghum)': ['ज्वारी', 'जोंधळा', 'ज्वार', 'jowar', 'jwari', 'jondhal'],
   'Bajra(Pearl Millet/Cumbu)': ['बाजरी', 'बाजरा', 'bajra', 'bajri', 'bajari'],
   'Groundnut': ['भुईमूग', 'शेंगदाणा', 'मूंगफली', 'मुंगफली', 'मूँगफली', 'moongfali', 'shengdana', 'groundnut', 'मूंगफली दाना'],
-  'Orange': ['संत्री', 'संतरा', 'संत्रे', 'orange', 'oranges', 'santra', 'santri', 'नागपुरी संत्री'],
+  'Orange': ['संत्री', 'संतरा', 'संत्रे', 'orange', 'oranges', 'santra', 'santri', 'नागपुरी संत्री', 'संत्र'],
   'Banana': ['केळी', 'केला', 'केले', 'banana', 'bananas', 'kela', 'keli'],
   'Gur(Jaggery)': ['गूळ', 'गुळ', 'गुळाच्या', 'गुळाची', 'गुड़', 'गुड़', 'gur', 'jaggery', 'gud'],
-  'Ginger(Green)': ['आले', 'आलं', 'अदरक', 'adrak', 'aale', 'ginger', 'green ginger']
+  'Ginger(Green)': ['आले', 'आलं', 'अदरक', 'adrak', 'aale', 'ginger', 'green ginger', 'आदराक']
 };
 
 // ============================================================================
@@ -280,7 +288,7 @@ function buildTalukaLexicon(): LexiconEntry[] {
   }
 
   const extraTalukas: Array<[string, string]> = [
-    ['niphad', 'Nashik'], ['निफाड', 'Nashik'], ['निफाड़', 'Nashik'],
+    ['niphad', 'Nashik'], ['निफाड', 'Nashik'], ['निफाड़', 'Nashik'], ['निफाद', 'Nashik'], ['लिफाड', 'Nashik'], ['नेपाल', 'Nashik'],
     ['dindori', 'Nashik'], ['दिंडोरी', 'Nashik'], ['दिण्डोरी', 'Nashik'],
     ['vinchur', 'Nashik'], ['विंचूर', 'Nashik'],
     ['satana', 'Nashik'], ['सटाणा', 'Nashik'], ['सटाना', 'Nashik'],
@@ -289,6 +297,7 @@ function buildTalukaLexicon(): LexiconEntry[] {
     ['junnar', 'Pune'], ['जुन्नर', 'Pune'],
     ['narayangaon', 'Pune'], ['नारायणगाव', 'Pune'], ['नारायणगाँव', 'Pune'],
     ['otur', 'Pune'], ['ओतूर', 'Pune'],
+    ['baramati', 'Pune'], ['बारामती', 'Pune'],
     ['sangamner', 'Ahilyanagar'], ['संगमनेर', 'Ahilyanagar'],
     ['kopargaon', 'Ahilyanagar'], ['कोपरगाव', 'Ahilyanagar'],
     ['rahata', 'Ahilyanagar'], ['राहाता', 'Ahilyanagar'],
@@ -297,6 +306,9 @@ function buildTalukaLexicon(): LexiconEntry[] {
     ['ausa', 'Latur'], ['औसा', 'Latur'],
     ['pandharpur', 'Solapur'], ['पंढरपूर', 'Solapur'], ['पंढरपुर', 'Solapur'],
     ['akluj', 'Solapur'], ['अकलूज', 'Solapur'],
+    ['karad', 'Satara'], ['कराड', 'Satara'],
+    ['raver', 'Jalgaon'], ['रावेर', 'Jalgaon'],
+    ['bhusawal', 'Jalgaon'], ['भुसावळ', 'Jalgaon'], ['भुसावल', 'Jalgaon'],
     ['kamthi', 'Nagpur'], ['कामठी', 'Nagpur'],
     ['katol', 'Nagpur'], ['कातोल', 'Nagpur'],
     ['lasalgaon', 'Nashik'], ['लासलगाव', 'Nashik'], ['लासलगाँव', 'Nashik'],
@@ -395,6 +407,21 @@ export function normalizeSpokenText(raw: string): string {
   // Step 2: Strip punctuation
   s = s.replace(/[,\.!?;:"']/g, ' ');
   s = s.replace(/\s+/g, ' ').trim();
+
+  // Step 2.5: Separate fused digits and words, e.g. "40बोरी" -> "40 बोरी", "80crates" -> "80 crates"
+  s = s.replace(/(\d+)([a-zA-Z\u0900-\u097F]+)/g, '$1 $2');
+  s = s.replace(/([a-zA-Z\u0900-\u097F]+)(\d+)/g, '$1 $2');
+
+  // Step 2.6: Convert spoken number words to digits BEFORE unit matching!
+  const words = s.split(/\s+/);
+  const convertedWords = words.map(w => {
+    const normW = normalizeDevanagariVowels(w);
+    if (w in WORD_NUMBERS) return String(WORD_NUMBERS[w]);
+    if (normW in WORD_NUMBERS) return String(WORD_NUMBERS[normW]);
+    return w;
+  });
+  s = convertedWords.join(' ');
+
   // Step 3: Normalize Devanagari vowels for fuzzy matching
   s = normalizeDevanagariVowels(s);
   // Step 4: Strip Marathi grammatical suffixes
@@ -406,12 +433,45 @@ export function normalizeSpokenText(raw: string): string {
   return s;
 }
 
+function levenshteinDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 99;
+  const m: number[][] = [];
+  for (let i = 0; i <= b.length; i++) m[i] = [i];
+  for (let j = 0; j <= a.length; j++) m[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      m[i][j] = b.charAt(i - 1) === a.charAt(j - 1)
+        ? m[i - 1][j - 1]
+        : Math.min(m[i - 1][j - 1] + 1, m[i][j - 1] + 1, m[i - 1][j] + 1);
+    }
+  }
+  return m[b.length][a.length];
+}
+
 function findLexiconMatch(text: string, lexicon: LexiconEntry[]): { canonicalId: string; token: string } | null {
+  // Phase 1: Exact substring match (highest confidence)
   for (const entry of lexicon) {
     if (text.includes(entry.token)) {
       return { canonicalId: entry.canonicalId, token: entry.token };
     }
   }
+
+  // Phase 2: Word-level acoustic/Levenshtein fuzzy matching for tokens >= 4 chars
+  const words = text.split(/\s+/);
+  for (const word of words) {
+    if (word.length < 4) continue;
+    for (const entry of lexicon) {
+      if (entry.token.length < 4) continue;
+      const dist = levenshteinDistance(word, entry.token);
+      const maxAllowed = entry.token.length >= 6 ? 2 : 1;
+      if (dist <= maxAllowed) {
+        return { canonicalId: entry.canonicalId, token: entry.token };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -677,6 +737,41 @@ export function extractAgrarianSlots(rawText: string): VoiceExtraction {
     },
     warnings
   };
+}
+
+/**
+ * Evaluates multiple transcription hypotheses (e.g. from Web Speech API's maxAlternatives)
+ * and returns the one with the highest confidence and most filled agrarian slots.
+ */
+export function scoreHypotheses(transcripts: string[]): VoiceExtraction {
+  if (!transcripts || transcripts.length === 0) {
+    return extractAgrarianSlots('');
+  }
+  if (transcripts.length === 1) {
+    return extractAgrarianSlots(transcripts[0]);
+  }
+
+  let bestExtraction: VoiceExtraction | null = null;
+  let bestScore = -1;
+
+  for (const t of transcripts) {
+    if (!t || !t.trim()) continue;
+    const ext = extractAgrarianSlots(t);
+    let score = 0;
+    if (ext.crop) score += 10;
+    if (ext.district) score += 10;
+    if (ext.quantityQuintals !== null) score += 10;
+    if (ext.originalUnit) score += 5;
+    if (ext.confidence === 'HIGH') score += 15;
+    else if (ext.confidence === 'MEDIUM') score += 8;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestExtraction = ext;
+    }
+  }
+
+  return bestExtraction || extractAgrarianSlots(transcripts[0]);
 }
 
 /**

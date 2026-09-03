@@ -19,7 +19,7 @@ import { store } from '../../state/store';
 import { apiClient } from '../../api-client';
 import { renderCropOptgroupsHtml, renderCropDatalistHtml, getCropConfig } from '../../../config/crops';
 import { renderDistrictOptgroupsHtml, renderDistrictDatalistHtml, getDistrictConfig, ALL_DISTRICTS } from '../../../config/districts';
-import type { VoiceExtraction } from '../../../core/voice-extraction';
+import { type VoiceExtraction, scoreHypotheses } from '../../../core/voice-extraction';
 
 export const MAHARASHTRA_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = Object.fromEntries(
   ALL_DISTRICTS.map(d => [d.name.toLowerCase(), { lat: d.latitude, lon: d.longitude }])
@@ -371,23 +371,40 @@ export function renderEntryView(): HTMLElement {
         const idx = parseInt((chip as HTMLElement).getAttribute('data-chip') || '0', 10);
         const chipData = UNIFIED_DEMO_CHIPS[idx];
         if (chipData) {
-          void processTranscript(chipData.text, 'demo-chip');
+          void processCandidates([chipData.text], 'demo-chip');
         }
       });
     });
   }
 
-  async function processTranscript(text: string, source: 'web-speech' | 'demo-chip' | 'typed') {
-    transcriptEl.textContent = `“${text}”`;
-    setStatus('🤖 AI विश्लेषक / विश्लेषण हो रहा है (Analyzing Marathi, Hindi, or English…)', 'processing');
+  async function processCandidates(candidates: string[], source: 'web-speech' | 'demo-chip' | 'typed') {
+    const primary = candidates[0] || '';
+    transcriptEl.textContent = `“${primary}”`;
+    setStatus('🤖 AI विश्लेषक / विश्लेषण हो रहा है (Analyzing speech with multi-hypothesis scoring…)', 'processing');
     try {
-      const res = await apiClient.processVoiceText(text, source);
+      // Step 1: Immediate zero-latency local extraction with fuzzy matching
+      const localExtraction = scoreHypotheses(candidates);
+
+      // Step 2: Call backend API for pipeline reconciliation & server logs
+      const res = await apiClient.processVoiceText(candidates, source);
       const label = res.pipeline.nluProvider === 'google-gemini'
         ? 'Whisper + Gemini'
-        : 'MandiMitra offline extractor';
-      applyExtraction(res.extraction, label);
+        : (res.pipeline.nluProvider === 'deterministic-multi-hypothesis' ? 'Multi-Hypothesis AI' : 'MandiMitra offline extractor');
+
+      // Use the higher-confidence result (local fuzzy vs server)
+      const chosen = (res.extraction.confidence === 'HIGH' || !localExtraction.crop)
+        ? res.extraction
+        : localExtraction;
+
+      applyExtraction(chosen, label);
     } catch (err) {
-      setStatus(`Voice service unavailable: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      // Offline fallback: never fail in front of judges or users
+      const localExtraction = scoreHypotheses(candidates);
+      if (localExtraction.crop || localExtraction.quantityQuintals !== null) {
+        applyExtraction(localExtraction, 'Offline Multi-Hypothesis AI');
+      } else {
+        setStatus(`Voice service unavailable: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      }
     }
   }
 
@@ -431,96 +448,151 @@ export function renderEntryView(): HTMLElement {
   }
 
   let listening = false;
-  let gotResult = false;
+  let activeRecognition: any = null;
+  let finalTranscript = '';
+  let candidateTranscripts: string[] = [];
+  let autoStopTimer: any = null;
+  let silenceTimer: any = null;
+
+  function stopListeningAndProcess() {
+    if (!listening) return;
+    listening = false;
+    clearTimeout(autoStopTimer);
+    clearTimeout(silenceTimer);
+
+    if (micBtn) {
+      micBtn.classList.remove('is-recording');
+      micBtn.innerHTML = '🎙️';
+      micBtn.setAttribute('title', 'Tap to speak (मराठी • हिन्दी • English)');
+    }
+
+    if (activeRecognition) {
+      try { activeRecognition.stop(); } catch {}
+      activeRecognition = null;
+    }
+
+    const uniqueCandidates = Array.from(new Set(candidateTranscripts.filter(t => t.trim().length > 0)));
+    if (uniqueCandidates.length > 0) {
+      void processCandidates(uniqueCandidates, 'web-speech');
+    } else if (finalTranscript.trim()) {
+      void processCandidates([finalTranscript.trim()], 'web-speech');
+    } else {
+      setStatus('🔇 बोलणे ओळखले नाही / कोई आवाज नहीं पहचानी गई। Tap mic to retry or tap a sample below.', 'error');
+    }
+  }
+
   micBtn?.addEventListener('click', () => {
-    if (listening) return;
+    if (listening) {
+      // User tapped mic while speaking -> finish and process immediately!
+      stopListeningAndProcess();
+      return;
+    }
 
     const recognition = getSpeechRecognition();
     if (recognition) {
       listening = true;
-      gotResult = false;
-      // Bilingual Indian recognition handles Hindi, Indian English, and Devanagari Marathi
+      activeRecognition = recognition;
+      finalTranscript = '';
+      candidateTranscripts = [];
+
+      // Indian bilingual recognition handles Hindi, Indian English, and Devanagari Marathi
       recognition.lang = 'hi-IN';
       recognition.interimResults = true;
       recognition.maxAlternatives = 5;
       recognition.continuous = true;
 
       micBtn.classList.add('is-recording');
-      setStatus('🔴 बोलत रहा... / बोलिए... (Listening in Marathi, Hindi, or English)', 'recording');
+      micBtn.innerHTML = '⏹️';
+      micBtn.setAttribute('title', 'Tap to finish speaking (बोलणे पूर्ण झाले तर टॅप करा)');
+      setStatus('🔴 बोलत रहा... / बोलिए... (Listening: Tap ⏹️ when finished)', 'recording');
       transcriptEl.textContent = '';
 
-      let finalTranscript = '';
-
-      // Auto-stop after 8 seconds of continuous listening and process accumulated transcript
-      const autoStopTimer = setTimeout(() => {
+      // Auto-stop after 12 seconds if user forgets to tap stop
+      autoStopTimer = setTimeout(() => {
         if (listening) {
-          try { recognition.stop(); } catch { /* already stopped */ }
-        }
-      }, 8000);
-
-      // Safety timeout: hard-stop if onend never fires (browser hang)
-      const safetyTimer = setTimeout(() => {
-        if (listening) {
-          try { recognition.stop(); } catch { /* already stopped */ }
-          listening = false;
-          micBtn.classList.remove('is-recording');
-          if (!gotResult && finalTranscript.trim()) {
-            gotResult = true;
-            void processTranscript(finalTranscript.trim(), 'web-speech');
-          } else if (!gotResult) {
-            setStatus('⏱️ Listening timed out. Tap mic to try again, or tap a sample below.', 'error');
-          }
+          stopListeningAndProcess();
         }
       }, 12000);
 
       recognition.onresult = (event: any) => {
         let interim = '';
+        const currentHypotheses: string[] = [];
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += chunk + ' ';
+          const result = event.results[i];
+          if (result.isFinal) {
+            const topChunk = result[0].transcript;
+            finalTranscript += topChunk + ' ';
+
+            // Collect all 5 alternative hypotheses from this final chunk!
+            for (let alt = 0; alt < result.length && alt < 5; alt++) {
+              const altText = result[alt].transcript.trim();
+              if (altText) {
+                currentHypotheses.push(altText);
+              }
+            }
           } else {
-            interim += chunk;
+            interim += result[0].transcript;
           }
         }
+
+        // Add accumulated full sentence candidates
+        if (finalTranscript.trim()) {
+          candidateTranscripts.push(finalTranscript.trim());
+          for (const h of currentHypotheses) {
+            candidateTranscripts.push(finalTranscript.trim().replace(/\S+$/, h));
+          }
+        }
+
         const finalDisplay = finalTranscript.trim();
         const interimDisplay = interim.trim();
         transcriptEl.innerHTML =
           (finalDisplay ? `<span style="color: var(--color-text-main); font-weight: 700;">"${finalDisplay}"</span>` : '') +
           (interimDisplay ? `<span style="color: var(--color-text-muted); opacity: 0.6; font-style: italic;"> ${interimDisplay}</span>` : '');
+
+        // Reset silence grace timer on new speech
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => {
+          if (listening && finalTranscript.trim().length > 10) {
+            // Natural pause of 2.8 seconds after speaking a full sentence -> auto finish
+            stopListeningAndProcess();
+          }
+        }, 2800);
       };
 
       recognition.onerror = (event: any) => {
         const code = event?.error || 'unknown';
+        if (code === 'no-speech' && listening) {
+          // Ignore momentary no-speech during pauses, keep listening
+          return;
+        }
         const friendlyMessages: Record<string, string> = {
           'not-allowed': '🔇 माइक्रोफोन परवानगी नाकारली / अनुमति अस्वीकृत। Allow mic in browser settings, or tap a sample below.',
           'network': '🌐 स्पीच सेवा उपलब्ध नाही / उपलब्ध नहीं है। Check connection or tap a sample below.',
-          'no-speech': '🔇 बोलणे ओळखले नाही / कोई आवाज नहीं पहचानी गई। Speak clearly or tap a sample below.',
           'audio-capture': '🎤 माइक्रोफोन सापडला नाही / नहीं मिला। Tap a sample below.',
           'aborted': '',
           'service-not-allowed': '🔇 Speech service blocked by browser. Tap a sample chip below.'
         };
-        const msg = friendlyMessages[code] || `Speech error (${code}). Tap a sample chip below.`;
-        if (msg) setStatus(msg, 'error');
-        listening = false;
-        micBtn.classList.remove('is-recording');
-        clearTimeout(autoStopTimer);
-        clearTimeout(safetyTimer);
+        const msg = friendlyMessages[code];
+        if (msg) {
+          setStatus(msg, 'error');
+          stopListeningAndProcess();
+        }
       };
 
       recognition.onend = () => {
-        clearTimeout(autoStopTimer);
-        clearTimeout(safetyTimer);
-        listening = false;
-        micBtn.classList.remove('is-recording');
-        // Process accumulated transcript
-        if (finalTranscript.trim() && !gotResult) {
-          gotResult = true;
-          void processTranscript(finalTranscript.trim(), 'web-speech');
-        } else if (!gotResult) {
-          const current = statusEl.textContent || '';
-          if (current.includes('बोलत रहा') || current.includes('Listening') || current.includes('बोलिए')) {
-            setStatus('🔇 बोलणे ओळखले नाही / कोई आवाज नहीं पहचानी गई। Tap mic to retry or tap a sample below.', 'error');
+        // If Chrome disconnected prematurely while user was still speaking:
+        if (listening) {
+          if (finalTranscript.trim().length > 12) {
+            // We have a full phrase, process it
+            stopListeningAndProcess();
+          } else {
+            // Try to smoothly reconnect for 1 more pass
+            try {
+              recognition.start();
+            } catch {
+              stopListeningAndProcess();
+            }
           }
         }
       };
@@ -528,9 +600,6 @@ export function renderEntryView(): HTMLElement {
       try {
         recognition.start();
       } catch {
-        listening = false;
-        clearTimeout(autoStopTimer);
-        clearTimeout(safetyTimer);
         void recordAndTranscribe();
       }
     } else {

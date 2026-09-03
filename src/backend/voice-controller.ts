@@ -25,6 +25,7 @@ import { Request, Response } from 'express';
 import {
   extractAgrarianSlots,
   reconcileLlmExtraction,
+  scoreHypotheses,
   VoiceExtraction,
   UNIT_TO_QUINTALS
 } from '../core/voice-extraction';
@@ -50,7 +51,7 @@ export interface VoiceProcessResponse {
     sttProvider: 'openai-whisper' | 'groq-whisper' | 'client-web-speech' | 'none';
     sttStatus: 'ok' | 'skipped-no-key' | 'failed' | 'not-required';
     sttDetail?: string;
-    nluProvider: 'google-gemini' | 'deterministic-offline';
+    nluProvider: 'google-gemini' | 'deterministic-offline' | 'deterministic-multi-hypothesis';
     nluStatus: 'ok' | 'skipped-no-key' | 'failed';
     nluDetail?: string;
     usedFallback: boolean;
@@ -206,11 +207,17 @@ export async function voiceProcessController(req: Request, res: Response): Promi
   try {
     const body = (Buffer.isBuffer(req.body) ? {} : (req.body || {})) as Record<string, unknown>;
     const language = typeof body.language === 'string' ? body.language : 'auto';
+    const candidates = Array.isArray(body.candidates)
+      ? (body.candidates.filter(c => typeof c === 'string' && (c as string).trim().length > 0) as string[])
+      : [];
 
     // ---------- Step A: obtain a transcript ----------
     let transcript = typeof body.text === 'string' ? body.text.trim() : '';
+    if (candidates.length > 0 && !transcript) {
+      transcript = candidates[0];
+    }
 
-    if (transcript) {
+    if (transcript || candidates.length > 0) {
       // The client already has text (typed, a demo chip, or the Web Speech API).
       pipeline.sttProvider = typeof body.sttSource === 'string' && body.sttSource === 'web-speech'
         ? 'client-web-speech'
@@ -253,21 +260,28 @@ export async function voiceProcessController(req: Request, res: Response): Promi
 
     // ---------- Step B: entity extraction ----------
     let extraction: VoiceExtraction;
-    try {
-      const llm = await extractWithGemini(transcript);
-      extraction = reconcileLlmExtraction(transcript, llm as any);
-      pipeline.nluProvider = 'google-gemini';
+    if (candidates.length > 1) {
+      extraction = scoreHypotheses(candidates);
+      pipeline.nluProvider = 'deterministic-multi-hypothesis';
       pipeline.nluStatus = 'ok';
-      pipeline.usedFallback = false;
-    } catch (err) {
-      const message = String(err instanceof Error ? err.message : err);
-      pipeline.nluProvider = 'deterministic-offline';
-      pipeline.nluStatus = message === 'no-key' ? 'skipped-no-key' : 'failed';
-      pipeline.nluDetail = message === 'no-key'
-        ? 'GEMINI_API_KEY not configured. Using MandiMitra\'s deterministic catalogue-driven extractor.'
-        : message;
       pipeline.usedFallback = true;
-      extraction = extractAgrarianSlots(transcript);
+    } else {
+      try {
+        const llm = await extractWithGemini(transcript);
+        extraction = reconcileLlmExtraction(transcript, llm as any);
+        pipeline.nluProvider = 'google-gemini';
+        pipeline.nluStatus = 'ok';
+        pipeline.usedFallback = false;
+      } catch (err) {
+        const message = String(err instanceof Error ? err.message : err);
+        pipeline.nluProvider = 'deterministic-offline';
+        pipeline.nluStatus = message === 'no-key' ? 'skipped-no-key' : 'failed';
+        pipeline.nluDetail = message === 'no-key'
+          ? 'GEMINI_API_KEY not configured. Using MandiMitra\'s deterministic catalogue-driven extractor.'
+          : message;
+        pipeline.usedFallback = true;
+        extraction = extractAgrarianSlots(transcript);
+      }
     }
 
     const response: VoiceProcessResponse = {

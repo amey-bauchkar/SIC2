@@ -132,9 +132,15 @@ export class ApiClient {
     return response.json();
   }
 
-  /** Voice autofill: send a transcript (Web Speech API or a demo chip). */
-  public async processVoiceText(text: string, sttSource: 'web-speech' | 'demo-chip' | 'typed' = 'typed'): Promise<VoiceProcessResult> {
-    return this.postJson<VoiceProcessResult>('/voice/process', { text, sttSource }, 'Voice processing');
+  /** Voice autofill: send a transcript or multiple candidate hypotheses. */
+  public async processVoiceText(
+    textOrCandidates: string | string[],
+    sttSource: 'web-speech' | 'demo-chip' | 'typed' = 'typed'
+  ): Promise<VoiceProcessResult> {
+    const payload = Array.isArray(textOrCandidates)
+      ? { candidates: textOrCandidates, text: textOrCandidates[0] || '', sttSource }
+      : { text: textOrCandidates, sttSource };
+    return this.postJson<VoiceProcessResult>('/voice/process', payload, 'Voice processing');
   }
 
   /** Voice autofill: send recorded audio for server-side Whisper transcription. */
