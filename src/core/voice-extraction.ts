@@ -104,24 +104,33 @@ const WORD_NUMBERS: Record<string, number> = {
   'डेढ़': 1.5, 'देढ़': 1.5, 'dedh': 1.5,
   'ढाई': 2.5, 'dhai': 2.5,
 
-  // English number words
+  // English number words (Latin & Devanagari transliterations)
   'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
   'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
   'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
   'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
   'twenty-five': 25, 'thirty': 30, 'thirty-five': 35, 'forty': 40, 'forty-five': 45,
-  'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90, 'hundred': 100
+  'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90, 'hundred': 100,
+
+  // Devanagari transliterated English number words
+  'वन': 1, 'टू': 2, 'थ्री': 3, 'फोर': 4, 'फाइव': 5,
+  'सिक्स': 6, 'सेवन': 7, 'एट': 8, 'नाइन': 9, 'टेन': 10,
+  'इलेवन': 11, 'ट्वेलव': 12, 'थर्टीन': 13, 'फोर्टीन': 14, 'फिफ्टीन': 15,
+  'सिक्सटीन': 16, 'सेवेन्टीन': 17, 'एटीन': 18, 'नाइन्टीन': 19,
+  'ट्वेंटी': 20, 'ट्वंटी': 20, 'थर्टी': 30, 'फोर्टी': 40, 'फोर्टि': 40,
+  'फिफ्टी': 50, 'सिक्सटी': 60, 'सेवेन्टी': 70, 'एटी': 80, 'एट्टी': 80,
+  'नाइंटी': 90, 'हंड्रेड': 100
 };
 
 /** Additional colloquial crop names not present in the catalogue's own Marathi/Hindi labels. */
 const CROP_SYNONYMS: Record<string, string[]> = {
-  'Onion': ['kanda', 'kandaa', 'pyaz', 'pyaaz', 'pyaaj', 'कांदे', 'कांद्या', 'कांद्याचा', 'प्याज़', 'प्याज', 'कान्दा', 'लाल प्याज', 'लाल कांदा', 'कंधा', 'कांधा', 'कंदा', 'कादा', 'कांधे', 'कंधे', 'onion', 'onions', 'ओनियन'],
+  'Onion': ['kanda', 'kandaa', 'pyaz', 'pyaaz', 'pyaaj', 'कांदे', 'कांद्या', 'कांद्याचा', 'प्याज़', 'प्याज', 'कान्दा', 'लाल प्याज', 'लाल कांदा', 'कंधा', 'कांधा', 'कंदा', 'कादा', 'कांधे', 'कंधे', 'onion', 'onions', 'ओनियन', 'अनियन', 'अन्योन'],
   'Tomato': ['tamatar', 'tomato', 'tomatoes', 'टमाटे', 'टोमेटो', 'टमाटर', 'टमाटा', 'tamata', 'लाल टमाटर', 'तमतर', 'तमातर', 'टोमाटो', 'टोमॅटो', 'टोमैटो'],
   'Soyabean': ['soyabean', 'soybean', 'soya', 'सोयाबिन', 'सोयबीन', 'सोयाबीनचा', 'soybin', 'सोयाबीन', 'सोया', 'सोयाबिन'],
-  'Wheat': ['gehu', 'gehun', 'gahu', 'gahun', 'गेहूं', 'गेहू', 'गव्हा', 'गहु', 'गव्ह', 'कनक', 'wheat'],
-  'Potato': ['batata', 'aalu', 'alu', 'aaloo', 'बटाटे', 'बटाट्या', 'बटाटा', 'आलू', 'आलु', 'बताता', 'बताते', 'potato', 'potatoes'],
+  'Wheat': ['gehu', 'gehun', 'gahu', 'gahun', 'गेहूं', 'गेहू', 'गव्हा', 'गहु', 'गव्ह', 'कनक', 'wheat', 'वीट'],
+  'Potato': ['batata', 'aalu', 'alu', 'aaloo', 'बटाटे', 'बटाट्या', 'बटाटा', 'आलू', 'आलु', 'बताता', 'बताते', 'potato', 'potatoes', 'पोटैटो', 'पोटैटोज', 'पोटेटो'],
   'Bengal Gram(Gram)(Whole)': ['chana', 'harbara', 'हरभरा', 'चना', 'चने', 'काला चना', 'काबुली चना', 'छोला', 'bengal gram', 'gram', 'हरभऱ्या', 'चणा', 'chanaa', 'हरबरा', 'हरबरे', 'हरबऱ्या'],
-  'Pomegranate': ['dalimb', 'anar', 'डाळींब', 'डाळिंब', 'अनार', 'दाड़िम', 'दालिंब', 'डालीम', 'डालिम', 'दालिम', 'अणार', 'pomegranate'],
+  'Pomegranate': ['dalimb', 'anar', 'डाळींब', 'डाळिंब', 'अनार', 'दाड़िम', 'दालिंब', 'डालीम', 'डालिम', 'दालिम', 'अणार', 'pomegranate', 'पोमेग्रेनेट'],
   'Grapes': ['draksha', 'angur', 'द्राक्ष', 'द्राक्षे', 'अंगूर', 'angoor', 'अंगुर', 'grapes'],
   'Maize': ['makka', 'maka', 'मक्याचे', 'मक्का', 'मका', 'मक्याच', 'मक्के', 'भुट्टा', 'मकई', 'bhutta', 'maize', 'corn'],
   'Turmeric': ['halad', 'haldi', 'हळद', 'हल्दी', 'हळदी', 'turmeric'],

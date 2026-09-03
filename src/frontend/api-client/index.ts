@@ -135,11 +135,12 @@ export class ApiClient {
   /** Voice autofill: send a transcript or multiple candidate hypotheses. */
   public async processVoiceText(
     textOrCandidates: string | string[],
-    sttSource: 'web-speech' | 'demo-chip' | 'typed' = 'typed'
+    sttSource: 'web-speech' | 'demo-chip' | 'typed' = 'typed',
+    language: 'mr' | 'hi' | 'en' | 'auto' = 'auto'
   ): Promise<VoiceProcessResult> {
     const payload = Array.isArray(textOrCandidates)
-      ? { candidates: textOrCandidates, text: textOrCandidates[0] || '', sttSource }
-      : { text: textOrCandidates, sttSource };
+      ? { candidates: textOrCandidates, text: textOrCandidates[0] || '', sttSource, language }
+      : { text: textOrCandidates, sttSource, language };
     return this.postJson<VoiceProcessResult>('/voice/process', payload, 'Voice processing');
   }
 

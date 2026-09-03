@@ -19,7 +19,7 @@ import { store } from '../../state/store';
 import { apiClient } from '../../api-client';
 import { renderCropOptgroupsHtml, renderCropDatalistHtml, getCropConfig } from '../../../config/crops';
 import { renderDistrictOptgroupsHtml, renderDistrictDatalistHtml, getDistrictConfig, ALL_DISTRICTS } from '../../../config/districts';
-import { type VoiceExtraction, scoreHypotheses } from '../../../core/voice-extraction';
+import { type VoiceExtraction, scoreHypotheses, extractAgrarianSlots } from '../../../core/voice-extraction';
 
 export const MAHARASHTRA_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = Object.fromEntries(
   ALL_DISTRICTS.map(d => [d.name.toLowerCase(), { lat: d.latitude, lon: d.longitude }])
@@ -28,16 +28,32 @@ MAHARASHTRA_DISTRICT_COORDS['ahmednagar'] = MAHARASHTRA_DISTRICT_COORDS['ahilyan
 MAHARASHTRA_DISTRICT_COORDS['aurangabad'] = MAHARASHTRA_DISTRICT_COORDS['chhatrapati sambhajinagar'] || { lat: 19.8762, lon: 75.3433 };
 MAHARASHTRA_DISTRICT_COORDS['osmanabad'] = MAHARASHTRA_DISTRICT_COORDS['dharashiv'] || { lat: 18.1861, lon: 76.0419 };
 
-/** Sample utterances for noisy presentation rooms across Marathi, Hindi, and English. */
-const UNIFIED_DEMO_CHIPS: Array<{ emoji: string; text: string; hint: string }> = [
-  { emoji: '🧅', text: 'नाशिक निफाड मध्ये 40 गोणी कांदा आहे', hint: 'मराठी · 40 bags · Nashik' },
-  { emoji: '🍅', text: 'पुणे में 80 क्रेट टमाटर', hint: 'हिन्दी · 80 crates · Pune' },
-  { emoji: '🌻', text: 'लातूर मध्ये 30 क्विंटल सोयाबीन', hint: 'मराठी · 30 quintals · Latur' },
-  { emoji: '🌾', text: 'जलगांव में 2 ट्रॉली गेहूं', hint: 'हिन्दी · 2 trolleys · Jalgaon' },
-  { emoji: '🌽', text: 'धुले में 25 कट्टे मक्का', hint: 'हिन्दी · 25 bags · Dhule' },
-  { emoji: '🧅', text: '40 bags onion in Nashik Niphad', hint: 'English · 40 bags · Nashik' }
-];
+/** Native language sample utterances for noisy presentation rooms. */
+const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ emoji: string; text: string; hint: string }>> = {
+  'mr-IN': [
+    { emoji: '🧅', text: 'नाशिक निफाड मध्ये 40 गोणी कांदा आहे', hint: 'मराठी · 40 bags · Nashik' },
+    { emoji: '🍅', text: 'पुणे जुन्नर मध्ये 80 क्रेट टोमॅटो', hint: 'मराठी · 80 crates · Pune' },
+    { emoji: '🌻', text: 'लातूर मध्ये 30 क्विंटल सोयाबीन', hint: 'मराठी · 30 quintals · Latur' },
+    { emoji: '🥔', text: 'अहमदनगर संगमनेर मध्ये 50 गोणी बटाटा', hint: 'मराठी · 50 bags · Ahilyanagar' },
+    { emoji: '🍇', text: 'सोलापूर पंढरपूर मध्ये 15 क्विंटल डाळिंब', hint: 'मराठी · 15 quintals · Solapur' }
+  ],
+  'hi-IN': [
+    { emoji: '🧅', text: 'नासिक में 40 बोरी प्याज है', hint: 'हिन्दी · 40 bags · Nashik' },
+    { emoji: '🍅', text: 'पुणे में 80 क्रेट टमाटर', hint: 'हिन्दी · 80 crates · Pune' },
+    { emoji: '🌻', text: 'लातूर में 30 क्विंटल सोयाबीन', hint: 'हिन्दी · 30 quintals · Latur' },
+    { emoji: '🌾', text: 'जलगांव में 2 ट्रॉली गेहूं', hint: 'हिन्दी · 2 trolleys · Jalgaon' },
+    { emoji: '🌽', text: 'धुले में 25 कट्टे मक्का', hint: 'हिन्दी · 25 bags · Dhule' }
+  ],
+  'en-IN': [
+    { emoji: '🧅', text: '40 bags onion in Nashik', hint: 'English · 40 bags · Nashik' },
+    { emoji: '🍅', text: '80 crates tomato in Pune', hint: 'English · 80 crates · Pune' },
+    { emoji: '🌻', text: '30 quintals soyabean in Latur', hint: 'English · 30 quintals · Latur' },
+    { emoji: '🌾', text: '2 trolley wheat in Jalgaon', hint: 'English · 80 quintals · Jalgaon' },
+    { emoji: '🥔', text: '50 bags potato in Ahmednagar', hint: 'English · 50 bags · Ahilyanagar' }
+  ]
+};
 
+const UNIFIED_DEMO_CHIPS = LANG_CHIPS['mr-IN'];
 const DEMO_CHIPS = UNIFIED_DEMO_CHIPS;
 
 type SpeechRecognitionLike = {
@@ -85,40 +101,45 @@ export function renderEntryView(): HTMLElement {
         <!-- ============ HERO VOICE INTERFACE ============ -->
         <div class="voice-hero" style="background: var(--color-brand-primary-subtle); border: 1.5px solid var(--color-brand-primary); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-5); text-align: center;">
           
-          <!-- Unified Multilingual Auto-Detect Badge -->
-          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 999px; background: rgba(30, 86, 49, 0.08); border: 1.5px solid rgba(30, 86, 49, 0.25); color: var(--color-brand-primary); font-size: 0.72rem; font-weight: 800; margin-bottom: var(--space-4); letter-spacing: 0.03em;">
-            🌐 AUTO-DETECT VOICE AI (मराठी • हिन्दी • English)
+          <!-- 1-Tap Language Selector Pills -->
+          <div style="display: flex; justify-content: center; margin-bottom: var(--space-4);">
+            <div id="voice-lang-pills" style="display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(30, 86, 49, 0.08); border: 1.5px solid rgba(30, 86, 49, 0.25);">
+              <button type="button" class="voice-lang-pill is-active" data-lang="mr-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: var(--color-brand-primary); color: #ffffff;">
+                🇮🇳 मराठी
+              </button>
+              <button type="button" class="voice-lang-pill" data-lang="hi-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--color-text-main);">
+                🇮🇳 हिन्दी
+              </button>
+              <button type="button" class="voice-lang-pill" data-lang="en-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--color-text-main);">
+                🇬🇧 English
+              </button>
+            </div>
           </div>
 
           <div>
-            <button type="button" id="btn-voice-mic" class="voice-mic-button" aria-label="Speak your crop, quantity and district in Marathi, Hindi, or English">
+            <button type="button" id="btn-voice-mic" class="voice-mic-button" aria-label="Speak your crop, quantity and district">
               🎙️
             </button>
           </div>
-          <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: 1.05rem; color: var(--color-text-main); margin-top: var(--space-3);">
+          <div id="voice-title-label" style="font-family: var(--font-family-heading); font-weight: 800; font-size: 1.05rem; color: var(--color-text-main); margin-top: var(--space-3);">
             बोलून सांगा / बोलकर बताएं / Speak to Fill
           </div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px;">
-            Speak naturally in Marathi, Hindi, or English — crop, bags/crates, and taluka
+          <div id="voice-sub-label" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px;">
+            बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर ⏹️ दाबा.
           </div>
 
           <div id="voice-status" class="voice-status" style="margin-top: var(--space-3); min-height: 22px; font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-muted);">
-            Tap the microphone to speak (मराठी • हिन्दी • English)
+            माइक दाबा आणि बोला (मराठी निवडले आहे)
           </div>
 
-          <div id="voice-transcript" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-muted); font-style: italic; min-height: 18px;"></div>
+          <div id="voice-transcript" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-main); font-weight: 600; min-height: 20px;"></div>
 
           <!-- Demo chips for noisy rooms -->
           <div style="margin-top: var(--space-4); border-top: 1px dashed var(--color-border); padding-top: var(--space-3);">
             <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 800; color: var(--color-text-muted); margin-bottom: 8px;">
-              Noisy room? Tap a sample in any language
+              Noisy room? Tap a sample to test
             </div>
             <div id="demo-chips-wrapper" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
-              ${UNIFIED_DEMO_CHIPS.map((c, i) => `
-                <button type="button" class="voice-demo-chip" data-chip="${i}" title="${c.hint}">
-                  ${c.emoji} ${c.text}
-                </button>
-              `).join('')}
             </div>
           </div>
         </div>
@@ -363,45 +384,106 @@ export function renderEntryView(): HTMLElement {
     setStatus(statusMsg, filled === 3 ? 'ok' : 'error');
   }
 
-  // Bind demo chips
-  const chipsWrapper = container.querySelector('#demo-chips-wrapper') as HTMLElement | null;
-  if (chipsWrapper) {
+  // ==========================================================================
+  // Trilingual Native Routing & Demo Chips
+  // ==========================================================================
+  let currentLang: 'mr-IN' | 'hi-IN' | 'en-IN' = 'mr-IN';
+
+  function renderLanguageChips() {
+    const chipsWrapper = container.querySelector('#demo-chips-wrapper') as HTMLElement | null;
+    if (!chipsWrapper) return;
+    const chips = LANG_CHIPS[currentLang] || LANG_CHIPS['mr-IN'];
+    chipsWrapper.innerHTML = chips.map((c, i) => `
+      <button type="button" class="voice-demo-chip" data-chip="${i}" title="${c.hint}">
+        ${c.emoji} ${c.text}
+      </button>
+    `).join('');
+
     chipsWrapper.querySelectorAll('.voice-demo-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const idx = parseInt((chip as HTMLElement).getAttribute('data-chip') || '0', 10);
-        const chipData = UNIFIED_DEMO_CHIPS[idx];
+        const chipData = chips[idx];
         if (chipData) {
-          void processCandidates([chipData.text], 'demo-chip');
+          void processVoiceText(chipData.text, 'demo-chip');
         }
       });
     });
   }
 
-  async function processCandidates(candidates: string[], source: 'web-speech' | 'demo-chip' | 'typed') {
-    const primary = candidates[0] || '';
-    transcriptEl.textContent = `“${primary}”`;
-    setStatus('🤖 AI विश्लेषक / विश्लेषण हो रहा है (Analyzing speech with multi-hypothesis scoring…)', 'processing');
+  function updateLanguagePillsUI() {
+    const pills = container.querySelectorAll('.voice-lang-pill');
+    pills.forEach(pill => {
+      const pLang = pill.getAttribute('data-lang');
+      if (pLang === currentLang) {
+        pill.classList.add('is-active');
+        (pill as HTMLElement).style.background = 'var(--color-brand-primary)';
+        (pill as HTMLElement).style.color = '#ffffff';
+      } else {
+        pill.classList.remove('is-active');
+        (pill as HTMLElement).style.background = 'transparent';
+        (pill as HTMLElement).style.color = 'var(--color-text-main)';
+      }
+    });
+
+    const subLabel = container.querySelector('#voice-sub-label');
+    const statusEl = container.querySelector('#voice-status');
+
+    if (currentLang === 'mr-IN') {
+      if (subLabel) subLabel.textContent = 'बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर ⏹️ दाबा.';
+      if (statusEl && !listening) statusEl.textContent = 'माइक दाबा आणि बोला (मराठी मोड)';
+    } else if (currentLang === 'hi-IN') {
+      if (subLabel) subLabel.textContent = 'बोलते समय रुकने पर भी आवाज रिकॉर्ड होती रहेगी। बोलना पूरा होने पर ⏹️ दबाएं।';
+      if (statusEl && !listening) statusEl.textContent = 'माइक दबाएं और बोलें (हिन्दी मोड)';
+    } else {
+      if (subLabel) subLabel.textContent = 'Natural pauses are preserved. Tap ⏹️ when you finish speaking.';
+      if (statusEl && !listening) statusEl.textContent = 'Tap mic to speak (English Mode)';
+    }
+
+    renderLanguageChips();
+  }
+
+  const langPillsContainer = container.querySelector('#voice-lang-pills');
+  langPillsContainer?.querySelectorAll('.voice-lang-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const newLang = pill.getAttribute('data-lang') as 'mr-IN' | 'hi-IN' | 'en-IN';
+      if (newLang && newLang !== currentLang) {
+        if (listening) {
+          stopListeningAndProcess();
+        }
+        currentLang = newLang;
+        updateLanguagePillsUI();
+      }
+    });
+  });
+
+  // Initial chip render
+  renderLanguageChips();
+
+  async function processVoiceText(text: string, source: 'web-speech' | 'demo-chip' | 'typed') {
+    transcriptEl.innerHTML = `<span style="color: var(--color-text-main); font-weight: 700;">“${text}”</span>`;
+    setStatus('🤖 AI विश्लेषक / विश्लेषण हो रहा है (Analyzing speech…)', 'processing');
     try {
-      // Step 1: Immediate zero-latency local extraction with fuzzy matching
-      const localExtraction = scoreHypotheses(candidates);
+      // Step 1: Instant zero-latency local extraction with fuzzy matching
+      const localExtraction = extractAgrarianSlots(text);
 
       // Step 2: Call backend API for pipeline reconciliation & server logs
-      const res = await apiClient.processVoiceText(candidates, source);
+      const apiLang = currentLang.split('-')[0] as 'mr' | 'hi' | 'en';
+      const res = await apiClient.processVoiceText(text, source, apiLang);
       const label = res.pipeline.nluProvider === 'google-gemini'
         ? 'Whisper + Gemini'
-        : (res.pipeline.nluProvider === 'deterministic-multi-hypothesis' ? 'Multi-Hypothesis AI' : 'MandiMitra offline extractor');
+        : 'MandiMitra AI Extractor';
 
-      // Use the higher-confidence result (local fuzzy vs server)
+      // Pick the highest-confidence extraction (local vs server)
       const chosen = (res.extraction.confidence === 'HIGH' || !localExtraction.crop)
         ? res.extraction
         : localExtraction;
 
       applyExtraction(chosen, label);
     } catch (err) {
-      // Offline fallback: never fail in front of judges or users
-      const localExtraction = scoreHypotheses(candidates);
+      // Offline fallback: never fail in front of users or judges
+      const localExtraction = extractAgrarianSlots(text);
       if (localExtraction.crop || localExtraction.quantityQuintals !== null) {
-        applyExtraction(localExtraction, 'Offline Multi-Hypothesis AI');
+        applyExtraction(localExtraction, 'Offline MandiMitra AI');
       } else {
         setStatus(`Voice service unavailable: ${err instanceof Error ? err.message : String(err)}`, 'error');
       }
@@ -421,15 +503,16 @@ export function renderEntryView(): HTMLElement {
 
       recorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        setStatus('🤖 Whisper AI transcribing… (Auto-Detecting Language)', 'processing');
+        setStatus('🤖 Whisper AI transcribing…', 'processing');
         try {
           const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-          const res = await apiClient.processVoiceAudio(blob, 'auto');
+          const apiLang = currentLang.split('-')[0] || 'mr';
+          const res = await apiClient.processVoiceAudio(blob, apiLang);
           if (res.pipeline.sttStatus === 'skipped-no-key' || res.pipeline.sttStatus === 'failed') {
             setStatus(`Server speech-to-text unavailable (${res.pipeline.sttStatus}). Tap a sample chip or fill manually.`, 'error');
             return;
           }
-          transcriptEl.textContent = `“${res.extraction.transcript}”`;
+          transcriptEl.innerHTML = `<span style="color: var(--color-text-main); font-weight: 700;">“${res.extraction.transcript}”</span>`;
           applyExtraction(
             res.extraction,
             res.pipeline.nluProvider === 'google-gemini' ? 'Whisper + Gemini' : 'Whisper + MandiMitra offline extractor'
@@ -440,7 +523,7 @@ export function renderEntryView(): HTMLElement {
       };
 
       recorder.start();
-      setStatus('🔴 रेकॉर्डिंग सुरू आहे... / बोलिए... (Whisper AI Auto-Detect)', 'recording');
+      setStatus('🔴 रेकॉर्डिंग सुरू आहे... / बोलिए... (Whisper AI)', 'recording');
       setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 6000);
     } catch {
       setStatus('Microphone permission denied. Tap a sample chip below or fill manually.', 'error');
@@ -450,7 +533,6 @@ export function renderEntryView(): HTMLElement {
   let listening = false;
   let activeRecognition: any = null;
   let finalTranscript = '';
-  let candidateTranscripts: string[] = [];
   let autoStopTimer: any = null;
   let silenceTimer: any = null;
 
@@ -463,7 +545,7 @@ export function renderEntryView(): HTMLElement {
     if (micBtn) {
       micBtn.classList.remove('is-recording');
       micBtn.innerHTML = '🎙️';
-      micBtn.setAttribute('title', 'Tap to speak (मराठी • हिन्दी • English)');
+      micBtn.setAttribute('title', 'Tap to speak');
     }
 
     if (activeRecognition) {
@@ -471,13 +553,17 @@ export function renderEntryView(): HTMLElement {
       activeRecognition = null;
     }
 
-    const uniqueCandidates = Array.from(new Set(candidateTranscripts.filter(t => t.trim().length > 0)));
-    if (uniqueCandidates.length > 0) {
-      void processCandidates(uniqueCandidates, 'web-speech');
-    } else if (finalTranscript.trim()) {
-      void processCandidates([finalTranscript.trim()], 'web-speech');
+    const textToProcess = finalTranscript.trim();
+    if (textToProcess.length > 0) {
+      transcriptEl.innerHTML = `<span style="color: var(--color-text-main); font-weight: 700;">“${textToProcess}”</span>`;
+      void processVoiceText(textToProcess, 'web-speech');
     } else {
-      setStatus('🔇 बोलणे ओळखले नाही / कोई आवाज नहीं पहचानी गई। Tap mic to retry or tap a sample below.', 'error');
+      const msg = currentLang === 'mr-IN'
+        ? '🔇 बोलणे ओळखले नाही. पुन्हा प्रयत्न करा किंवा खालील नमुना टॅप करा.'
+        : (currentLang === 'hi-IN'
+            ? '🔇 कोई आवाज नहीं पहचानी गई। दोबारा प्रयास करें या नीचे डेमो चिप चुनें।'
+            : '🔇 No speech detected. Tap mic to retry or tap a sample below.');
+      setStatus(msg, 'error');
     }
   }
 
@@ -493,71 +579,63 @@ export function renderEntryView(): HTMLElement {
       listening = true;
       activeRecognition = recognition;
       finalTranscript = '';
-      candidateTranscripts = [];
 
-      // Indian bilingual recognition handles Hindi, Indian English, and Devanagari Marathi
-      recognition.lang = 'hi-IN';
+      // Route to native neural ASR model for selected language!
+      recognition.lang = currentLang;
       recognition.interimResults = true;
-      recognition.maxAlternatives = 5;
+      recognition.maxAlternatives = 3;
       recognition.continuous = true;
 
       micBtn.classList.add('is-recording');
       micBtn.innerHTML = '⏹️';
-      micBtn.setAttribute('title', 'Tap to finish speaking (बोलणे पूर्ण झाले तर टॅप करा)');
-      setStatus('🔴 बोलत रहा... / बोलिए... (Listening: Tap ⏹️ when finished)', 'recording');
+      micBtn.setAttribute('title', 'Tap when finished speaking');
+
+      const recordingMsg = currentLang === 'mr-IN'
+        ? '🔴 ऐकत आहे... (बोलणे संपल्यावर ⏹️ दाबा)'
+        : (currentLang === 'hi-IN'
+            ? '🔴 सुन रहे हैं... (बोलना पूरा होने पर ⏹️ दबाएं)'
+            : '🔴 Listening... (Tap ⏹️ when finished)');
+      setStatus(recordingMsg, 'recording');
       transcriptEl.textContent = '';
 
-      // Auto-stop after 12 seconds if user forgets to tap stop
+      // Hard safety timer: 20 seconds maximum
       autoStopTimer = setTimeout(() => {
         if (listening) {
           stopListeningAndProcess();
         }
-      }, 12000);
+      }, 20000);
 
       recognition.onresult = (event: any) => {
-        let interim = '';
-        const currentHypotheses: string[] = [];
+        let currentInterim = '';
+        let currentFinal = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
           if (result.isFinal) {
-            const topChunk = result[0].transcript;
-            finalTranscript += topChunk + ' ';
-
-            // Collect all 5 alternative hypotheses from this final chunk!
-            for (let alt = 0; alt < result.length && alt < 5; alt++) {
-              const altText = result[alt].transcript.trim();
-              if (altText) {
-                currentHypotheses.push(altText);
-              }
-            }
+            currentFinal += result[0].transcript + ' ';
           } else {
-            interim += result[0].transcript;
+            currentInterim += result[0].transcript;
           }
         }
 
-        // Add accumulated full sentence candidates
-        if (finalTranscript.trim()) {
-          candidateTranscripts.push(finalTranscript.trim());
-          for (const h of currentHypotheses) {
-            candidateTranscripts.push(finalTranscript.trim().replace(/\S+$/, h));
-          }
+        if (currentFinal.trim()) {
+          finalTranscript = currentFinal.trim();
         }
 
-        const finalDisplay = finalTranscript.trim();
-        const interimDisplay = interim.trim();
+        const fullDisplay = finalTranscript.trim();
+        const interimDisplay = currentInterim.trim();
+
         transcriptEl.innerHTML =
-          (finalDisplay ? `<span style="color: var(--color-text-main); font-weight: 700;">"${finalDisplay}"</span>` : '') +
+          (fullDisplay ? `<span style="color: var(--color-text-main); font-weight: 700;">"${fullDisplay}"</span>` : '') +
           (interimDisplay ? `<span style="color: var(--color-text-muted); opacity: 0.6; font-style: italic;"> ${interimDisplay}</span>` : '');
 
-        // Reset silence grace timer on new speech
+        // Reset silence grace timer on new speech: gives 3.5s of silence after speaking
         clearTimeout(silenceTimer);
         silenceTimer = setTimeout(() => {
-          if (listening && finalTranscript.trim().length > 10) {
-            // Natural pause of 2.8 seconds after speaking a full sentence -> auto finish
+          if (listening && finalTranscript.trim().length > 0) {
             stopListeningAndProcess();
           }
-        }, 2800);
+        }, 3500);
       };
 
       recognition.onerror = (event: any) => {
@@ -567,11 +645,11 @@ export function renderEntryView(): HTMLElement {
           return;
         }
         const friendlyMessages: Record<string, string> = {
-          'not-allowed': '🔇 माइक्रोफोन परवानगी नाकारली / अनुमति अस्वीकृत। Allow mic in browser settings, or tap a sample below.',
-          'network': '🌐 स्पीच सेवा उपलब्ध नाही / उपलब्ध नहीं है। Check connection or tap a sample below.',
-          'audio-capture': '🎤 माइक्रोफोन सापडला नाही / नहीं मिला। Tap a sample below.',
+          'not-allowed': '🔇 माइक्रोफोन परवानगी नाकारली / अनुमति अस्वीकृत। Allow mic in browser settings.',
+          'network': '🌐 स्पीच सेवा उपलब्ध नाही / उपलब्ध नहीं है। Check internet connection.',
+          'audio-capture': '🎤 माइक्रोफोन सापडला नाही / नहीं मिला।',
           'aborted': '',
-          'service-not-allowed': '🔇 Speech service blocked by browser. Tap a sample chip below.'
+          'service-not-allowed': '🔇 Speech service blocked by browser.'
         };
         const msg = friendlyMessages[code];
         if (msg) {
@@ -581,18 +659,13 @@ export function renderEntryView(): HTMLElement {
       };
 
       recognition.onend = () => {
-        // If Chrome disconnected prematurely while user was still speaking:
+        // If Chrome disconnected on a momentary pause while the user is still speaking:
         if (listening) {
-          if (finalTranscript.trim().length > 12) {
-            // We have a full phrase, process it
-            stopListeningAndProcess();
-          } else {
-            // Try to smoothly reconnect for 1 more pass
-            try {
-              recognition.start();
-            } catch {
-              stopListeningAndProcess();
-            }
+          // Reconnect smoothly without dropping accumulated speech!
+          try {
+            recognition.start();
+          } catch {
+            // Already running or stopped
           }
         }
       };
