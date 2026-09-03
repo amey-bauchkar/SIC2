@@ -2,8 +2,8 @@
  * MandiMitra Feature: Evidence ("Why?") View
  * Route: /evidence
  * 
- * OWNER: Tanmay (Frontend Feature Engineer - Decision & Evidence Vertical)
- * Structural placeholder - renders granular net realisation breakdown and reasons list.
+ * VerdaAgro Editorial Agricultural Redesign
+ * 100% Preserves reasons list, data quality tiers, and net realisation by day
  */
 
 import { store } from '../../state/store';
@@ -18,74 +18,84 @@ export function renderEvidenceView(): HTMLElement {
 
   if (!evalData) {
     container.innerHTML = `
-      <div class="card" style="text-align: center; padding: var(--space-8);">
-        <p style="color: var(--color-text-muted); margin-bottom: var(--space-4);">
-          No active evaluation found to explain.
+      <div class="editorial-panel" style="text-align: center; padding: var(--space-12); max-width: 640px; margin: var(--space-8) auto;">
+        <div style="font-size: 3rem; margin-bottom: var(--space-3);">📊</div>
+        <h2 class="heading-lg" style="margin-bottom: var(--space-2);">No Active Evidence</h2>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--space-6);">
+          Run a crop price evaluation from the Decision Hub first to view the empirical rationale.
         </p>
-        <button class="btn btn-primary" id="btn-back-to-entry" style="max-width: 240px; margin: 0 auto;">
-          Go to Crop Selection
+        <button class="btn btn-primary" id="btn-back-to-entry">
+          Go to Decision Hub
         </button>
       </div>
     `;
     const btn = container.querySelector('#btn-back-to-entry');
-    if (btn) btn.addEventListener('click', () => store.setRoute('/'));
+    if (btn) btn.addEventListener('click', () => store.setRoute('/hub'));
     return container;
   }
 
   const { recommendation, evaluations } = evalData;
 
   container.innerHTML = `
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-        <h2 style="font-size: var(--font-size-xl); font-weight: 800;">
-          Decision Evidence & Why
-        </h2>
-        <button class="btn btn-outline" id="btn-back-decision" style="width: auto; padding: var(--space-2) var(--space-3); font-size: var(--font-size-xs);">
+    <div class="editorial-panel" style="padding: var(--space-8); margin-bottom: var(--space-8);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-6);">
+        <div>
+          <div class="kicker">DECISION INTEGRITY & EVIDENCE</div>
+          <h2 class="heading-xl">
+            Why This Recommendation Was Made
+          </h2>
+          <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 4px;">
+            Full audit trail of physical road haulage deductions, APMC statutory tariffs, biological holding decay, and Agmarknet data quality.
+          </p>
+        </div>
+        <button class="btn btn-outline" id="btn-back-decision">
           ← Back to Decision
         </button>
       </div>
 
-      <div style="margin-bottom: var(--space-6);">
-        <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-2);">
-          Algorithmic Rationale
+      <!-- Algorithmic Rationale List -->
+      <div style="margin-bottom: var(--space-8);">
+        <h3 class="heading-sm" style="color: var(--color-brand-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3);">
+          Algorithmic Factors & Logic
         </h3>
-        <ul style="list-style-type: none; padding: 0;">
+        <div style="display: flex; flex-direction: column; gap: var(--space-2);">
           ${recommendation.reasons.map(reason => `
-            <li style="padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-subtle); font-size: var(--font-size-sm); display: flex; gap: var(--space-2);">
-              <span style="color: var(--color-brand-primary); font-weight: 700;">✓</span>
-              <span>${reason}</span>
-            </li>
+            <div style="display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-brand-primary-subtle); border-radius: var(--radius-md); border: 1px solid rgba(139,146,113,0.2);">
+              <span style="color: var(--color-brand-primary); font-weight: 900; font-size: 1.1rem; line-height: 1.2;">✓</span>
+              <span style="font-size: var(--font-size-sm); color: var(--color-text-main); line-height: 1.5;">${reason}</span>
+            </div>
           `).join('')}
-        </ul>
+        </div>
       </div>
 
+      <!-- Net Realisation by Day Table -->
       ${evaluations && evaluations.length > 0 ? `
-        <div style="margin-bottom: var(--space-6);">
-          <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-3);">
-            Net Realisation Analysis (Day 0 to 3)
+        <div style="margin-bottom: var(--space-8);">
+          <h3 class="heading-sm" style="color: var(--color-brand-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3);">
+            Net Realisation Analysis (Day 0 to Day 3)
           </h3>
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: var(--font-size-xs); text-align: left;">
+          <div class="table-responsive-wrapper">
+            <table class="editorial-table">
               <thead>
-                <tr style="border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">
-                  <th style="padding: var(--space-2);">Market</th>
-                  <th style="padding: var(--space-2);">Day</th>
-                  <th style="padding: var(--space-2);">Expected Price</th>
-                  <th style="padding: var(--space-2);">Transport</th>
-                  <th style="padding: var(--space-2);">Wait Cost</th>
-                  <th style="padding: var(--space-2); font-weight: 700;">Net Return</th>
+                <tr>
+                  <th>Mandi / APMC</th>
+                  <th>Timeline</th>
+                  <th>Expected Gross</th>
+                  <th>Transport Haulage</th>
+                  <th>Holding Decay</th>
+                  <th>Take-Home Cash</th>
                 </tr>
               </thead>
               <tbody>
                 ${evaluations.flatMap(ev => 
                   ev.netRealisationByDay.map(nr => `
-                    <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-                      <td style="padding: var(--space-2); font-weight: 600;">${ev.market.name}</td>
-                      <td style="padding: var(--space-2);">Day ${nr.day}</td>
-                      <td style="padding: var(--space-2);">₹${nr.expectedPrice.toFixed(1)}</td>
-                      <td style="padding: var(--space-2); color: var(--color-status-abstain);">-₹${nr.transportCostPerQtl.toFixed(1)}</td>
-                      <td style="padding: var(--space-2); color: var(--color-status-abstain);">-₹${nr.waitingCostPerQtl.toFixed(1)}</td>
-                      <td style="padding: var(--space-2); font-weight: 700; color: var(--color-brand-primary);">₹${nr.netRealisation.toFixed(1)}</td>
+                    <tr>
+                      <td style="font-weight: 700;">${ev.market.name}</td>
+                      <td>Day ${nr.day} (${nr.day === 0 ? 'Today' : `+${nr.day}d`})</td>
+                      <td>₹${nr.expectedPrice.toFixed(1)}</td>
+                      <td style="color: var(--color-status-abstain);">-₹${nr.transportCostPerQtl.toFixed(1)}</td>
+                      <td style="color: var(--color-status-abstain);">-₹${nr.waitingCostPerQtl.toFixed(1)}</td>
+                      <td class="number-display number-positive" style="font-weight: 800; font-size: var(--font-size-sm);">₹${nr.netRealisation.toFixed(1)}/qtl</td>
                     </tr>
                   `)
                 ).join('')}
@@ -95,9 +105,10 @@ export function renderEvidenceView(): HTMLElement {
         </div>
       ` : ''}
 
-      <div id="quality-badges-section" style="margin-top: var(--space-4);">
-        <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-2);">
-          Evaluated Market Data Quality
+      <!-- Data Quality Tiers -->
+      <div id="quality-badges-section">
+        <h3 class="heading-sm" style="color: var(--color-brand-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3);">
+          Assessed Mandi Data Quality (Zero Fabrication Policy)
         </h3>
         <div id="badges-container" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
       </div>
@@ -111,7 +122,11 @@ export function renderEvidenceView(): HTMLElement {
       row.style.display = 'flex';
       row.style.justifyContent = 'space-between';
       row.style.alignItems = 'center';
-      row.innerHTML = `<span style="font-size: var(--font-size-xs); font-weight: 600;">${ev.market.name}</span>`;
+      row.style.padding = 'var(--space-3) var(--space-4)';
+      row.style.background = 'var(--color-bg-muted)';
+      row.style.borderRadius = 'var(--radius-md)';
+      row.style.border = '1px solid var(--color-border)';
+      row.innerHTML = `<span style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-main);">${ev.market.name}</span>`;
       row.appendChild(renderQualityBadge({ assessment: ev.dataQuality, compact: false }));
       badgesContainer.appendChild(row);
     });

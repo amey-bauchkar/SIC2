@@ -1,49 +1,79 @@
 /**
  * MandiMitra Design System Tokens
  * Core CSS Custom Properties for theme, typography, elevation, and responsiveness.
- * 
- * OWNER: Janhvi (Frontend Lead)
+ * Strictly adhering to VerdaAgro Editorial Agricultural Aesthetic:
+ * - Primary Sage Green: #8B9271
+ * - Accent Yellow: #FEF3A3 (Accents, badges, small highlights only)
+ * - White: #FFFFFF (Cleanness, contrast, content surfaces)
+ * - Headings & Numbers: Manrope
+ * - Body & Nav: Inter
  */
 
 :root {
-  /* Color Palette - Vibrant Agricultural & Trust Spectrum */
-  --color-brand-primary: #15803d;       /* Lush farm green */
-  --color-brand-primary-hover: #166534;
-  --color-brand-accent: #eab308;        /* Golden harvest */
-  --color-brand-accent-soft: #fef08a;
+  /* Brand Color Palette */
+  --color-brand-primary: #8B9271;           /* Primary Sage Green */
+  --color-brand-primary-hover: #757C5D;     /* Darker Sage for hover states */
+  --color-brand-primary-dark: #535940;      /* Deep Olive/Sage */
+  --color-brand-primary-light: #EBF0E5;     /* Ultra-light sage tint */
+  --color-brand-primary-subtle: #F4F6F0;    /* Background sage wash */
   
-  /* Semantic Status Colors */
-  --color-status-success: #16a34a;      /* Good data / Sell Today */
-  --color-status-success-bg: #dcfce7;
-  --color-status-info: #0284c7;         /* Wait recommendation */
-  --color-status-info-bg: #e0f2fe;
-  --color-status-warning: #d97706;      /* Moderate data / Caution */
-  --color-status-warning-bg: #fef3c7;
-  --color-status-abstain: #dc2626;      /* Abstain / Poor data */
-  --color-status-abstain-bg: #fee2e2;
+  /* Yellow Accent (Strictly for small badges, highlights, tiny indicators) */
+  --color-brand-accent: #FEF3A3;            /* Soft Warm Harvest Yellow */
+  --color-brand-accent-hover: #FCEF8B;
+  --color-brand-accent-text: #574F06;       /* High-contrast dark amber for yellow backgrounds */
+  --color-brand-accent-border: #E8DD8C;
 
-  /* Neutrals & Surfaces */
-  --color-bg-canvas: #f8fafc;           /* Light canvas */
-  --color-bg-surface: #ffffff;          /* Card surface */
-  --color-bg-surface-elevated: #ffffff;
-  --color-bg-muted: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  /* Neutrals & Clean Content Surfaces */
+  --color-bg-canvas: #F8F8F5;               /* Natural warm organic canvas */
+  --color-bg-surface: #FFFFFF;              /* Crisp pure white */
+  --color-bg-surface-elevated: #FFFFFF;
+  --color-bg-muted: #F0F1EA;                /* Soft stone neutral */
+  --color-bg-dark: #1E2519;                 /* Deep organic forest footer/hero */
+  
+  --color-border: #E2E5DC;                  /* Organic divider line */
+  --color-border-subtle: #EDF0E8;
+  --color-border-focus: #8B9271;
 
   /* Typography Colors */
-  --color-text-main: #0f172a;           /* Deep slate */
-  --color-text-muted: #64748b;
-  --color-text-inverted: #ffffff;
+  --color-text-main: #182014;               /* Deep forest organic charcoal */
+  --color-text-muted: #586151;              /* Soft earthy slate */
+  --color-text-subtle: #818C7A;             /* Light muted label text */
+  --color-text-inverted: #FFFFFF;
+  --color-text-inverted-muted: #D1D8C9;
 
-  /* Typography Hierarchy */
-  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Semantic Status Colors (Subordinate to brand) */
+  --color-status-success: #2C7A3C;
+  --color-status-success-bg: #E8F5E9;
+  --color-status-success-border: #C8E6C9;
+  
+  --color-status-info: #5B7F8C;
+  --color-status-info-bg: #EAF2F5;
+  --color-status-info-border: #CFDFE5;
+
+  --color-status-warning: #B26A00;
+  --color-status-warning-bg: #FFF8E7;
+  --color-status-warning-border: #FFE6A8;
+
+  --color-status-abstain: #B73229;
+  --color-status-abstain-bg: #FDF0EE;
+  --color-status-abstain-border: #F7CAC4;
+
+  /* Typography System */
+  --font-family-heading: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-numbers: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Typography Scale */
+  --font-size-2xs: 0.6875rem; /* 11px */
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px */
   --font-size-lg: 1.125rem;   /* 18px */
   --font-size-xl: 1.25rem;    /* 20px */
   --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-3xl: 2rem;      /* 32px */
+  --font-size-4xl: 2.5rem;    /* 40px */
+  --font-size-5xl: 3.25rem;   /* 52px */
 
   /* Spacing Scale */
   --space-1: 0.25rem;   /* 4px */
@@ -54,21 +84,31 @@
   --space-6: 1.5rem;    /* 24px */
   --space-8: 2rem;      /* 32px */
   --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
 
-  /* Border Radii */
+  /* Border Radii (Soft, intentional, never childish) */
+  --radius-xs: 0.25rem;  /* 4px */
   --radius-sm: 0.375rem; /* 6px */
   --radius-md: 0.5rem;   /* 8px */
   --radius-lg: 0.75rem;  /* 12px */
   --radius-xl: 1rem;     /* 16px */
+  --radius-2xl: 1.5rem;  /* 24px */
   --radius-full: 9999px;
 
-  /* Elevations & Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  /* Shadows (Subtle, organic, natural diffusion) */
+  --shadow-xs: 0 1px 2px 0 rgba(28, 36, 23, 0.04);
+  --shadow-sm: 0 2px 4px 0 rgba(28, 36, 23, 0.06);
+  --shadow-md: 0 6px 16px -2px rgba(28, 36, 23, 0.08);
+  --shadow-lg: 0 12px 30px -4px rgba(28, 36, 23, 0.12);
+  --shadow-inner: inset 0 2px 4px 0 rgba(28, 36, 23, 0.04);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout Widths */
+  --container-max-width: 1360px;
+  --container-narrow-width: 960px;
 }

@@ -1,9 +1,7 @@
 /**
  * MandiMitra Shared Component: QualityBadge
  * Renders a visual tag reflecting data quality tier (GOOD, MODERATE, POOR).
- * 
- * OWNER: Janhvi (Frontend Lead)
- * Pure presentation - consumes DataQualityAssessment contract.
+ * Adheres strictly to the brand design system tokens.
  */
 
 import { QualityBadgeProps } from '../../contracts/frontend';
@@ -11,7 +9,7 @@ import { QualityBadgeProps } from '../../contracts/frontend';
 export function renderQualityBadge(props: QualityBadgeProps): HTMLElement {
   const { assessment, compact = false } = props;
   const badge = document.createElement('span');
-  badge.className = `quality-badge tier-${assessment.tier.toLowerCase()}`;
+  badge.className = `badge quality-badge tier-${assessment.tier.toLowerCase()}`;
 
   let label: string = assessment.tier;
   if (!compact) {
@@ -20,23 +18,12 @@ export function renderQualityBadge(props: QualityBadgeProps): HTMLElement {
 
   badge.textContent = label;
 
-  // Inline scoped styling referencing CSS tokens
-  badge.style.display = 'inline-flex';
-  badge.style.alignItems = 'center';
-  badge.style.padding = compact ? '2px 8px' : '4px 10px';
-  badge.style.borderRadius = 'var(--radius-full)';
-  badge.style.fontSize = 'var(--font-size-xs)';
-  badge.style.fontWeight = '600';
-
   if (assessment.tier === 'GOOD') {
-    badge.style.backgroundColor = 'var(--color-status-success-bg)';
-    badge.style.color = 'var(--color-status-success)';
+    badge.className += ' badge-success';
   } else if (assessment.tier === 'MODERATE') {
-    badge.style.backgroundColor = 'var(--color-status-warning-bg)';
-    badge.style.color = 'var(--color-status-warning)';
+    badge.className += ' badge-warning';
   } else {
-    badge.style.backgroundColor = 'var(--color-status-abstain-bg)';
-    badge.style.color = 'var(--color-status-abstain)';
+    badge.className += ' badge-danger';
   }
 
   return badge;

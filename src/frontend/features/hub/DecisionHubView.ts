@@ -1,17 +1,25 @@
 /**
  * MandiMitra: Unified Decision Hub Cockpit
  * 
- * Unifies all capabilities in one interactive operational workspace:
- * - AsliDaam ("असली दाम") Net Realizable Value Engine (Total pocket cash delta, economic waterfall)
- * - Mandi Radar (Candidate markets & road distances)
- * - "Why?" Evidence Panel (Momentum, biological decay, arrival shocks)
- * - Walk-Forward Temporal Backtest (Real held-out metrics & CEDA citation)
- * - Logistics & Cost Simulator
- * - Future Features Launchpad (Farmer pooling, Weather risk, Voice audio)
+ * VerdaAgro-Inspired Editorial Agricultural Redesign
+ * 
+ * Strict Color System:
+ * - Sage Green: #8B9271 (Primary Brand)
+ * - Yellow Accent: #FEF3A3 (Badges & Small Indicators)
+ * - White: #FFFFFF (Clean Content Surfaces)
+ * - Typography: Manrope (Headings & Numbers) / Inter (Body & Nav)
+ * 
+ * FUNCTIONALITY 100% PRESERVED:
+ * - AsliDaam Joint Optimization (Mandi × 0-3 Days)
+ * - Nirnay Kawach (Monte Carlo stress slider)
+ * - Bhed Vivek (Congestion risk simulation)
+ * - Regional speech synthesis audio readout
+ * - Multilingual toggle (English, Marathi, Hindi)
+ * - WhatsApp recommendation slip
+ * - Supabase freight pooling (SajhaBazaar)
  */
 
 import { store } from '../../state/store';
-import { apiClient } from '../../api-client';
 import { runAsliDaamOptimization, AsliDaamOptimizationResult } from '../../../core/asli-daam';
 import { renderMarketsView } from '../markets/MarketsView';
 import { renderEvidenceView } from '../evidence/EvidenceView';
@@ -33,7 +41,7 @@ export function renderDecisionHubView(): HTMLElement {
   const qty = state.harvestQuantityQuintals || 25;
   const district = state.userLocation?.district || 'Nashik';
 
-  // Candidate markets around Nashik region with real OSRM road distances & Agmarknet baseline prices
+  // Candidate markets around Nashik region with real OSRM road distances & baseline prices
   const candidateMarkets = [
     {
       market: { id: 'nsk_nashik', name: 'Nashik (Dindori Road)', state: 'Maharashtra', district: 'Nashik', lat: 20.016, lon: 73.7997 },
@@ -74,94 +82,138 @@ export function renderDecisionHubView(): HTMLElement {
   );
 
   container.innerHTML = `
-    <!-- AsliDaam Hero Banner & Control Bar -->
-    <div class="card" style="background: linear-gradient(135deg, #0d3822 0%, #175432 100%); color: #ffffff; border: none; margin-bottom: var(--space-4); padding: var(--space-5);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4);">
-        <div>
-          <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
-            <span style="font-size: 1.5rem;">🌾</span>
-            <h1 style="font-size: var(--font-size-xl); font-weight: 800; color: #ffffff; margin: 0;">
-              MandiMitra Decision Hub
-            </h1>
-            <span style="background: #22c55e; color: #042f15; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase;">
-              AsliDaam™ Inside
-            </span>
+    <!-- SECTION 1: PANORAMIC TRACTOR LANDING HERO (MATCHING REFERENCE IMAGE) -->
+    <section class="panoramic-tractor-hero">
+      <!-- Left side: transparent spacer keeping the green tractor unobstructed -->
+      <div class="panoramic-hero-spacer"></div>
+
+      <!-- Right side: editorial copy with the exact required text -->
+      <div class="panoramic-hero-content">
+        <!-- Kicker & Language Switcher -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3);">
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #ffffff;">
+            <span>🌾 MandiMitra Decision Hub</span>
+            <span style="background: var(--color-brand-accent); color: var(--color-brand-accent-text); padding: 2px 7px; border-radius: var(--radius-full); font-size: 0.65rem; margin-left: 4px;">AsliDaam™ Inside</span>
           </div>
-          <p style="font-size: var(--font-size-xs); color: #86efac; margin: 0;">
-            Joint Economics Optimizer: Mandi × Timing (0-3 Days) • Real Net In-Hand Wallet Rupees
+
+          <!-- Language Selector -->
+          <div style="display: inline-flex; background: rgba(0, 0, 0, 0.35); padding: 3px; border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.2);">
+            <button class="lang-btn ${currentLanguage === 'en' ? 'active' : ''}" data-lang="en" style="padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 700;">English</button>
+            <button class="lang-btn ${currentLanguage === 'mr' ? 'active' : ''}" data-lang="mr" style="padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 700;">मराठी</button>
+            <button class="lang-btn ${currentLanguage === 'hi' ? 'active' : ''}" data-lang="hi" style="padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 700;">हिंदी</button>
+          </div>
+        </div>
+
+        <h1 class="heading-display">
+          Rooted in the Land.<br>Driven by Real Profits.
+        </h1>
+
+        <p class="text-farmer-lead">
+          Joint Economics Optimizer for Indian Farmers: Mandi × Timing (0–3 Days). Know the exact in-hand wallet cash after haulage diesel, APMC tariffs, and storage shrinkage.
+        </p>
+
+        <!-- Feature rows in the exact style of the reference image -->
+        <div class="panoramic-feature-list">
+          <div class="panoramic-feature-item active">
+            <span>Higher Real Net Take-Home</span>
+            <span style="font-size: 1.1rem; line-height: 1;">↗</span>
+          </div>
+          <p style="font-size: var(--font-size-xs); color: rgba(255, 255, 255, 0.85); line-height: 1.5; margin-bottom: var(--space-2);">
+            Calculates real in-hand rupees rather than naive gross prices. Accounts for transport freight, APMC cess, and warehouse storage.
           </p>
-        </div>
 
-        <!-- Language Selector -->
-        <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.25); padding: 4px; border-radius: 8px;">
-          <button class="lang-btn ${currentLanguage === 'en' ? 'active' : ''}" data-lang="en" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;">English</button>
-          <button class="lang-btn ${currentLanguage === 'mr' ? 'active' : ''}" data-lang="mr" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;">मराठी</button>
-          <button class="lang-btn ${currentLanguage === 'hi' ? 'active' : ''}" data-lang="hi" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;">हिंदी</button>
-        </div>
-      </div>
+          <div class="panoramic-feature-item">
+            <span>Cost Efficiency & Road Haulage</span>
+            <span style="font-size: 1rem; line-height: 1;">↓</span>
+          </div>
 
-      <!-- Farmer Inputs Strip -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); background: rgba(255,255,255,0.08); padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.15);">
-        <div>
-          <label style="font-size: var(--font-size-xs); color: #86efac; display: block; font-weight: 600; margin-bottom: 4px;">
-            ${currentLanguage === 'mr' ? 'शेतमाल (Commodity)' : (currentLanguage === 'hi' ? 'फसल (Commodity)' : 'Commodity')}
-          </label>
-          <select id="hub-select-crop" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.85rem; background: #ffffff; color: #1e293b;">
-            <option value="Onion" ${crop === 'Onion' ? 'selected' : ''}>Onion (कांदा)</option>
-            <option value="Tomato" ${crop === 'Tomato' ? 'selected' : ''}>Tomato (टोमॅटो)</option>
-            <option value="Soyabean" ${crop === 'Soyabean' ? 'selected' : ''}>Soyabean (सोयाबीन)</option>
-            <option value="Wheat" ${crop === 'Wheat' ? 'selected' : ''}>Wheat (गहू)</option>
-            <option value="Gram" ${crop === 'Gram' ? 'selected' : ''}>Gram / Chana (हरभरा)</option>
-          </select>
-        </div>
-
-        <div>
-          <label style="font-size: var(--font-size-xs); color: #86efac; display: block; font-weight: 600; margin-bottom: 4px;">
-            ${currentLanguage === 'mr' ? 'एकूण वजन (क्विंटल)' : (currentLanguage === 'hi' ? 'कुल वजन (क्विंटल)' : 'Harvest Volume (Quintals)')}
-          </label>
-          <div style="display: flex; gap: 4px;">
-            <input type="number" id="hub-input-qty" value="${qty}" min="1" max="1000" style="width: 70px; padding: 6px 8px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.85rem; background: #ffffff; color: #1e293b;" />
-            <button class="qty-pill" data-q="10" style="padding: 4px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; font-size: 0.7rem; cursor: pointer;">10q</button>
-            <button class="qty-pill" data-q="25" style="padding: 4px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; font-size: 0.7rem; cursor: pointer;">25q</button>
-            <button class="qty-pill" data-q="50" style="padding: 4px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; font-size: 0.7rem; cursor: pointer;">50q</button>
-            <button class="qty-pill" data-q="100" style="padding: 4px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; font-size: 0.7rem; cursor: pointer;">100q</button>
+          <div class="panoramic-feature-item">
+            <span>Honest Data Quality Abstention</span>
+            <span style="font-size: 1rem; line-height: 1;">↓</span>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div>
-          <label style="font-size: var(--font-size-xs); color: #86efac; display: block; font-weight: 600; margin-bottom: 4px;">
-            ${currentLanguage === 'mr' ? 'शेतकरी तालुका / जिल्हा' : (currentLanguage === 'hi' ? 'किसान स्थान' : 'Farmer Origin')}
-          </label>
-          <input type="text" id="hub-input-origin" value="${district}" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.85rem; background: #ffffff; color: #1e293b;" />
-        </div>
+    <!-- SECTION 2: FARMER INPUT CARD (SHIFTED INTO THE NEXT SECTION) -->
+    <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-6);">
+      <div class="editorial-header" style="margin-bottom: var(--space-4);">
+        <div class="kicker">DECISION COCKPIT FILTER</div>
+        <h2 class="heading-lg">Find Your Best Selling Market & Timing</h2>
+        <p>Enter your crop volume and location to evaluate nearby mandis over the next 0 to 3 days.</p>
+      </div>
 
-        <div style="display: flex; align-items: flex-end;">
-          <button id="btn-recalculate-hub" class="btn" style="width: 100%; background: #22c55e; color: #052e16; font-weight: 800; border: none; padding: 8px 12px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">
-            ⚡ ${currentLanguage === 'mr' ? 'असली दाम शोधा' : (currentLanguage === 'hi' ? 'असली दाम निकालें' : 'Run AsliDaam')}
-          </button>
+      <div class="editorial-panel" style="background: #ffffff; border: 1.5px solid var(--color-border); box-shadow: var(--shadow-sm); padding: var(--space-5);">
+        <div class="farmer-input-strip">
+          
+          <!-- Commodity / Crop -->
+          <div>
+            <label class="input-label" style="margin-bottom: 6px; display: block;">
+              ${currentLanguage === 'mr' ? 'शेतमाल (Crop)' : (currentLanguage === 'hi' ? 'फसल (Crop)' : 'Crop')}
+            </label>
+            <select id="hub-select-crop" class="select-field">
+              <option value="Onion" ${crop === 'Onion' ? 'selected' : ''}>Onion (कांदा / प्याज)</option>
+              <option value="Tomato" ${crop === 'Tomato' ? 'selected' : ''}>Tomato (टोमॅटो / टमाटर)</option>
+              <option value="Soyabean" ${crop === 'Soyabean' ? 'selected' : ''}>Soyabean (सोयाबीन)</option>
+              <option value="Wheat" ${crop === 'Wheat' ? 'selected' : ''}>Wheat (गहू / गेहूं)</option>
+              <option value="Gram" ${crop === 'Gram' ? 'selected' : ''}>Gram / Chana (हरभरा)</option>
+            </select>
+          </div>
+
+          <!-- Quantity (with quick farmer pills) -->
+          <div>
+            <label class="input-label" style="margin-bottom: 6px; display: block;">
+              ${currentLanguage === 'mr' ? 'एकूण वजन (क्विंटल)' : (currentLanguage === 'hi' ? 'कुल वजन (क्विंटल)' : 'Harvest Volume (Quintals)')}
+            </label>
+            <div style="display: flex; gap: var(--space-2); align-items: center;">
+              <input type="number" id="hub-input-qty" class="input-field" value="${qty}" min="1" max="1000" style="max-width: 90px; font-family: var(--font-family-numbers); font-weight: 800;" />
+              <div style="display: flex; gap: 4px;">
+                <button class="qty-pill ${qty === 10 ? 'active' : ''}" data-q="10">10q</button>
+                <button class="qty-pill ${qty === 25 ? 'active' : ''}" data-q="25">25q</button>
+                <button class="qty-pill ${qty === 50 ? 'active' : ''}" data-q="50">50q</button>
+                <button class="qty-pill ${qty === 100 ? 'active' : ''}" data-q="100">100q</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Origin District -->
+          <div>
+            <label class="input-label" style="margin-bottom: 6px; display: block;">
+              ${currentLanguage === 'mr' ? 'शेतकरी तालुका / जिल्हा' : (currentLanguage === 'hi' ? 'किसान स्थान' : 'Farmer Origin')}
+            </label>
+            <input type="text" id="hub-input-origin" class="input-field" value="${district}" placeholder="e.g. Nashik" />
+          </div>
+
+          <!-- Recalculate CTA -->
+          <div>
+            <button id="btn-recalculate-hub" class="btn btn-primary" style="width: 100%; font-weight: 700; height: 46px;">
+              ⚡ ${currentLanguage === 'mr' ? 'असली दाम शोधा' : (currentLanguage === 'hi' ? 'असली दाम निकालें' : 'Run AsliDaam')}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
+    <!-- CONTENT FLOW BELOW HERO -->
     <!-- Cockpit Tab Navigation Bar -->
-    <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: 4px; border-bottom: 2px solid var(--color-border);">
+    <div class="hub-tabs-nav" style="margin-top: var(--space-4);">
       <button class="hub-tab-btn ${activeTab === 'aslidaam' ? 'active' : ''}" data-tab="aslidaam">
-        💎 AsliDaam™ Engine
+        <span>💎</span> AsliDaam™ Engine
       </button>
       <button class="hub-tab-btn ${activeTab === 'markets' ? 'active' : ''}" data-tab="markets">
-        🗺️ Mandi Radar
+        <span>🗺️</span> Mandi Radar
       </button>
       <button class="hub-tab-btn ${activeTab === 'evidence' ? 'active' : ''}" data-tab="evidence">
-        📊 "Why?" Evidence
+        <span>📊</span> "Why?" Evidence
       </button>
       <button class="hub-tab-btn ${activeTab === 'backtest' ? 'active' : ''}" data-tab="backtest">
-        📈 Walk-Forward Backtest
+        <span>📈</span> Walk-Forward Backtest
       </button>
       <button class="hub-tab-btn ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
-        ⚙️ Cost Simulator
+        <span>⚙️</span> Cost Simulator
       </button>
       <button class="hub-tab-btn ${activeTab === 'future' ? 'active' : ''}" data-tab="future">
-        🚀 Future Features
+        <span>🚀</span> Future Features
       </button>
     </div>
 
@@ -176,11 +228,11 @@ export function renderDecisionHubView(): HTMLElement {
   langButtons.forEach(btn => {
     const b = btn as HTMLButtonElement;
     if (b.dataset.lang === currentLanguage) {
-      b.style.background = '#22c55e';
-      b.style.color = '#052e16';
+      b.style.background = 'var(--color-brand-primary)';
+      b.style.color = '#ffffff';
     } else {
       b.style.background = 'transparent';
-      b.style.color = '#ffffff';
+      b.style.color = 'var(--color-text-main)';
     }
     b.addEventListener('click', () => {
       currentLanguage = b.dataset.lang as Language;
@@ -258,7 +310,7 @@ function renderTabContent(
 }
 
 /**
- * Tab 1: AsliDaam Engine UI
+ * Tab 1: AsliDaam Engine UI (ONE GLANCE → ONE DECISION)
  */
 function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: number): HTMLElement {
   const panel = document.createElement('div');
@@ -270,166 +322,193 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
   const headline = opt.headlineSummary[currentLanguage];
 
   panel.innerHTML = `
-    <!-- Big AsliDaam Decision Hero Card -->
-    <div class="card" style="border: 2px solid #22c55e; box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.15); margin-bottom: var(--space-5);">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3);">
-        <span style="display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; color: #15803d; font-size: var(--font-size-xs); font-weight: 800; padding: 4px 10px; border-radius: 9999px;">
-          <span>🎯</span> ${isWait ? `WAIT ${rec.dayOffset} DAYS` : 'SELL TODAY'}
-        </span>
-        <span style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600;">
-          Optimal Market: <strong style="color: var(--color-text-main);">${rec.market.name}</strong>
+    <!-- PRIMARY RECOMMENDATION: ONE GLANCE → ONE DECISION HERO -->
+    <div class="editorial-panel" style="border: 2px solid var(--color-brand-primary); background: #ffffff; padding: var(--space-8); margin-bottom: var(--space-8); position: relative; overflow: hidden;">
+      
+      <!-- Top Badges & Timing Indicator -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4);">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <span class="badge ${isWait ? 'badge-accent' : 'badge-sage'}" style="font-size: var(--font-size-xs); padding: 6px 14px; font-weight: 800;">
+            ${isWait ? `🎯 WAIT ${rec.dayOffset} DAYS` : '⚡ SELL TODAY'}
+          </span>
+          <span style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600;">
+            Optimal Market: <strong style="color: var(--color-text-main); font-family: var(--font-family-heading);">${rec.market.name}</strong>
+          </span>
+        </div>
+
+        <span class="badge badge-sage" style="font-size: var(--font-size-xs);">
+          Verified Joint Optimization
         </span>
       </div>
 
-      <h2 style="font-size: var(--font-size-xl); font-weight: 800; color: var(--color-text-main); margin-bottom: var(--space-3); line-height: 1.3;">
+      <!-- Main Decision Headline in Bold Manrope -->
+      <h2 class="heading-xl" style="color: var(--color-text-main); margin-bottom: var(--space-6); max-width: 960px;">
         ${headline}
       </h2>
 
-      <!-- Big Cash Payout Stat Box -->
-      <div style="background: var(--color-bg-canvas); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-4); display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3);">
+      <!-- Dominant Financial & Risk Metrics (Open Layout, Large Numbers) -->
+      <div class="decision-metrics-grid" style="background-color: var(--color-brand-primary-subtle); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-6);">
+        
         <div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600;">
+          <div style="font-family: var(--font-family-body); font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
             ${currentLanguage === 'mr' ? 'खिशात जास्तीचा निव्वळ नफा' : (currentLanguage === 'hi' ? 'जेब में अतिरिक्त नकद लाभ' : 'Extra Cash in Your Pocket')}
           </div>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #16a34a;">
+          <div class="number-display number-huge number-positive">
             +₹${opt.totalPocketCashGain.toLocaleString('en-IN')}
           </div>
-          <div style="font-size: var(--font-size-xs); color: #16a34a; font-weight: 600;">
-            (+₹${opt.gainPerQtl.toFixed(1)}/qtl vs nearest mandi)
+          <div style="font-size: var(--font-size-xs); color: var(--color-status-success); font-weight: 700; margin-top: 4px;">
+            (+₹${opt.gainPerQtl.toFixed(1)}/qtl vs nearest local mandi)
           </div>
         </div>
 
         <div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600;">
+          <div style="font-family: var(--font-family-body); font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
             ${currentLanguage === 'mr' ? 'अपेक्षित एकूण असली दाम' : (currentLanguage === 'hi' ? 'कुल असली दाम (इन-हैंड)' : 'Total AsliDaam Take-Home')}
           </div>
-          <div style="font-size: 1.8rem; font-weight: 900; color: var(--color-text-main);">
+          <div class="number-display number-huge number-main">
             ₹${rec.totalNetPayout.toLocaleString('en-IN')}
           </div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-            ₹${rec.asliDaamPerQtl.toFixed(1)}/qtl for ${qty} quintals
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
+            ₹${rec.asliDaamPerQtl.toFixed(1)}/qtl for ${qty} quintals net
           </div>
         </div>
 
         <div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600;">
-            Road Haulage & Risk
+          <div style="font-family: var(--font-family-body); font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
+            Travel Haulage & Risk
           </div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: var(--color-text-main);">
+          <div class="number-display number-xl number-main">
             ${rec.market.estimatedRoadDistanceKm || 0} km road
           </div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-            High Confidence (Residual ±4.2%)
+          <div style="font-size: var(--font-size-xs); color: var(--color-status-success); font-weight: 600; margin-top: 4px;">
+            ✓ High Confidence (Residual ±4.2%)
           </div>
         </div>
+
       </div>
 
-      <!-- Voice Audio Readout Bar -->
-      <div style="display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; border: 1px solid #bbf7d0; padding: var(--space-3); border-radius: var(--radius-md);">
-        <div style="display: flex; align-items: center; gap: var(--space-2);">
-          <span style="font-size: 1.2rem;">🔊</span>
-          <span style="font-size: var(--font-size-xs); font-weight: 700; color: #166534;">
-            ${currentLanguage === 'mr' ? 'शेतकऱ्यांसाठी मराठी आवाज सारांश' : (currentLanguage === 'hi' ? 'किसानों के लिए हिंदी आवाज सारांश' : 'Farmer Regional Audio Voice Readout')}
-          </span>
+      <!-- Farmer Regional Audio Voice Readout Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); background: #ffffff; border: 1.5px solid var(--color-border); padding: var(--space-3) var(--space-5); border-radius: var(--radius-lg);">
+        <div style="display: flex; align-items: center; gap: var(--space-3);">
+          <span style="font-size: 1.3rem;">🔊</span>
+          <div>
+            <div style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-main);">
+              ${currentLanguage === 'mr' ? 'शेतकऱ्यांसाठी मराठी आवाज सारांश' : (currentLanguage === 'hi' ? 'किसानों के लिए हिंदी आवाज सारांश' : 'Farmer Regional Audio Voice Readout')}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+              Listen to the recommendation readout in your regional language
+            </div>
+          </div>
         </div>
-        <button id="btn-speak-aslidaam" class="btn btn-sm" style="background: #16a34a; color: #fff; font-size: var(--font-size-xs); font-weight: 700; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer;">
+        <button id="btn-speak-aslidaam" class="btn btn-sm btn-primary" style="font-weight: 700;">
           ▶ Play Audio
         </button>
       </div>
+
     </div>
 
     <!-- Section: Decision Armor Suite (Nirnay Kawach & Bhed Vivek) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5);">
-      
-      <!-- 🛡️ Nirnay Kawach (Decision Shield) -->
-      <div class="card" style="border-top: 4px solid #3b82f6;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
-          <h3 style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main); margin: 0;">
-            🛡️ Nirnay Kawach (निर्णय कवच)
-          </h3>
-          <span style="background: #dbeafe; color: #1e40af; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">
-            ROBUST (100% Stability)
-          </span>
-        </div>
-        <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
-          Stress-tests recommendation against diesel price hikes & backtest residual errors (N = 500 Monte Carlo runs).
-        </p>
-
-        <div style="background: var(--color-bg-canvas); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); margin-bottom: var(--space-2);">
-          <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); margin-bottom: 6px;">
-            <span>Current Transport: <strong>₹3.00/km</strong></span>
-            <span>Breakeven Threshold: <strong style="color: #ea580c;">₹13.40/km</strong></span>
-          </div>
-          <input type="range" id="nirnay-slider" min="1.0" max="16.0" step="0.5" value="3.0" style="width: 100%; cursor: pointer;">
-          <div id="nirnay-slider-feedback" style="font-size: 0.72rem; color: #16a34a; font-weight: 700; margin-top: 6px;">
-            Active Transport: ₹3.0/km ➔ Optimal: ${rec.market.name} (+${rec.dayOffset}d)
-          </div>
-        </div>
+    <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-8);">
+      <div class="editorial-header">
+        <div class="kicker">DECISION ARMOR & RISK INTELLIGENCE</div>
+        <h3 class="heading-lg">Stress-Tested Against Transport & Mandi Congestion</h3>
+        <p>Ensuring your recommended market remains profitable even during sudden diesel price spikes or arrival queues.</p>
       </div>
 
-      <!-- 👥 Bhed Vivek (Market Congestion Intelligence) -->
-      <div class="card" style="border-top: 4px solid #f59e0b;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
-          <h3 style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main); margin: 0;">
-            👥 Bhed Vivek (भीड़ विवेक)
-          </h3>
-          <span id="bhed-badge" style="background: #fef3c7; color: #b45309; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">
-            CONGESTION AWARE
-          </span>
+      <div class="editorial-grid-2">
+        
+        <!-- 🛡️ Nirnay Kawach (Decision Shield) -->
+        <div class="editorial-panel" style="border-top: 4px solid var(--color-brand-primary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+            <h4 class="heading-sm">
+              🛡️ Nirnay Kawach (निर्णय कवच)
+            </h4>
+            <span class="badge badge-sage">
+              100% STABLE
+            </span>
+          </div>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+            Stress-tests recommendation against diesel price hikes & backtest residual errors (N = 500 Monte Carlo runs).
+          </p>
+
+          <div style="background: var(--color-bg-muted); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-3);">
+            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); font-weight: 600; margin-bottom: var(--space-2);">
+              <span>Current Transport: <strong>₹3.00/km</strong></span>
+              <span>Breakeven Threshold: <strong style="color: var(--color-status-warning);">₹13.40/km</strong></span>
+            </div>
+            <input type="range" id="nirnay-slider" min="1.0" max="16.0" step="0.5" value="3.0" style="width: 100%; accent-color: var(--color-brand-primary); cursor: pointer;">
+            <div id="nirnay-slider-feedback" style="font-size: var(--font-size-xs); color: var(--color-status-success); font-weight: 700; margin-top: var(--space-2);">
+              Active Transport: ₹3.0/km ➔ Optimal: ${rec.market.name} (+${rec.dayOffset}d)
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            • Withstands haulage increases up to 4.4× before Lasalgaon's price premium is overtaken by travel costs.
+          </div>
         </div>
-        <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
-          Models price slippage if simultaneous farmers follow the recommendation into one mandi.
+
+        <!-- 👥 Bhed Vivek (Market Congestion Intelligence) -->
+        <div class="editorial-panel" style="border-top: 4px solid var(--color-brand-accent-text);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+            <h4 class="heading-sm">
+              👥 Bhed Vivek (भीड़ विवेक)
+            </h4>
+            <span id="bhed-badge" class="badge badge-accent">
+              CONGESTION AWARE
+            </span>
+          </div>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+            Models price slippage if simultaneous farmers follow the recommendation into one mandi.
+          </p>
+
+          <div style="margin-bottom: var(--space-4);">
+            <label class="input-label" style="margin-bottom: 6px; display: block;">
+              Simulated Supply Pressure Scenario:
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-2);">
+              <button class="btn btn-sm btn-bhed-scenario" data-level="LOW" style="border: 1px solid var(--color-border); background: var(--color-bg-surface);">
+                🟢 Low (20%)
+              </button>
+              <button class="btn btn-sm btn-bhed-scenario" data-level="MEDIUM" style="border: 1px solid var(--color-border); background: var(--color-bg-surface);">
+                🟡 Med (50%)
+              </button>
+              <button class="btn btn-sm btn-bhed-scenario active" data-level="HIGH" style="border: 1px solid var(--color-border); background: var(--color-brand-accent); color: var(--color-brand-accent-text); font-weight: 800;">
+                🔴 High (85%)
+              </button>
+            </div>
+          </div>
+
+          <div id="bhed-feedback-box" style="background: var(--color-bg-muted); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); font-size: var(--font-size-xs);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Congestion Impact: <strong style="color: var(--color-status-abstain);" id="bhed-impact-text">-₹260/qtl</strong></span>
+              <span>Terminal Liquidity: <strong>Deep (0.08 PCS)</strong></span>
+            </div>
+            <div id="bhed-alert-text" style="color: var(--color-brand-accent-text); font-weight: 700; line-height: 1.4;">
+              ⚠️ Heavy arrival bottleneck at Lasalgaon! Optimal Diversion: Pimpalgaon Baswant (Day +1) protects +₹1,350 profit.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section: AsliDaam Economic Waterfall Step-Down Table -->
+    <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-8);">
+      <div class="editorial-header">
+        <div class="kicker">ECONOMIC WATERFALL BREAKDOWN</div>
+        <h3 class="heading-lg">Where Every Rupee Goes</h3>
+        <p>
+          Step-by-step audit comparing Local Mandi Today (${base.market.name}) vs Recommended Mandi (${rec.market.name}, Day ${rec.dayOffset}).
         </p>
-
-        <div style="margin-bottom: var(--space-3);">
-          <label style="font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-main); display: block; margin-bottom: 6px;">
-            Simulated Supply Pressure Scenario:
-          </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
-            <button class="btn btn-sm btn-bhed-scenario" data-level="LOW" style="font-size: 0.7rem; padding: 6px 4px; border: 1px solid var(--color-border); background: var(--color-bg-surface); cursor: pointer; border-radius: 4px;">
-              🟢 Low (20%)
-            </button>
-            <button class="btn btn-sm btn-bhed-scenario" data-level="MEDIUM" style="font-size: 0.7rem; padding: 6px 4px; border: 1px solid var(--color-border); background: var(--color-bg-surface); cursor: pointer; border-radius: 4px;">
-              🟡 Med (50%)
-            </button>
-            <button class="btn btn-sm btn-bhed-scenario active" data-level="HIGH" style="font-size: 0.7rem; padding: 6px 4px; border: 1px solid #f59e0b; background: #fef3c7; color: #b45309; font-weight: 800; cursor: pointer; border-radius: 4px;">
-              🔴 High (85%)
-            </button>
-          </div>
-        </div>
-
-        <div id="bhed-feedback-box" style="background: var(--color-bg-canvas); border: 1px solid #fde68a; border-radius: var(--radius-md); padding: var(--space-3); font-size: var(--font-size-xs);">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>Congestion Impact: <strong style="color: #dc2626;" id="bhed-impact-text">-₹260/qtl</strong></span>
-            <span>Terminal PCS: <strong>0.08 (Deep Liquidity)</strong></span>
-          </div>
-          <div id="bhed-alert-text" style="color: #b45309; font-weight: 700; font-size: 0.72rem;">
-            ⚠️ Heavy arrival bottleneck at Lasalgaon! Optimal Diversion: Pimpalgaon Baswant (Day +1) protects +₹1,350 profit.
-          </div>
-        </div>
       </div>
 
-    </div>
-
-    <!-- Section: AsliDaam Economic Waterfall Breakdown Table -->
-    <div class="card" style="margin-bottom: var(--space-5);">
-      <div style="margin-bottom: var(--space-3);">
-        <h3 style="font-size: var(--font-size-md); font-weight: 800; color: var(--color-text-main);">
-          💰 AsliDaam™ Step-Down Payout Waterfall
-        </h3>
-        <p style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-          Comparing Default Option (Selling Today at Nearest APMC) vs Optimal Recommendation (${rec.market.name}, Day ${rec.dayOffset})
-        </p>
-      </div>
-
-      <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; text-align: left; font-size: var(--font-size-xs);">
+      <div class="table-responsive-wrapper">
+        <table class="editorial-table">
           <thead>
             <tr>
               <th>Economic Component</th>
               <th>Local Mandi Today (${base.market.name})</th>
               <th>Recommended (${rec.market.name}, Day ${rec.dayOffset})</th>
-              <th>Wallet Difference</th>
+              <th>Net Difference In Wallet</th>
             </tr>
           </thead>
           <tbody>
@@ -437,50 +516,49 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
               <td><strong>1. Gross Modal Price</strong></td>
               <td>₹${base.grossPricePerQtl.toFixed(1)}/qtl (₹${base.totalGrossValue.toLocaleString('en-IN')})</td>
               <td>₹${rec.grossPricePerQtl.toFixed(1)}/qtl (₹${rec.totalGrossValue.toLocaleString('en-IN')})</td>
-              <td style="color: #16a34a; font-weight: 700;">+₹${(rec.totalGrossValue - base.totalGrossValue).toLocaleString('en-IN')}</td>
+              <td class="number-display number-positive" style="font-weight: 800;">+₹${(rec.totalGrossValue - base.totalGrossValue).toLocaleString('en-IN')}</td>
             </tr>
             <tr>
-              <td style="color: var(--color-danger);">2. Less: Road Haulage Freight</td>
+              <td style="color: var(--color-status-abstain);">2. Less: Road Haulage Freight (Diesel)</td>
               <td>-₹${base.roadFreightPerQtl.toFixed(1)}/qtl (-₹${base.totalTransportCost.toLocaleString('en-IN')})</td>
               <td>-₹${rec.roadFreightPerQtl.toFixed(1)}/qtl (-₹${rec.totalTransportCost.toLocaleString('en-IN')})</td>
-              <td style="color: var(--color-danger);">-₹${(rec.totalTransportCost - base.totalTransportCost).toLocaleString('en-IN')}</td>
+              <td style="color: var(--color-status-abstain);">-₹${(rec.totalTransportCost - base.totalTransportCost).toLocaleString('en-IN')}</td>
             </tr>
             <tr>
-              <td style="color: var(--color-danger);">3. Less: APMC Statutory Tariffs (1.1% Cess + Hamali/Tolai)</td>
+              <td style="color: var(--color-status-abstain);">3. Less: APMC Statutory Tariffs (1.1% Cess + Hamali/Tolai)</td>
               <td>-₹${(base.apmcCessPerQtl + base.hamaliAndTolaiPerQtl).toFixed(1)}/qtl (-₹${base.totalApmcDeductions.toLocaleString('en-IN')})</td>
               <td>-₹${(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl).toFixed(1)}/qtl (-₹${rec.totalApmcDeductions.toLocaleString('en-IN')})</td>
               <td>-₹${(rec.totalApmcDeductions - base.totalApmcDeductions).toLocaleString('en-IN')}</td>
             </tr>
             <tr>
-              <td style="color: var(--color-danger);">4. Less: Holding Storage & Spoilage Decay Loss</td>
+              <td style="color: var(--color-status-abstain);">4. Less: Holding Storage & Spoilage Decay Loss</td>
               <td>₹0.0 (Zero wait)</td>
               <td>-₹${rec.holdingAndSpoilagePerQtl.toFixed(1)}/qtl (-₹${rec.totalHoldingSpoilageLoss.toLocaleString('en-IN')})</td>
-              <td style="color: var(--color-danger);">-₹${rec.totalHoldingSpoilageLoss.toLocaleString('en-IN')}</td>
+              <td style="color: var(--color-status-abstain);">-₹${rec.totalHoldingSpoilageLoss.toLocaleString('en-IN')}</td>
             </tr>
-            <tr style="background: #f0fdf4; font-weight: 800; font-size: var(--font-size-sm); border-top: 2px solid #22c55e;">
+            <tr style="background-color: var(--color-brand-primary-light); font-weight: 800; font-size: var(--font-size-sm); border-top: 2px solid var(--color-brand-primary);">
               <td><strong>💎 AsliDaam Take-Home Cash</strong></td>
               <td><strong>₹${base.asliDaamPerQtl.toFixed(1)}/qtl (₹${base.totalNetPayout.toLocaleString('en-IN')})</strong></td>
-              <td style="color: #16a34a;"><strong>₹${rec.asliDaamPerQtl.toFixed(1)}/qtl (₹${rec.totalNetPayout.toLocaleString('en-IN')})</strong></td>
-              <td style="color: #16a34a;"><strong>+₹${opt.totalPocketCashGain.toLocaleString('en-IN')} Extra</strong></td>
+              <td class="number-display number-positive"><strong>₹${rec.asliDaamPerQtl.toFixed(1)}/qtl (₹${rec.totalNetPayout.toLocaleString('en-IN')})</strong></td>
+              <td class="number-display number-positive"><strong>+₹${opt.totalPocketCashGain.toLocaleString('en-IN')} Extra</strong></td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
     <!-- Section: Multi-Mandi × Day Joint Optimization Grid -->
-    <div class="card">
-      <div style="margin-bottom: var(--space-3);">
-        <h3 style="font-size: var(--font-size-md); font-weight: 800; color: var(--color-text-main);">
-          🧭 Multi-Mandi × Day (0-3) Joint Optimization Grid
-        </h3>
-        <p style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-          Every combination evaluated for true payout. Highlights why distant mandis or waiting days win or lose after factoring in all costs.
+    <section class="editorial-section" style="padding-top: 0;">
+      <div class="editorial-header">
+        <div class="kicker">REGIONAL MATRIX</div>
+        <h3 class="heading-lg">Multi-Mandi × Day (0–3) Joint Optimization Grid</h3>
+        <p>
+          Every combination evaluated for true payout. Shows why distant mandis or waiting days win or lose after factoring in haulage and decay.
         </p>
       </div>
 
-      <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; text-align: left; font-size: var(--font-size-xs);">
+      <div class="table-responsive-wrapper">
+        <table class="editorial-table">
           <thead>
             <tr>
               <th>Mandi Name</th>
@@ -490,21 +568,21 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
               <th>All Deductions</th>
               <th>AsliDaam / Qtl</th>
               <th>Total Wallet Payout</th>
-              <th>Status</th>
+              <th>Outcome</th>
             </tr>
           </thead>
           <tbody>
             ${opt.allCombinations.map(c => {
               if (c.isStaleOrAbstained) {
                 return `
-                  <tr style="opacity: 0.6; background: #fff1f2;">
+                  <tr style="opacity: 0.65; background-color: var(--color-status-abstain-bg);">
                     <td><strong>${c.market.name}</strong></td>
                     <td>${c.market.estimatedRoadDistanceKm || 88} km</td>
                     <td>Day ${c.dayOffset}</td>
-                    <td colspan="4" style="color: #be123c; font-weight: 600;">
+                    <td colspan="4" style="color: var(--color-status-abstain); font-weight: 600;">
                       ⚠️ ${c.abstentionReason || 'Data Stale — Cannot Advise'}
                     </td>
-                    <td><span class="badge" style="background: #be123c; color: #fff;">ABSTAINED</span></td>
+                    <td><span class="badge badge-danger">ABSTAINED</span></td>
                   </tr>
                 `;
               }
@@ -512,8 +590,8 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
               const isBest = c.isRecommended;
               const isBase = c.isBaseline;
               const rowStyle = isBest 
-                ? 'background: #f0fdf4; font-weight: 700;' 
-                : (isBase ? 'background: #f8fafc;' : '');
+                ? 'background-color: var(--color-brand-primary-light); font-weight: 700;' 
+                : (isBase ? 'background-color: var(--color-bg-muted);' : '');
 
               return `
                 <tr style="${rowStyle}">
@@ -521,17 +599,17 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
                   <td>${c.market.estimatedRoadDistanceKm || 0} km</td>
                   <td>Day ${c.dayOffset} (${c.dayOffset === 0 ? 'Today' : `+${c.dayOffset}d`})</td>
                   <td>₹${c.grossPricePerQtl.toFixed(0)}</td>
-                  <td style="color: var(--color-danger);">-₹${(c.grossPricePerQtl - c.asliDaamPerQtl).toFixed(0)}</td>
-                  <td><strong>₹${c.asliDaamPerQtl.toFixed(1)}</strong></td>
-                  <td><strong>₹${c.totalNetPayout.toLocaleString('en-IN')}</strong></td>
+                  <td style="color: var(--color-status-abstain);">-₹${(c.grossPricePerQtl - c.asliDaamPerQtl).toFixed(0)}</td>
+                  <td class="number-display"><strong>₹${c.asliDaamPerQtl.toFixed(1)}</strong></td>
+                  <td class="number-display"><strong>₹${c.totalNetPayout.toLocaleString('en-IN')}</strong></td>
                   <td>
                     ${isBest 
-                      ? '<span class="badge" style="background: #22c55e; color: #052e16; font-weight: 800;">🏆 BEST OPTION</span>' 
+                      ? '<span class="badge badge-accent">🏆 BEST OPTION</span>' 
                       : (isBase 
-                          ? '<span class="badge" style="background: #64748b; color: #fff;">📍 DEFAULT</span>' 
+                          ? '<span class="badge badge-neutral">📍 DEFAULT</span>' 
                           : (c.totalPocketGainVsDefault > 0 
-                              ? `<span style="color: #16a34a; font-weight: 700;">+₹${c.totalPocketGainVsDefault}</span>` 
-                              : `<span style="color: var(--color-danger);">${c.totalPocketGainVsDefault}</span>`
+                              ? `<span class="number-display number-positive" style="font-weight: 700;">+₹${c.totalPocketGainVsDefault}</span>` 
+                              : `<span style="color: var(--color-status-abstain);">${c.totalPocketGainVsDefault}</span>`
                             )
                         )
                     }
@@ -542,10 +620,10 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   `;
 
-  // Audio speech synthesis
+  // Audio speech synthesis listener
   const speakBtn = panel.querySelector('#btn-speak-aslidaam');
   if (speakBtn) {
     speakBtn.addEventListener('click', () => {
@@ -569,14 +647,14 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
     nirnaySlider.addEventListener('input', () => {
       const val = parseFloat(nirnaySlider.value);
       if (val < 13.4) {
-        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ Optimal: <strong>${rec.market.name} (+${rec.dayOffset}d)</strong> <span style="color: #16a34a;">(Safe Zone)</span>`;
-        nirnayFeedback.style.color = '#16a34a';
+        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ Optimal: <strong>${rec.market.name} (+${rec.dayOffset}d)</strong> <span style="color: var(--color-status-success);">(Safe Zone)</span>`;
+        nirnayFeedback.style.color = 'var(--color-status-success)';
       } else if (val >= 13.4 && val <= 13.6) {
-        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ <strong style="color: #ea580c;">⚖️ EXACT BREAKEVEN POINT</strong> (Lasalgaon & Pimpalgaon have equal NRV)`;
-        nirnayFeedback.style.color = '#ea580c';
+        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ <strong style="color: var(--color-status-warning);">⚖️ EXACT BREAKEVEN POINT</strong> (Lasalgaon & Pimpalgaon have equal net value)`;
+        nirnayFeedback.style.color = 'var(--color-status-warning)';
       } else {
-        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ <strong style="color: #dc2626;">FLIPPED: Pimpalgaon Baswant (+1d)</strong> wins! (Closer distance beats high price)`;
-        nirnayFeedback.style.color = '#dc2626';
+        nirnayFeedback.innerHTML = `Active Transport: ₹${val.toFixed(1)}/km ➔ <strong style="color: var(--color-status-abstain);">FLIPPED: Pimpalgaon Baswant (+1d)</strong> wins! (Closer distance beats high price)`;
+        nirnayFeedback.style.color = 'var(--color-status-abstain)';
       }
     });
   }
@@ -601,51 +679,48 @@ function renderAsliDaamTab(opt: AsliDaamOptimizationResult, crop: string, qty: n
       const level = btn.getAttribute('data-level');
 
       if (level === 'LOW') {
-        (btn as HTMLElement).style.background = '#dcfce7';
-        (btn as HTMLElement).style.borderColor = '#22c55e';
-        (btn as HTMLElement).style.color = '#15803d';
+        (btn as HTMLElement).style.background = 'var(--color-status-success-bg)';
+        (btn as HTMLElement).style.borderColor = 'var(--color-status-success-border)';
+        (btn as HTMLElement).style.color = 'var(--color-status-success)';
         (btn as HTMLElement).style.fontWeight = '800';
 
         if (bhedBadge) {
-          bhedBadge.style.background = '#dcfce7';
-          bhedBadge.style.color = '#15803d';
+          bhedBadge.className = 'badge badge-success';
           bhedBadge.textContent = '🟢 LOW CONGESTION RISK';
         }
         if (bhedImpactText) bhedImpactText.textContent = '-₹65/qtl';
         if (bhedAlertText) {
-          bhedAlertText.style.color = '#15803d';
+          bhedAlertText.style.color = 'var(--color-status-success)';
           bhedAlertText.textContent = '🟢 Normal dispersed arrivals. Lasalgaon Terminal APMC absorbs arrivals with minimal price slippage. Proceed as planned!';
         }
       } else if (level === 'MEDIUM') {
-        (btn as HTMLElement).style.background = '#fef3c7';
-        (btn as HTMLElement).style.borderColor = '#f59e0b';
-        (btn as HTMLElement).style.color = '#b45309';
+        (btn as HTMLElement).style.background = 'var(--color-status-warning-bg)';
+        (btn as HTMLElement).style.borderColor = 'var(--color-status-warning-border)';
+        (btn as HTMLElement).style.color = 'var(--color-status-warning)';
         (btn as HTMLElement).style.fontWeight = '800';
 
         if (bhedBadge) {
-          bhedBadge.style.background = '#fef3c7';
-          bhedBadge.style.color = '#b45309';
+          bhedBadge.className = 'badge badge-warning';
           bhedBadge.textContent = '🟡 MODERATE PRESSURE';
         }
         if (bhedImpactText) bhedImpactText.textContent = '-₹155/qtl';
         if (bhedAlertText) {
-          bhedAlertText.style.color = '#b45309';
+          bhedAlertText.style.color = 'var(--color-status-warning)';
           bhedAlertText.textContent = '🟡 Noticeable arrival queues forming. Lasalgaon price advantage narrows by ₹155/q, but remains slightly ahead.';
         }
       } else if (level === 'HIGH') {
-        (btn as HTMLElement).style.background = '#fee2e2';
-        (btn as HTMLElement).style.borderColor = '#ef4444';
-        (btn as HTMLElement).style.color = '#b91c1c';
+        (btn as HTMLElement).style.background = 'var(--color-brand-accent)';
+        (btn as HTMLElement).style.borderColor = 'var(--color-brand-accent-border)';
+        (btn as HTMLElement).style.color = 'var(--color-brand-accent-text)';
         (btn as HTMLElement).style.fontWeight = '800';
 
         if (bhedBadge) {
-          bhedBadge.style.background = '#fee2e2';
-          bhedBadge.style.color = '#b91c1c';
+          bhedBadge.className = 'badge badge-accent';
           bhedBadge.textContent = '⚠️ BHED VIVEK ALERT';
         }
         if (bhedImpactText) bhedImpactText.textContent = '-₹260/qtl';
         if (bhedAlertText) {
-          bhedAlertText.style.color = '#b91c1c';
+          bhedAlertText.style.color = 'var(--color-status-abstain)';
           bhedAlertText.textContent = '⚠️ Heavy arrival bottleneck at Lasalgaon! Recommended Diversion: Pimpalgaon Baswant (Day +1) protects +₹1,350 profit!';
         }
       }
@@ -663,47 +738,46 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
   panel.className = 'future-features-panel';
 
   panel.innerHTML = `
-    <div class="card" style="margin-bottom: var(--space-4);">
-      <h3 style="font-size: var(--font-size-md); font-weight: 800; color: var(--color-brand-primary); margin-bottom: var(--space-2);">
-        🚀 MandiMitra Future Capabilities Launchpad
-      </h3>
-      <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4);">
-        High-impact extensions connected to backend services and cloud database:
-      </p>
+    <div class="editorial-panel" style="margin-bottom: var(--space-6);">
+      <div class="editorial-header">
+        <div class="kicker">CLOUD & EXTENSIONS</div>
+        <h3 class="heading-lg">MandiMitra Future Capabilities Launchpad</h3>
+        <p>High-impact integrations connected to cloud databases and live weather feeds for farmer resilience.</p>
+      </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4);">
+      <div class="editorial-grid-3">
         
         <!-- Feature 1: Farmer Freight Pooling (SajhaBazaar) -->
-        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-surface);">
-          <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">🤝</div>
-          <h4 style="font-size: var(--font-size-sm); font-weight: 800; margin-bottom: 4px;">SajhaBazaar: Freight Pooling</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
+        <div class="editorial-panel" style="background: var(--color-bg-surface);">
+          <div style="font-size: 2rem; margin-bottom: var(--space-2);">🤝</div>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">SajhaBazaar: Freight Pooling</h4>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
             Share truck capacity with neighboring farmers headed to Lasalgaon APMC. Cuts haulage cost by 35% (from ₹3.0/km to ₹1.95/km/qtl).
           </p>
-          <button id="btn-load-pools" class="btn btn-sm btn-primary" style="font-size: 0.75rem; width: auto; padding: 6px 14px;">
+          <button id="btn-load-pools" class="btn btn-sm btn-primary">
             View Active Pools
           </button>
-          <div id="pools-list-container" style="margin-top: var(--space-3); font-size: var(--font-size-xs);"></div>
+          <div id="pools-list-container" style="margin-top: var(--space-4); font-size: var(--font-size-xs);"></div>
         </div>
 
         <!-- Feature 2: Weather Anomaly Risk Index -->
-        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-surface);">
-          <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">🌦️</div>
-          <h4 style="font-size: var(--font-size-sm); font-weight: 800; margin-bottom: 4px;">Weather & Rain Risk Alert</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
+        <div class="editorial-panel" style="background: var(--color-bg-surface);">
+          <div style="font-size: 2rem; margin-bottom: var(--space-2);">🌦️</div>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">Weather & Rain Risk Alert</h4>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
             Open-Meteo rainfall anomaly integration: Unseasonal rain warning for Nashik district (+18mm expected in 48h). Accelerates onion rot.
           </p>
-          <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 0.7rem; font-weight: 700;">Rain Alert Active</span>
+          <span class="badge badge-accent">Rain Alert Active</span>
         </div>
 
         <!-- Feature 3: WhatsApp Recommendation Slip -->
-        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-surface);">
-          <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">📱</div>
-          <h4 style="font-size: var(--font-size-sm); font-weight: 800; margin-bottom: 4px;">WhatsApp Payout Slip</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
+        <div class="editorial-panel" style="background: var(--color-bg-surface);">
+          <div style="font-size: 2rem; margin-bottom: var(--space-2);">📱</div>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">WhatsApp Payout Slip</h4>
+          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
             Generate a clean, Marathi/Hindi text slip with full AsliDaam breakdown to share with fellow farmers and FPO leaders.
           </p>
-          <button id="btn-copy-slip" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; width: auto; padding: 6px 14px;">
+          <button id="btn-copy-slip" class="btn btn-sm btn-outline">
             Copy WhatsApp Slip
           </button>
         </div>
@@ -717,21 +791,21 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
   const poolsContainer = panel.querySelector('#pools-list-container');
   if (loadPoolsBtn && poolsContainer) {
     loadPoolsBtn.addEventListener('click', async () => {
-      poolsContainer.innerHTML = '<p style="color: var(--color-text-muted);">Fetching clusters...</p>';
+      poolsContainer.innerHTML = '<p style="color: var(--color-text-muted);">Fetching clusters from database...</p>';
       try {
         const res = await fetch('/api/pools');
         const json = await res.json();
         const pools = json.data || [];
         if (pools.length === 0) {
-          poolsContainer.innerHTML = '<p>No active pools currently.</p>';
+          poolsContainer.innerHTML = '<p>No active pools currently in your area.</p>';
           return;
         }
         poolsContainer.innerHTML = `
-          <div style="border-top: 1px solid var(--color-border); padding-top: 8px;">
-            <strong style="color: #166534;">Active Clusters (${json.source === 'supabase' ? 'Cloud' : 'Local'}):</strong>
-            <ul style="list-style: none; padding-left: 0; margin-top: 4px;">
+          <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3);">
+            <strong style="color: var(--color-brand-primary-dark);">Active Clusters (${json.source === 'supabase' ? 'Cloud Supabase' : 'Local'}):</strong>
+            <ul style="list-style: none; padding-left: 0; margin-top: 6px;">
               ${pools.slice(0, 3).map((p: any) => `
-                <li style="padding: 4px 0; border-bottom: 1px dashed var(--color-border);">
+                <li style="padding: 6px 0; border-bottom: 1px dashed var(--color-border); font-size: var(--font-size-xs);">
                   <strong>${p.farmer_name}</strong> (${p.village || p.taluka}) • <strong>${p.quantity_quintals}q</strong> → ${p.target_mandi}
                 </li>
               `).join('')}
@@ -739,7 +813,7 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
           </div>
         `;
       } catch (err) {
-        poolsContainer.innerHTML = '<p style="color: var(--color-danger);">Offline cluster cache active.</p>';
+        poolsContainer.innerHTML = '<p style="color: var(--color-status-abstain);">Offline cluster cache active.</p>';
       }
     });
   }
@@ -757,4 +831,3 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
 
   return panel;
 }
-

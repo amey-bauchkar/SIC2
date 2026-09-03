@@ -84,5 +84,15 @@ export class Router {
         link.classList.remove('active');
       }
     });
+
+    const mobileLinks = document.querySelectorAll('.mobile-nav-item');
+    mobileLinks.forEach(link => {
+      const href = link.getAttribute('href')?.replace('#', '');
+      if (href === route || (route === '/' && href === '/hub')) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
   }
 }

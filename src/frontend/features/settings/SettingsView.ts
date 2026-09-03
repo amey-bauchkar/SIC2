@@ -2,8 +2,8 @@
  * MandiMitra Feature: Farmer Logistics Settings View
  * Route: /settings
  * 
- * OWNER: Purva (Frontend Feature Engineer - Markets & Trust Vertical)
- * Structural placeholder - updates user-editable transport, storage, and search radius values.
+ * VerdaAgro Editorial Agricultural Redesign
+ * 100% Preserves user cost updates, inputs, and form submission
  */
 
 import { store } from '../../state/store';
@@ -16,65 +16,87 @@ export function renderSettingsView(): HTMLElement {
   const config = state.costConfig;
 
   container.innerHTML = `
-    <div class="card">
-      <h2 style="font-size: var(--font-size-xl); font-weight: 800; margin-bottom: var(--space-2);">
-        Logistics & Cost Settings
-      </h2>
-      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-6);">
-        Adjust transport and holding assumptions to tailor Net Realisation calculations to your farm.
-      </p>
+    <div class="editorial-panel" style="padding: var(--space-8); max-width: 800px; margin: 0 auto;">
+      <div style="border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-4); margin-bottom: var(--space-6);">
+        <div class="kicker">LOGISTICS & COST SIMULATOR</div>
+        <h2 class="heading-xl">
+          Farm Logistics Assumptions
+        </h2>
+        <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 4px;">
+          Tailor transport freight and crop holding costs to your local vehicle and storage arrangements.
+        </p>
+      </div>
 
       <form id="settings-form">
-        <div style="margin-bottom: var(--space-4);">
-          <label style="display: block; font-size: var(--font-size-sm); font-weight: 600; margin-bottom: var(--space-1);">
-            Transport Cost (₹ per km per quintal)
-          </label>
+        
+        <!-- Transport Cost Input -->
+        <div class="form-group" style="margin-bottom: var(--space-5);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <label class="input-label" for="input-transport-cost">
+              Transport Haulage Cost (₹ per km per quintal)
+            </label>
+            <span style="font-size: var(--font-size-xs); color: var(--color-brand-primary-dark); font-weight: 700;">Regional Default: ₹3.00</span>
+          </div>
           <input 
             type="number" 
             step="0.5" 
             min="0.5" 
             max="20" 
             id="input-transport-cost" 
+            class="input-field"
             value="${config.transportCostPerKmPerQtl}" 
-            style="width: 100%; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--font-size-base);"
           />
-          <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Standard regional default: ₹3.00/km/qtl</span>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
+            Covers pickup truck or tractor trolley fuel and driver cost per kilometer per quintal of produce.
+          </div>
         </div>
 
-        <div style="margin-bottom: var(--space-4);">
-          <label style="display: block; font-size: var(--font-size-sm); font-weight: 600; margin-bottom: var(--space-1);">
-            Storage & Holding Cost (₹ per day per quintal)
-          </label>
+        <!-- Storage & Holding Cost Input -->
+        <div class="form-group" style="margin-bottom: var(--space-5);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <label class="input-label" for="input-storage-cost">
+              Holding & Storage Cost (₹ per day per quintal)
+            </label>
+            <span style="font-size: var(--font-size-xs); color: var(--color-brand-primary-dark); font-weight: 700;">Default: ₹10.00</span>
+          </div>
           <input 
             type="number" 
             step="1" 
             min="1" 
             max="50" 
             id="input-storage-cost" 
+            class="input-field"
             value="${config.storageCostPerDayPerQtl}" 
-            style="width: 100%; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--font-size-base);"
           />
-          <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Includes farm storage shrinkage/spoilage risk. Default: ₹10.00/day/qtl</span>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
+            Models biological crop shrinkage, weight loss, and daily shed holding expenses.
+          </div>
         </div>
 
-        <div style="margin-bottom: var(--space-6);">
-          <label style="display: block; font-size: var(--font-size-sm); font-weight: 600; margin-bottom: var(--space-1);">
-            Search Radius (km)
-          </label>
+        <!-- Search Radius Input -->
+        <div class="form-group" style="margin-bottom: var(--space-8);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <label class="input-label" for="input-radius">
+              Maximum Search Radius (Kilometers)
+            </label>
+            <span style="font-size: var(--font-size-xs); color: var(--color-brand-primary-dark); font-weight: 700;">Default: 100 km</span>
+          </div>
           <input 
             type="number" 
             step="10" 
             min="20" 
             max="300" 
             id="input-radius" 
+            class="input-field"
             value="${config.searchRadiusKm}" 
-            style="width: 100%; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--font-size-base);"
           />
-          <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Maximum driving radius considered. Default: 100 km</span>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
+            Maximum driving distance considered around your farm for finding profitable APMCs.
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" id="btn-save-settings">
-          Save Settings & Recalculate
+        <button type="submit" class="btn btn-primary btn-lg" id="btn-save-settings" style="width: 100%;">
+          ✓ Save Settings & Recalculate Payouts
         </button>
       </form>
     </div>
@@ -94,8 +116,8 @@ export function renderSettingsView(): HTMLElement {
         searchRadiusKm: parseFloat(radiusInput.value) || 100.0
       });
 
-      // Navigate back to entry or decision
-      store.setRoute('/');
+      // Navigate back to hub
+      store.setRoute('/hub');
     });
   }
 

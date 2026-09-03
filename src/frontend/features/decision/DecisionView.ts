@@ -2,8 +2,7 @@
  * MandiMitra Feature: Decision Card View
  * Route: /decision
  * 
- * OWNER: Tanmay (Frontend Feature Engineer - Decision & Evidence Vertical)
- * Structural placeholder - mounts shared DecisionCard and wires route transitions.
+ * VerdaAgro Editorial Agricultural Redesign
  */
 
 import { store } from '../../state/store';
@@ -18,18 +17,20 @@ export function renderDecisionView(): HTMLElement {
 
   if (!evalData) {
     container.innerHTML = `
-      <div class="card" style="text-align: center; padding: var(--space-8);">
-        <p style="color: var(--color-text-muted); margin-bottom: var(--space-4);">
-          No active evaluation found. Please select a crop first.
+      <div class="editorial-panel" style="text-align: center; padding: var(--space-12); max-width: 640px; margin: var(--space-8) auto;">
+        <div style="font-size: 3rem; margin-bottom: var(--space-3);">🌾</div>
+        <h2 class="heading-lg" style="margin-bottom: var(--space-2);">No Active Evaluation</h2>
+        <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--space-6);">
+          Please select your crop and location from the Decision Hub or Entry view to calculate optimal returns.
         </p>
-        <button class="btn btn-primary" id="btn-back-to-entry" style="max-width: 240px; margin: 0 auto;">
-          Go to Crop Selection
+        <button class="btn btn-primary" id="btn-back-to-entry">
+          Go to Decision Hub
         </button>
       </div>
     `;
     const btn = container.querySelector('#btn-back-to-entry');
     if (btn) {
-      btn.addEventListener('click', () => store.setRoute('/'));
+      btn.addEventListener('click', () => store.setRoute('/hub'));
     }
     return container;
   }
@@ -38,7 +39,7 @@ export function renderDecisionView(): HTMLElement {
     recommendation: evalData.recommendation,
     commodity: evalData.commodity,
     onViewEvidenceClick: () => store.setRoute('/evidence'),
-    onSelectAnotherCropClick: () => store.setRoute('/')
+    onSelectAnotherCropClick: () => store.setRoute('/hub')
   });
 
   container.appendChild(decisionCard);

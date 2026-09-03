@@ -2,8 +2,10 @@
  * MandiMitra Shared Component: DecisionCard
  * Primary hero card displaying the sell/wait recommendation, confidence, and financial upside.
  * 
- * OWNER: Janhvi (Frontend Lead)
- * Pure presentation - consumes Recommendation contract.
+ * DESIGN: VerdaAgro Editorial Agricultural Direction
+ * - Strong Manrope headings and numbers
+ * - Sage Green #8B9271 Primary CTA
+ * - Soft Yellow #FEF3A3 Accent Pill
  */
 
 import { DecisionCardProps } from '../../contracts/frontend';
@@ -11,82 +13,86 @@ import { DecisionCardProps } from '../../contracts/frontend';
 export function renderDecisionCard(props: DecisionCardProps): HTMLElement {
   const { recommendation, commodity, onViewEvidenceClick, onSelectAnotherCropClick } = props;
   const card = document.createElement('div');
-  card.className = 'card decision-card';
+  card.className = 'editorial-panel decision-card';
+  card.style.borderTop = '4px solid var(--color-brand-primary)';
 
   const isAbstain = recommendation.action === 'NO_RECOMMENDATION';
   const isSellToday = recommendation.action === 'SELL_TODAY';
 
   let actionTitle = '';
-  let badgeColor = 'var(--color-status-info)';
-  let badgeBg = 'var(--color-status-info-bg)';
+  let badgeClass = 'badge-sage';
 
   if (isAbstain) {
-    actionTitle = 'Cannot Recommend (Data Stale or Sparse)';
-    badgeColor = 'var(--color-status-abstain)';
-    badgeBg = 'var(--color-status-abstain-bg)';
+    actionTitle = 'Cannot Recommend (Data Stale or Missing)';
+    badgeClass = 'badge-danger';
   } else if (isSellToday) {
     actionTitle = 'Sell Today';
-    badgeColor = 'var(--color-status-success)';
-    badgeBg = 'var(--color-status-success-bg)';
+    badgeClass = 'badge-success';
   } else {
-    // WAIT_1_DAY, WAIT_2_DAYS, etc.
     const days = recommendation.action.replace('WAIT_', '').replace('_DAYS', '').replace('_DAY', '');
     actionTitle = `Wait ${days} Days Before Selling`;
-    badgeColor = 'var(--color-status-info)';
-    badgeBg = 'var(--color-status-info-bg)';
+    badgeClass = 'badge-accent';
   }
 
   const marketName = recommendation.market ? recommendation.market.name : 'No eligible market';
 
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4);">
       <div>
-        <span style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 0.05em;">
-          RECOMMENDATION FOR ${commodity.toUpperCase()}
-        </span>
-        <h2 style="font-size: var(--font-size-2xl); font-weight: 800; color: var(--color-text-main); margin-top: var(--space-1);">
+        <div class="kicker">
+          🌾 RECOMMENDATION FOR ${commodity.toUpperCase()}
+        </div>
+        <h2 class="heading-xl" style="color: var(--color-text-main); margin-top: var(--space-1);">
           ${actionTitle}
         </h2>
       </div>
-      <span style="padding: 4px 10px; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: 700; background: ${badgeBg}; color: ${badgeColor};">
+      <span class="badge ${badgeClass}" style="font-size: var(--font-size-xs); padding: 4px 12px;">
         ${recommendation.confidence || 'LOW'} CONFIDENCE
       </span>
     </div>
 
     ${!isAbstain && recommendation.market ? `
-      <div style="background: var(--color-bg-canvas); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+      <div style="background-color: var(--color-brand-primary-subtle); border: 1px solid rgba(139,146,113,0.25); border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
         <div>
-          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Recommended APMC</div>
-          <div style="font-size: var(--font-size-base); font-weight: 700; color: var(--color-text-main);">${marketName}</div>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+            Best Place to Sell
+          </div>
+          <div style="font-family: var(--font-family-heading); font-size: 1.35rem; font-weight: 800; color: var(--color-text-main);">
+            ${marketName}
+          </div>
         </div>
         ${recommendation.expectedGainPerQtl && recommendation.expectedGainPerQtl > 0 ? `
           <div style="text-align: right;">
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Expected Net Gain</div>
-            <div style="font-size: var(--font-size-lg); font-weight: 800; color: var(--color-status-success);">+₹${recommendation.expectedGainPerQtl.toFixed(2)}/qtl</div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+              Extra In Your Pocket
+            </div>
+            <div class="number-display number-lg number-positive">
+              +₹${recommendation.expectedGainPerQtl.toFixed(2)}/qtl
+            </div>
           </div>
         ` : ''}
       </div>
     ` : ''}
 
-    <div style="margin-bottom: var(--space-5);">
-      <div style="font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-muted); margin-bottom: var(--space-2); text-transform: uppercase;">
-        Primary Reasoning
+    <div style="margin-bottom: var(--space-6);">
+      <div style="font-family: var(--font-family-heading); font-size: var(--font-size-xs); font-weight: 800; color: var(--color-text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.05em;">
+        Why We Recommend This
       </div>
       <ul style="list-style-type: none; padding: 0;">
-        ${recommendation.reasons.slice(0, 2).map(r => `
-          <li style="display: flex; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-main); margin-bottom: var(--space-2);">
-            <span style="color: var(--color-brand-primary);">•</span>
+        ${recommendation.reasons.slice(0, 3).map(r => `
+          <li style="display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-main); margin-bottom: var(--space-2);">
+            <span style="color: var(--color-brand-primary); font-weight: 800; font-size: 1.1rem; line-height: 1;">✓</span>
             <span>${r}</span>
           </li>
         `).join('')}
       </ul>
     </div>
 
-    <div style="display: flex; gap: var(--space-3);">
+    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
       <button class="btn btn-primary" id="btn-view-evidence">
         Why This Decision? (Full Evidence)
       </button>
-      <button class="btn btn-outline" id="btn-select-crop" style="width: auto; white-space: nowrap;">
+      <button class="btn btn-outline" id="btn-select-crop">
         Change Crop
       </button>
     </div>
