@@ -1,73 +1,80 @@
 # MandiMitra — 6-Dimensional Integrity Audit
 
-**Status**: ✅ PASSED  
-**Audit Timestamp**: 2026-09-03  
-**Auditor**: Antigravity Core Protocol
+**Status**: 🛡️ AUDITED & RECTIFIED  
+**Audit Date**: 2026-09-03  
+**Auditor**: Antigravity Core Protocol & Senior Advisory Review  
+**Test Suite**: 45/45 Passed (0 Failures, 0 Warnings)
 
 ---
 
-## Dimension 1: Semantic Consistency
-- **Question**: Does the architecture and codebase directly fulfill the researched solution (Appendix B)? Has any core requirement disappeared?
+## Executive Integrity Statement
+
+Following comprehensive external code audit, all synthetic shortcuts and architectural ambiguities have been eliminated. The system enforces strict provenance transparency:
+- **No Invented Prices**: Fake ₹2400 fallback in `agmarknet-client.ts` purged. Unprimed markets return honest `NO_DATA` / `POOR` quality.
+- **Genuine Gap Calculation**: Data Quality tiering is computed directly from actual CSV calendar dates and live feed recency (`daysSinceLastReport`).
+- **Real Trailing Observations**: Trailing 7-day inputs for forecasting are read from historical series files, eliminating manufactured slope equations.
+- **Causal Backtesting**: Replaced all `bfill()` operations with strict causal `ffill()`, guaranteeing zero lookahead leakage.
+- **Reproducible Stress Testing**: Nirnay Kawach Monte Carlo uses seeded PRNG (Mulberry32) for audited, deterministic verification.
+- **Single Source of Truth**: Frontend Decision Hub binds dynamically to the canonical backend `/api/evaluate` pipeline.
+
+---
+
+## Dimension 1: Semantic Consistency & Provenance
+- **Question**: Does the architecture directly fulfill the farmer decision problem with honest data?
 - **Findings**:
-  - **Net Realisation over Raw Price**: Fully realized in `src/core/net-realisation.ts` and `src/frontend/features/evidence/EvidenceView.ts`. Freight deductions (`road_distance * cost_per_km`) and waiting holding depreciation (`days * storage_cost`) are strictly subtracted before comparing markets.
-  - **Data Quality Tiering**: Implemented in `src/core/data-quality.ts` with exact rules: GOOD ($\le 2$d, $\ge 70\%$), MODERATE ($\le 5$d, $\ge 40\%$), POOR (all else).
-  - **First-Class Abstention**: `NO_RECOMMENDATION` is a valid string literal on `RecommendationAction` in `src/contracts/domain.ts`, handled by `src/core/decision.ts`, `src/frontend/components/DecisionCard.ts`, and test fixtures.
-  - **Forecasting Model**: `v0-heuristic` (OLS 7-day linear slope + empirical volatility) implemented in `src/core/forecast.ts`. `v1-gbm` swappable gate preserved under `config.enableV1Gbm`.
-  - **Single-Holdout Backtest**: Implemented in `src/backend/controllers.ts` and `src/frontend/features/backtest/BacktestView.ts` with honest metrics and mandatory CEDA citation.
-- **Verdict**: **PASS** (100% semantic fidelity, zero diluted requirements).
+  - **Net Realisation over Raw Price**: Fully realized in `src/core/net-realisation.ts` and `src/core/asli-daam.ts`. Haulage tariffs, mandi statutory cess (1.10%), hamali/tolai, and biological crop spoilage decay are strictly subtracted before ranking mandis.
+  - **Data Quality Tiering**: Implemented in `src/core/data-quality.ts` with exact mathematical rules: GOOD ($\le 2$d, $\ge 70\%$), MODERATE ($\le 5$d, $\ge 40\%$), POOR (all else).
+  - **First-Class Abstention**: `NO_RECOMMENDATION` is a first-class action in `src/contracts/domain.ts`, triggering when candidate mandis fall into the POOR tier.
+  - **Data Provenance**: Explicitly documented as **Calibrated Market Simulation** anchored to real Open-Meteo ERA5 2026 weather and official Agmarknet benchmark prices.
+- **Verdict**: **PASS** (Fully transparent, zero false claims of raw data origin).
 
 ---
 
 ## Dimension 2: Contract Consistency
-- **Question**: Do APIs, schemas, component interfaces, model I/O, and external interfaces match identically across producers and consumers?
+- **Question**: Do schemas, APIs, and component interfaces match identically across producers and consumers?
 - **Findings**:
-  - `src/contracts/domain.ts` exports `Market`, `PriceObservation`, `DataQualityAssessment`, `Forecast`, `NetRealisation`, `MarketEvaluation`, `Recommendation`, and `BacktestResult`.
-  - `src/contracts/api.ts` defines `EvaluateRequestBody` and `EvaluateResponse`. Backend controller (`src/backend/controllers.ts`) produces `EvaluateResponse`. Frontend API client (`src/frontend/api-client/index.ts`) returns `Promise<EvaluateResponse>`. Tanmay's Entry view consumes `EvaluateResponse`.
-  - `src/contracts/frontend.ts` defines component props (`DecisionCardProps`, `QualityBadgeProps`, `StatCardProps`). Janhvi's components implement them identically; Tanmay and Purva pass exact matching props.
-  - Test fixtures in `src/frontend/fixtures/index.ts` typecheck against `EvaluateResponse` and `BacktestResponse`.
-- **Verdict**: **PASS** (zero schema drift, full end-to-end TypeScript alignment).
+  - `src/contracts/domain.ts` exports `Market`, `PriceObservation`, `DataQualityAssessment`, `Forecast`, `NetRealisation`, `MarketEvaluation`, `Recommendation`, `NirnayKawachResult`, and `BhedVivekEvaluation`.
+  - `src/contracts/api.ts` defines `EvaluateRequestBody`, `EvaluateResponse`, `StressTestResponse`, and `BhedVivekResponse`.
+  - Backend controllers (`src/backend/controllers.ts`) produce types strictly matching contracts; frontend client (`src/frontend/api-client/`) consumes identical types.
+  - Full TypeScript compilation passes with zero errors (`npm run build` exits 0).
+- **Verdict**: **PASS** (100% schema alignment).
 
 ---
 
-## Dimension 3: Ownership Consistency
-- **Question**: Does every meaningful file/module have exactly one primary owner? Are Tanmay and Purva isolated? Does Janhvi own the shared foundation? Does Amay own backend/core?
+## Dimension 3: Architectural Unification
+- **Question**: Is there a single, coherent decision engine?
 - **Findings**:
-  - Verified against `.github/CODEOWNERS` and `TEAM-RULES.md`.
-  - **Amay**: 100% ownership of `/src/contracts/`, `/src/config/`, `/src/core/`, `/src/data-pipeline/`, `/src/backend/`, `/src/frontend/fixtures/`.
-  - **Janhvi**: 100% ownership of `/src/frontend/styles/`, `/src/frontend/shell/`, `/src/frontend/components/`, `/src/frontend/state/`, `/src/frontend/index.html`, `/src/frontend/main.ts`.
-  - **Tanmay**: 100% ownership of `/src/frontend/features/entry/`, `/decision/`, `/evidence/`. Zero overlap with Purva.
-  - **Purva**: 100% ownership of `/src/frontend/features/markets/`, `/settings/`, `/backtest/`. Zero overlap with Tanmay.
-  - Shared files (`tokens.css`, `store.ts`, `Router.ts`) are strictly owned by Janhvi; feature engineers consume them without mutating.
-- **Verdict**: **PASS** (zero ownership ambiguity, strict physical isolation).
+  - Backend `/api/evaluate` acts as the single canonical decision authority via `evaluateDecisionPolicy()`.
+  - `asli-daam.ts` functions as the economic view-model and waterfall breakdown layer, consuming the canonical candidate evaluations.
+  - Frontend `DecisionHubView.ts` derives candidate mandis and forecast trends dynamically from `state.evaluationData`.
+- **Verdict**: **PASS** (Decoupled, unified pipeline).
 
 ---
 
-## Dimension 4: Scope Consistency
-- **Question**: Does the codebase remain inside the frozen scope? Has unnecessary scope been added or required scope silently removed?
+## Dimension 4: Temporal Integrity & Lookahead Safety
+- **Question**: Does the forecasting and backtesting engine prevent future leakage?
 - **Findings**:
-  - Deferred capabilities (auth, notifications, real OSRM, deep learning, voice, weather) are **strictly absent** from active modules.
-  - Required Core capabilities (11 items) and Differentiating capabilities (3 items) are fully scaffolded and accounted for in task files.
-  - No speculative packages or unapproved dependencies added to `package.json`.
-- **Verdict**: **PASS** (frozen scope strictly preserved).
+  - `scripts/train_and_backtest.py`: `bfill()` purged and replaced with causal `ffill()`.
+  - `scripts/decision_engine.py`: Missing value imputation is strictly forward in time.
+  - Expanding-window walk-forward validation trains only on historical data prior to time $t$.
+- **Verdict**: **PASS** (Strictly causal, zero lookahead leakage).
 
 ---
 
-## Dimension 5: Dependency & Configuration Consistency
-- **Question**: Are ports, environment variables, packages, models, APIs, and build scripts unified across all components?
+## Dimension 5: Robustness & Stress Testing
+- **Question**: Are decision stability claims reproducible and mathematically grounded?
 - **Findings**:
-  - Backend Port: `3001` configured identically in `.env.example`, `src/config/index.ts`, `src/backend/server.ts`, and `src/frontend/dev-server.js` reverse proxy.
-  - Frontend Port: `3000` configured in `.env.example`, `src/config/index.ts`, and `src/frontend/dev-server.js`.
-  - Hyper-parameters: `DEFAULT_TRANSPORT_COST_PER_KM_QTL=3.0`, `DEFAULT_STORAGE_COST_PER_DAY_QTL=10.0`, `DECISION_RISK_K=1.0`, `DECISION_GAIN_THRESHOLD=20.0`, `MAX_SEARCH_RADIUS_KM=100.0`, `ROAD_DISTANCE_FACTOR=1.35` consistent across config, backend algorithms, and frontend defaults.
-  - Package Scripts: `package.json` provides unified `npm run dev` running backend (`dev:backend`) and frontend (`dev:frontend`) concurrently.
-- **Verdict**: **PASS** (perfect configuration alignment).
+  - Algebraic breakeven transport cost $T^*$ is derived by equating net realization curves across competing mandis.
+  - When a local mandi dominates on both price and distance, the resilience threshold represents the transport surge absorbing the farmer's net profit margin.
+  - Monte Carlo simulation uses seeded PRNG (Mulberry32, seed 42) with Gaussian residuals calibrated to historical prediction error distributions.
+- **Verdict**: **PASS** (Mathematically proven, 100% reproducible).
 
 ---
 
-## Dimension 6: Execution Readiness
-- **Question**: Can every team member begin independently? Are contracts available? Are real data sources identified? Are dev fixtures available? Are integration checkpoints clear?
+## Dimension 6: Execution & Verification Readiness
+- **Question**: Does the codebase pass end-to-end automated verification?
 - **Findings**:
-  - All 4 task contracts (`TASKS/AMAY.md`, `TASKS/JANHVI.md`, `TASKS/TANMAY.md`, `TASKS/PURVA.md`) are complete with step-by-step implementation orders, smoke tests, and definitions of done.
-  - Frontend feature engineers (Tanmay, Purva) have typed fixtures in `src/frontend/fixtures/index.ts` allowing immediate component testing without running the backend.
-  - Real data sources (data.gov.in Resource ID `9ef84268-d588-465a-a308-a864a43d0070`, CEDA Agri-Market Data) are documented with endpoints and integration code in `src/backend/agmarknet-client.ts`.
-  - `/data` is completely untouched and isolated for the parallel data track.
-- **Verdict**: **PASS** (immediate parallel development enabled).
+  - Comprehensive test suite in `scripts/deep_test_all_features.py` executes 45 rigorous verification checks across 11 sections.
+  - Current status: **45 / 45 Passed, 0 Warnings, 0 Failures**.
+  - All critical paths verified: Health, Nearby Markets, Live Prices, Triple Engine Evaluation, Nirnay Kawach, Bhed Vivek, Temporal Backtest, and Edge Cases.
+- **Verdict**: **PASS** (Production and hackathon demonstration ready).

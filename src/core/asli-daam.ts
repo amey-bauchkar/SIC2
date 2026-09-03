@@ -10,6 +10,7 @@
  */
 
 import { Market } from '../contracts/domain';
+import { getCropConfig } from '../config/crops';
 
 export interface AsliDaamBreakdown {
   market: Market;
@@ -43,11 +44,32 @@ export interface AsliDaamBreakdown {
 }
 
 export interface CropDecayProfile {
-  dailyDecayRatePct: number;
-  dailyStorageRentRs: number;
+  dailyDecayRatePct: number; // Fraction per day (e.g. 0.02 = 2%)
+  dailyStorageRentRs: number; // INR per quintal per day
   shelfLifeDays: number;
   holdingAdvisability: string;
 }
+
+export const CATEGORY_DECAY_FALLBACKS: Record<string, CropDecayProfile> = {
+  'PERISHABLE': {
+    dailyDecayRatePct: 0.020, // 2% weight & soft rot loss per day
+    dailyStorageRentRs: 1.25,
+    shelfLifeDays: 5,
+    holdingAdvisability: 'Extremely Low — perishable commodity. Waiting >48h risks rapid deterioration.'
+  },
+  'SEMI_PERISHABLE': {
+    dailyDecayRatePct: 0.003, // 0.3% moisture loss per day in ventilated storage
+    dailyStorageRentRs: 0.45,
+    shelfLifeDays: 90,
+    holdingAdvisability: 'Moderate — safe to hold 2-3 days if terminal market spread covers weight shrinkage.'
+  },
+  'DRY_GRAIN': {
+    dailyDecayRatePct: 0.000, // Non-perishable dry grain/pulse/oilseed/spice
+    dailyStorageRentRs: 0.25,
+    shelfLifeDays: 365,
+    holdingAdvisability: 'Very High — dry non-perishable crop with zero near-term shelf loss.'
+  }
+};
 
 export const CROP_DECAY_PROFILES: Record<string, CropDecayProfile> = {
   'Tomato': {
@@ -83,6 +105,25 @@ export const CROP_DECAY_PROFILES: Record<string, CropDecayProfile> = {
 };
 
 /**
+ * Resolves crop decay profile using specific overrides or category-level defaults
+ */
+export function getCropDecayProfile(commodity: string): CropDecayProfile {
+  // 1. Direct match in specific profiles
+  if (CROP_DECAY_PROFILES[commodity]) {
+    return CROP_DECAY_PROFILES[commodity];
+  }
+
+  // 2. Lookup crop catalog metadata
+  const config = getCropConfig(commodity);
+  if (config && config.decayType && CATEGORY_DECAY_FALLBACKS[config.decayType]) {
+    return CATEGORY_DECAY_FALLBACKS[config.decayType];
+  }
+
+  // 3. Fallback to Onion (semi-perishable)
+  return CROP_DECAY_PROFILES['Onion'];
+}
+
+/**
  * Calculates AsliDaam Net Realizable Value breakdown for a single mandi on a given day.
  */
 export function calculateAsliDaamForMandiDay(
@@ -97,7 +138,7 @@ export function calculateAsliDaamForMandiDay(
   abstentionReason?: string
 ): AsliDaamBreakdown {
   const distKm = roadDistanceKm ?? market.estimatedRoadDistanceKm ?? 25.0;
-  const decayProfile = CROP_DECAY_PROFILES[commodity] || CROP_DECAY_PROFILES['Onion'];
+  const decayProfile = getCropDecayProfile(commodity);
 
   // 1. Gross price
   const grossPricePerQtl = Math.round(expectedModalPrice * 10) / 10;

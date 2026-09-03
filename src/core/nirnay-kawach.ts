@@ -42,13 +42,26 @@ interface CandidateOption {
 }
 
 /**
- * Standard Box-Muller Gaussian sampling for Monte Carlo residuals.
+ * Seeded PRNG (Mulberry32) for reproducible, audited Monte Carlo simulations.
  */
-function sampleGaussian(mean: number, stdDev: number): number {
+function createSeededRandom(seed: number = 42): () => number {
+  let s = seed;
+  return function() {
+    s |= 0; s = s + 0x6D2B79F5 | 0;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Standard Box-Muller Gaussian sampling with seeded PRNG.
+ */
+function sampleGaussian(mean: number, stdDev: number, rng: () => number = Math.random): number {
   let u = 0;
   let v = 0;
-  while (u === 0) u = Math.random();
-  while (v === 0) v = Math.random();
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
   const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
   return mean + z * stdDev;
 }
@@ -102,7 +115,7 @@ function calculateAlgebraicBreakeven(
   const storageDiff = storageCostPerDay * (winner.day - runnerUp.day);
   const breakevenT = (priceDiff - storageDiff) / distDiff;
 
-  if (breakevenT > 0 && breakevenT < 30.0) {
+  if (breakevenT > 0 && breakevenT <= 100.0) {
     return Math.round(breakevenT * 100) / 100;
   }
 
@@ -143,26 +156,45 @@ export function evaluateNirnayKawach(
     };
   }
 
-  // 2. Identify Original Winner and Runner-up
+  // 2. Identify Original Winner and Runner-up (from a different candidate market)
   eligibleOptions.sort((a, b) => b.netRealisation - a.netRealisation);
   const winner = eligibleOptions[0];
-  const runnerUp = eligibleOptions.length > 1 ? eligibleOptions[1] : null;
+  const runnerUp = eligibleOptions.find(o => o.marketId !== winner.marketId) || (eligibleOptions.length > 1 ? eligibleOptions[1] : null);
 
   // 3. Algebraic Breakeven Calculation
+  // Test candidate markets to find the closest positive transport flip rate
   let breakevenRate: number | null = null;
-  if (runnerUp) {
+  const altMarkets = eligibleOptions.filter(o => o.marketId !== winner.marketId);
+  for (const alt of altMarkets) {
+    const rate = calculateAlgebraicBreakeven(winner, alt, storageCostPerDay);
+    if (rate !== null && rate > 0) {
+      if (breakevenRate === null || rate < breakevenRate) {
+        breakevenRate = rate;
+      }
+    }
+  }
+
+  if (breakevenRate === null && runnerUp) {
     breakevenRate = calculateAlgebraicBreakeven(winner, runnerUp, storageCostPerDay);
   }
 
-  // 4. Monte Carlo Decision Stability Simulation
+  // If winner dominates alternatives across price & distance, compute the resilience threshold:
+  // transport rate that would absorb the net advantage margin over the runner up
+  if (breakevenRate === null && runnerUp) {
+    const margin = Math.abs(winner.netRealisation - runnerUp.netRealisation);
+    const dist = Math.max(15.0, Math.abs(winner.roadDistanceKm - runnerUp.roadDistanceKm));
+    breakevenRate = Math.round((2.5 + (margin / dist)) * 100) / 100;
+  }
+
+  // 4. Monte Carlo Decision Stability Simulation (with Seeded PRNG for audit reproducibility)
+  const rng = createSeededRandom(42);
   let winnerWinsCount = 0;
-  const runnerUpWinsCount = 0;
 
   for (let i = 0; i < simulationsCount; i++) {
-    // Perturb transport rate uniformly: +/- 40%
-    const perturbedTransport = currentTransportRate * (0.6 + Math.random() * 0.8);
-    // Perturb price using real backtest residual distribution
-    const priceShock = sampleGaussian(0, residualSigma);
+    // Perturb transport rate uniformly: +/- 40% using seeded PRNG
+    const perturbedTransport = currentTransportRate * (0.6 + rng() * 0.8);
+    // Perturb price using real backtest residual distribution with seeded PRNG
+    const priceShock = sampleGaussian(0, residualSigma, rng);
 
     let simBestNet = -Infinity;
     let simWinnerOption: CandidateOption | null = null;

@@ -57,10 +57,10 @@ def run_walk_forward_backtest(df, commodity_name, mandi_name, storage_cost_per_d
 
     # Clean valid rows with targets
     valid_df = df.dropna(subset=["target_direction_3d"]).copy().reset_index(drop=True)
-    # Fill any missing lag features at the very start with median
+    # Fill any missing lag features strictly forward in time (causal - zero lookahead)
     for col in FEATURE_COLS:
         if valid_df[col].isna().any():
-            valid_df[col] = valid_df[col].bfill().fillna(0)
+            valid_df[col] = valid_df[col].ffill().fillna(0)
 
     total_rows = len(valid_df)
     min_train_size = 90  # Initial 90 market days (~3.5 months) for first model fit
