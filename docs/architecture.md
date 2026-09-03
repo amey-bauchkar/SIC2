@@ -82,13 +82,13 @@ Complete architecture reference for the MandiMitra hackathon build.
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| **Frontend** | React / Next.js PWA | Mobile-first, offline-capable, fast |
-| **Backend** | FastAPI (Python) OR Node.js | FastAPI preferred — native pandas/sklearn integration for ML |
-| **Database** | PostgreSQL (prod) / SQLite (hackathon) | One prices table + one markets table with lat/lon |
-| **ML** | scikit-learn (GradientBoostingClassifier) | Trains in seconds on CPU; interpretable; small gappy series |
-| **Distance** | OSRM / Nominatim (pre-cached) | Pre-computed distance matrix for target mandis |
-| **Weather** | Open-Meteo API | Free, no key, historical archive |
-| **Infrastructure** | Single container | No GPU. No training cluster. |
+| **Frontend** | Vite + Vanilla TypeScript SPA | Ultra-fast lightweight bundle, zero-framework overhead, modular component views |
+| **Backend** | Node.js + Express (TypeScript) | Strongly-typed domain contract layer, microsecond route latency |
+| **ML Engine** | Python (scikit-learn GBM + OLS heuristic) | Walk-forward expanding window training, causal lag feature matrix |
+| **Database** | Supabase (PostgreSQL) + Local JSON/CSV | Cloud persistence for pools/alerts + ultra-fast local disk caching |
+| **Distance** | OSRM / Nominatim (calibrated pre-computed matrix) | Pre-computed road distance matrix for 82 Maharashtra mandis |
+| **Weather** | Open-Meteo ERA5 API | Official historical archive & real-time rural agro-weather |
+| **Infrastructure** | Single container / Local dev runner | Zero GPU requirements, runs CPU-native on edge hardware |
 
 ---
 

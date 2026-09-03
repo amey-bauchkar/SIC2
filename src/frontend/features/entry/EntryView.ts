@@ -4,16 +4,28 @@
  * 
  * VerdaAgro Editorial Agricultural Redesign
  * 100% Functionality & Form Submission Preserved
+ * Integrated with 99 Maharashtra Commodities & 36 Origin Districts
  */
 
 import { store } from '../../state/store';
 import { apiClient } from '../../api-client';
+import { renderCropOptgroupsHtml, renderCropDatalistHtml, getCropConfig } from '../../../config/crops';
+import { renderDistrictOptgroupsHtml, renderDistrictDatalistHtml, getDistrictConfig, ALL_DISTRICTS } from '../../../config/districts';
+
+export const MAHARASHTRA_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = Object.fromEntries(
+  ALL_DISTRICTS.map(d => [d.name.toLowerCase(), { lat: d.latitude, lon: d.longitude }])
+);
+MAHARASHTRA_DISTRICT_COORDS['ahmednagar'] = MAHARASHTRA_DISTRICT_COORDS['ahilyanagar'] || { lat: 19.0952, lon: 74.7480 };
+MAHARASHTRA_DISTRICT_COORDS['aurangabad'] = MAHARASHTRA_DISTRICT_COORDS['chhatrapati sambhajinagar'] || { lat: 19.8762, lon: 75.3433 };
+MAHARASHTRA_DISTRICT_COORDS['osmanabad'] = MAHARASHTRA_DISTRICT_COORDS['dharashiv'] || { lat: 18.1861, lon: 76.0419 };
 
 export function renderEntryView(): HTMLElement {
   const container = document.createElement('div');
   container.className = 'feature-entry-view';
 
   const state = store.getState();
+  const initialDistrictName = state.userLocation?.district || 'Nashik';
+  const initialDistrict = getDistrictConfig(initialDistrictName);
 
   container.innerHTML = `
     <div class="editorial-grid-2" style="align-items: center; margin: var(--space-6) 0;">
@@ -31,32 +43,47 @@ export function renderEntryView(): HTMLElement {
         </p>
 
         <form id="entry-form">
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: var(--space-4);">
             <label class="input-label" for="select-crop">
-              Select Crop (शेतमाल / फसल)
+              Select Commodity (शेतमाल / फसल निवडा)
             </label>
-            <select id="select-crop" class="select-field">
-              <option value="Onion" ${state.selectedCrop === 'Onion' ? 'selected' : ''}>Onion (कांदा / प्याज)</option>
-              <option value="Tomato" ${state.selectedCrop === 'Tomato' ? 'selected' : ''}>Tomato (टोमॅटो / टमाटर)</option>
-              <option value="Soyabean" ${state.selectedCrop === 'Soyabean' ? 'selected' : ''}>Soyabean (सोयाबीन)</option>
-              <option value="Wheat" ${state.selectedCrop === 'Wheat' ? 'selected' : ''}>Wheat (गहू / गेहूं)</option>
-              <option value="Gram" ${state.selectedCrop === 'Gram' ? 'selected' : ''}>Gram / Chana (हरभरा / चना)</option>
+            <div style="margin-bottom: var(--space-2);">
+              <input 
+                type="text" 
+                id="input-crop-search" 
+                class="input-field"
+                list="crop-datalist" 
+                placeholder="🔍 Quick search crop (e.g. Wheat, Chana, Aalu, Pomegranate)..."
+                style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);"
+              />
+              ${renderCropDatalistHtml('crop-datalist')}
+            </div>
+            <select id="select-crop" class="select-field" style="width: 100%;">
+              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion')}
             </select>
           </div>
 
           <div class="form-group" style="margin-bottom: var(--space-6);">
-            <label class="input-label" for="input-location">
-              Farmer District / Taluka (शेतकरी ठिकाण)
+            <label class="input-label" for="select-district">
+              Farmer Origin District (शेतकरी जिल्हा / मूळ स्थान निवडा)
             </label>
-            <input 
-              type="text" 
-              id="input-location" 
-              class="input-field"
-              value="${state.userLocation ? state.userLocation.district : 'Nashik'}" 
-              placeholder="e.g. Nashik, Maharashtra" 
-            />
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
-              📍 Center: Nashik Region (19.9975° N, 73.7898° E) • 100km Mandi Radius
+            <div style="margin-bottom: var(--space-2);">
+              <input 
+                type="text" 
+                id="input-district-search" 
+                class="input-field"
+                list="district-datalist" 
+                placeholder="🔍 Quick search district (e.g. Nashik, Pune, Latur, Solapur, Kolhapur)..."
+                style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);"
+              />
+              ${renderDistrictDatalistHtml('district-datalist')}
+            </div>
+            <select id="select-district" class="select-field" style="width: 100%;">
+              ${renderDistrictOptgroupsHtml(initialDistrictName)}
+            </select>
+            <input type="hidden" id="input-location" value="${initialDistrict.name}" />
+            <div id="district-coords-preview" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
+              📍 Geodesic origin: ${initialDistrict.displayName} (${initialDistrict.latitude.toFixed(4)}° N, ${initialDistrict.longitude.toFixed(4)}° E) • ${initialDistrict.divisionLabel}
             </div>
           </div>
 
@@ -95,21 +122,83 @@ export function renderEntryView(): HTMLElement {
     </div>
   `;
 
+  const cropSelect = container.querySelector('#select-crop') as HTMLSelectElement;
+  const cropSearchInput = container.querySelector('#input-crop-search') as HTMLInputElement;
+
+  if (cropSelect && cropSearchInput) {
+    cropSearchInput.addEventListener('input', () => {
+      const val = cropSearchInput.value.trim();
+      if (!val) return;
+      const matched = getCropConfig(val);
+      if (matched) {
+        cropSelect.value = matched.id;
+      }
+    });
+
+    cropSelect.addEventListener('change', () => {
+      const opt = cropSelect.selectedOptions[0];
+      if (opt) {
+        cropSearchInput.value = opt.textContent || '';
+      }
+    });
+  }
+
+  const districtSelect = container.querySelector('#select-district') as HTMLSelectElement;
+  const districtSearchInput = container.querySelector('#input-district-search') as HTMLInputElement;
+  const locInput = container.querySelector('#input-location') as HTMLInputElement;
+  const coordsPreview = container.querySelector('#district-coords-preview') as HTMLElement;
+
+  function updateDistrictSelection(dName: string) {
+    const config = getDistrictConfig(dName);
+    if (districtSelect) districtSelect.value = config.name;
+    if (districtSearchInput) districtSearchInput.value = config.displayName;
+    if (locInput) locInput.value = config.name;
+    if (coordsPreview) {
+      coordsPreview.textContent = `📍 Geodesic origin: ${config.displayName} (${config.latitude.toFixed(4)}° N, ${config.longitude.toFixed(4)}° E) • ${config.divisionLabel}`;
+    }
+  }
+
+  if (districtSelect && districtSearchInput) {
+    districtSearchInput.addEventListener('input', () => {
+      const val = districtSearchInput.value.trim();
+      if (!val) return;
+      const matched = getDistrictConfig(val);
+      if (matched) {
+        if (districtSelect) districtSelect.value = matched.name;
+        if (locInput) locInput.value = matched.name;
+        if (coordsPreview) {
+          coordsPreview.textContent = `📍 Geodesic origin: ${matched.displayName} (${matched.latitude.toFixed(4)}° N, ${matched.longitude.toFixed(4)}° E) • ${matched.divisionLabel}`;
+        }
+      }
+    });
+
+    districtSelect.addEventListener('change', () => {
+      updateDistrictSelection(districtSelect.value);
+    });
+  }
+
   const form = container.querySelector('#entry-form') as HTMLFormElement;
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const cropSelect = container.querySelector('#select-crop') as HTMLSelectElement;
-      const crop = cropSelect.value;
+      const crop = cropSelect ? cropSelect.value : 'Onion';
       store.setSelectedCrop(crop);
+
+      const dVal = districtSelect ? districtSelect.value : (locInput ? locInput.value : 'Nashik');
+      const distConfig = getDistrictConfig(dVal);
+      const targetLat = distConfig.latitude;
+      const targetLon = distConfig.longitude;
+      const districtRaw = distConfig.name;
+
+      store.setUserLocation(targetLat, targetLon, districtRaw);
       store.setLoading(true);
 
       try {
         const currentState = store.getState();
         const response = await apiClient.evaluate({
           commodity: crop,
-          latitude: currentState.userLocation ? currentState.userLocation.lat : 19.9975,
-          longitude: currentState.userLocation ? currentState.userLocation.lon : 73.7898,
+          latitude: targetLat,
+          longitude: targetLon,
           transportCostPerKmPerQtl: currentState.costConfig.transportCostPerKmPerQtl,
           storageCostPerDayPerQtl: currentState.costConfig.storageCostPerDayPerQtl,
           radiusKm: currentState.costConfig.searchRadiusKm

@@ -2,6 +2,8 @@
   "start_date": "2026-01-01",
   "end_date": "2026-09-03",
   "total_calendar_days": 246,
+  "data_provenance": "Calibrated Market Simulation (aligned with real Open-Meteo 2026 weather and Agmarknet September 2026 anchor price benchmarks)",
+  "is_synthetic_calibration": true,
   "datasets": {
     "onion_lasalgaon": {
       "market": "Lasalgaon",

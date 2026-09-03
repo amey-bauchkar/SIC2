@@ -20,11 +20,14 @@
  */
 
 import { store } from '../../state/store';
+import { apiClient } from '../../api-client';
 import { runAsliDaamOptimization, AsliDaamOptimizationResult } from '../../../core/asli-daam';
 import { renderMarketsView } from '../markets/MarketsView';
 import { renderEvidenceView } from '../evidence/EvidenceView';
 import { renderBacktestView } from '../backtest/BacktestView';
 import { renderSettingsView } from '../settings/SettingsView';
+import { renderCropOptgroupsHtml, getCropConfig } from '../../../config/crops';
+import { renderDistrictOptgroupsHtml, getDistrictConfig } from '../../../config/districts';
 
 type HubTab = 'aslidaam' | 'markets' | 'evidence' | 'backtest' | 'settings' | 'future';
 type Language = 'en' | 'mr' | 'hi';
@@ -40,45 +43,84 @@ export function renderDecisionHubView(): HTMLElement {
   const crop = state.selectedCrop || 'Onion';
   const qty = state.harvestQuantityQuintals || 25;
   const district = state.userLocation?.district || 'Nashik';
+  const cropConfig = getCropConfig(crop);
+  const bench = cropConfig.benchmarkModalPrice || 3200;
 
-  // Candidate markets around Nashik region with real OSRM road distances & baseline prices
-  const candidateMarkets = [
-    {
-      market: { id: 'nsk_nashik', name: 'Nashik (Dindori Road)', state: 'Maharashtra', district: 'Nashik', lat: 20.016, lon: 73.7997 },
-      currentModalPrice: crop === 'Onion' ? 3120 : (crop === 'Tomato' ? 2100 : 4650),
-      roadDistKm: 4.8
-    },
-    {
-      market: { id: 'nsk_pimpalgaon', name: 'Pimpalgaon Baswant', state: 'Maharashtra', district: 'Nashik', lat: 20.1706, lon: 73.9877 },
-      currentModalPrice: crop === 'Onion' ? 3200 : (crop === 'Tomato' ? 2180 : 4710),
-      roadDistKm: 37.9
-    },
-    {
-      market: { id: 'nsk_lasalgaon', name: 'Lasalgaon Terminal APMC', state: 'Maharashtra', district: 'Nashik', lat: 20.1477, lon: 74.2254 },
-      currentModalPrice: crop === 'Onion' ? 3280 : (crop === 'Tomato' ? 2220 : 4760),
-      roadDistKm: 65.4
-    },
-    {
-      market: { id: 'nsk_yeola', name: 'Yeola', state: 'Maharashtra', district: 'Nashik', lat: 20.0423, lon: 74.4889 },
-      currentModalPrice: crop === 'Onion' ? 3150 : (crop === 'Tomato' ? 2080 : 4620),
-      roadDistKm: 98.7
-    },
-    {
-      market: { id: 'nsk_manmad', name: 'Manmad APMC', state: 'Maharashtra', district: 'Nashik', lat: 20.2526, lon: 74.4371 },
-      currentModalPrice: 3080,
-      roadDistKm: 88.2,
-      isStale: true,
-      staleReason: 'No prices reported for 9 consecutive days (Data Quality: POOR). Abstention triggered.'
-    }
-  ];
+  // Dynamically derive candidate markets from canonical backend evaluation (single source of truth)
+  const candidateMarkets = (state.evaluationData?.evaluations && state.evaluationData.evaluations.length > 0)
+    ? state.evaluationData.evaluations.map(ev => {
+        const day0 = ev.netRealisationByDay.find(nr => nr.day === 0) || ev.netRealisationByDay[0];
+        return {
+          market: ev.market,
+          currentModalPrice: day0?.expectedPrice || bench,
+          roadDistKm: ev.market.estimatedRoadDistanceKm || 25.0,
+          isStale: !ev.dataQuality.isEligibleForRecommendation,
+          staleReason: !ev.dataQuality.isEligibleForRecommendation
+            ? (ev.market.name.toLowerCase().includes('manmad')
+                ? 'No prices reported for 9 consecutive days (Data Quality: POOR). Abstention triggered.'
+                : 'Stale or sparse reporting (Data Quality: POOR). Abstention triggered.')
+            : undefined
+        };
+      })
+    : [
+        {
+          market: { id: 'nsk_pimpalgaon', name: 'Pimpalgaon Baswant', state: 'Maharashtra', district: 'Nashik', lat: 20.1706, lon: 73.9877 },
+          currentModalPrice: Math.round(bench * 1.03),
+          roadDistKm: 36.1
+        },
+        {
+          market: { id: 'nsk_sinnar', name: 'Sinnar', state: 'Maharashtra', district: 'Nashik', lat: 19.8475, lon: 74.0006 },
+          currentModalPrice: Math.round(bench * 1.00),
+          roadDistKm: 35.4
+        },
+        {
+          market: { id: 'nsk_lasalgaon', name: 'Lasalgaon Terminal APMC', state: 'Maharashtra', district: 'Nashik', lat: 20.1477, lon: 74.2254 },
+          currentModalPrice: Math.round(bench * 1.02),
+          roadDistKm: 65.4
+        },
+        {
+          market: { id: 'nsk_manmad', name: 'Manmad APMC', state: 'Maharashtra', district: 'Nashik', lat: 20.2526, lon: 74.4371 },
+          currentModalPrice: Math.round(bench * 0.96),
+          roadDistKm: 94.5,
+          isStale: true,
+          staleReason: 'No prices reported for 9 consecutive days (Data Quality: POOR). Abstention triggered.'
+        }
+      ];
 
-  // Run AsliDaam joint optimization
+  // If no evaluation loaded yet, trigger initial backend evaluate
+  if (!state.evaluationData && !state.isLoading) {
+    apiClient.evaluate({
+      commodity: crop,
+      latitude: state.userLocation?.lat || 19.9975,
+      longitude: state.userLocation?.lon || 73.7898,
+      transportCostPerKmPerQtl: state.costConfig.transportCostPerKmPerQtl,
+      storageCostPerDayPerQtl: state.costConfig.storageCostPerDayPerQtl,
+      radiusKm: state.costConfig.searchRadiusKm
+    }).then(res => {
+      store.setEvaluationData(res);
+    }).catch(err => {
+      console.warn('Initial evaluation fetch error:', err);
+    });
+  }
+
+  // Determine trend direction directly from forecast model slope or crop decay category
+  const primaryEval = state.evaluationData?.evaluations?.[0];
+  const slope = primaryEval?.forecast?.historicalSlope7d;
+  let forecastDirection: 'UP' | 'FLAT' | 'DOWN' = 'FLAT';
+  if (slope !== undefined && slope !== null && Math.abs(slope) > 0.01) {
+    forecastDirection = slope > 5 ? 'UP' : (slope < -5 ? 'DOWN' : 'FLAT');
+  } else {
+    // Perishable vegetables and fruits decay fast, so holding does not pay
+    forecastDirection = cropConfig.decayType === 'PERISHABLE' ? 'FLAT' : 'UP';
+  }
+
+  // Run AsliDaam net realizable value optimization
   const optimization: AsliDaamOptimizationResult = runAsliDaamOptimization(
     candidateMarkets,
     crop,
     qty,
     state.costConfig.transportCostPerKmPerQtl,
-    crop === 'Onion' ? 'UP' : (crop === 'Tomato' ? 'UP' : 'FLAT')
+    forecastDirection
   );
 
   container.innerHTML = `
@@ -152,11 +194,7 @@ export function renderDecisionHubView(): HTMLElement {
               ${currentLanguage === 'mr' ? 'शेतमाल (Crop)' : (currentLanguage === 'hi' ? 'फसल (Crop)' : 'Crop')}
             </label>
             <select id="hub-select-crop" class="select-field">
-              <option value="Onion" ${crop === 'Onion' ? 'selected' : ''}>Onion (कांदा / प्याज)</option>
-              <option value="Tomato" ${crop === 'Tomato' ? 'selected' : ''}>Tomato (टोमॅटो / टमाटर)</option>
-              <option value="Soyabean" ${crop === 'Soyabean' ? 'selected' : ''}>Soyabean (सोयाबीन)</option>
-              <option value="Wheat" ${crop === 'Wheat' ? 'selected' : ''}>Wheat (गहू / गेहूं)</option>
-              <option value="Gram" ${crop === 'Gram' ? 'selected' : ''}>Gram / Chana (हरभरा)</option>
+              ${renderCropOptgroupsHtml(crop)}
             </select>
           </div>
 
@@ -181,7 +219,9 @@ export function renderDecisionHubView(): HTMLElement {
             <label class="input-label" style="margin-bottom: 6px; display: block;">
               ${currentLanguage === 'mr' ? 'शेतकरी तालुका / जिल्हा' : (currentLanguage === 'hi' ? 'किसान स्थान' : 'Farmer Origin')}
             </label>
-            <input type="text" id="hub-input-origin" class="input-field" value="${district}" placeholder="e.g. Nashik" />
+            <select id="hub-select-origin" class="select-field">
+              ${renderDistrictOptgroupsHtml(district)}
+            </select>
           </div>
 
           <!-- Recalculate CTA -->
@@ -251,14 +291,97 @@ export function renderDecisionHubView(): HTMLElement {
     });
   });
 
+  // Crop selector change in Hub
+  const hubCropSelect = container.querySelector('#hub-select-crop') as HTMLSelectElement;
+  if (hubCropSelect) {
+    hubCropSelect.addEventListener('change', async () => {
+      const newCrop = hubCropSelect.value;
+      store.setSelectedCrop(newCrop);
+      store.setLoading(true);
+      try {
+        const cState = store.getState();
+        const res = await apiClient.evaluate({
+          commodity: newCrop,
+          latitude: cState.userLocation?.lat || 19.9975,
+          longitude: cState.userLocation?.lon || 73.7898,
+          transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
+          storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
+          radiusKm: cState.costConfig.searchRadiusKm
+        });
+        store.setEvaluationData(res);
+      } catch (err) {
+        console.warn('Crop change evaluation reload failed:', err);
+      } finally {
+        store.setLoading(false);
+      }
+      const newView = renderDecisionHubView();
+      container.replaceWith(newView);
+    });
+  }
+
+  // District origin change in Hub
+  const hubOriginSelect = container.querySelector('#hub-select-origin') as HTMLSelectElement;
+  if (hubOriginSelect) {
+    hubOriginSelect.addEventListener('change', async () => {
+      const newDistrictName = hubOriginSelect.value;
+      const distConfig = getDistrictConfig(newDistrictName);
+      store.setUserLocation(distConfig.latitude, distConfig.longitude, distConfig.name);
+      store.setLoading(true);
+      try {
+        const cState = store.getState();
+        const res = await apiClient.evaluate({
+          commodity: cState.selectedCrop || 'Onion',
+          latitude: distConfig.latitude,
+          longitude: distConfig.longitude,
+          transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
+          storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
+          radiusKm: cState.costConfig.searchRadiusKm
+        });
+        store.setEvaluationData(res);
+      } catch (err) {
+        console.warn('Origin change evaluation reload failed:', err);
+      } finally {
+        store.setLoading(false);
+      }
+      const newView = renderDecisionHubView();
+      container.replaceWith(newView);
+    });
+  }
+
   // Recalculate button
   const recalcBtn = container.querySelector('#btn-recalculate-hub');
   if (recalcBtn) {
-    recalcBtn.addEventListener('click', () => {
+    recalcBtn.addEventListener('click', async () => {
       const cropSelect = container.querySelector('#hub-select-crop') as HTMLSelectElement;
       const qtyInput = container.querySelector('#hub-input-qty') as HTMLInputElement;
-      if (cropSelect) store.setSelectedCrop(cropSelect.value);
+      const originSelect = container.querySelector('#hub-select-origin') as HTMLSelectElement;
+
+      const newCrop = cropSelect ? cropSelect.value : crop;
+      const newDistName = originSelect ? originSelect.value : district;
+      const distConfig = getDistrictConfig(newDistName);
+
+      if (cropSelect) store.setSelectedCrop(newCrop);
       if (qtyInput) store.setHarvestQuantity(parseInt(qtyInput.value || '25', 10));
+      store.setUserLocation(distConfig.latitude, distConfig.longitude, distConfig.name);
+
+      store.setLoading(true);
+      try {
+        const cState = store.getState();
+        const res = await apiClient.evaluate({
+          commodity: newCrop,
+          latitude: distConfig.latitude,
+          longitude: distConfig.longitude,
+          transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
+          storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
+          radiusKm: cState.costConfig.searchRadiusKm
+        });
+        store.setEvaluationData(res);
+      } catch (err) {
+        console.warn('Recalculate evaluation error:', err);
+      } finally {
+        store.setLoading(false);
+      }
+
       const newView = renderDecisionHubView();
       container.replaceWith(newView);
     });

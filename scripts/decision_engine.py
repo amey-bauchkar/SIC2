@@ -123,7 +123,7 @@ def get_selling_decision(commodity="Onion", origin_district="Nashik", quantity_q
         "temperature_mean_c", "precipitation_mm", "relative_humidity_pct", "wind_speed_kmh",
         "day_of_week", "month"
     ]].copy()
-    latest_features = latest_features.bfill().ffill().fillna(0)
+    latest_features = latest_features.ffill().fillna(0)
 
     predicted_direction = model.predict(latest_features)[0]
     probs = model.predict_proba(latest_features)[0]

@@ -26,7 +26,7 @@ export interface Market {
 }
 
 export interface PriceObservation {
-  source: 'data.gov.in-live' | 'ceda-historical' | 'kaggle-fallback';
+  source: 'data.gov.in-live' | 'ceda-historical' | 'kaggle-fallback' | 'agmarknet-verified-cache';
   market: Market;
   commodity: string;
   variety: string;

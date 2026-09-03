@@ -1,16 +1,12 @@
 """
-MandiMitra — Historical Mandi Price Time-Series Generator & Ingestion
-Aligns real 2026 daily weather from Open-Meteo with Agmarknet historical price series:
-1. Onion at Lasalgaon APMC (Asia's premier onion market, Nashik)
-2. Onion at Pimpalgaon Baswant APMC (Key secondary hub, Nashik)
-3. Onion at Manmad APMC (Includes intentional 9-day reporting gap for calibrated abstention demo!)
-4. Tomato at Junnar/Narayangaon APMC (Western India's premier tomato hub, Pune)
-5. Soyabean at Latur APMC (India's premier oilseed/pulses hub, Marathwada)
+MandiMitra — Calibrated Historical Mandi Price Time-Series Simulator & Ingestion
 
-Features:
-- Aligned 1-to-1 with daily dates from 2026-01-01 to 2026-09-03 (246 calendar days)
-- Calibrated to real Agmarknet 2026 price trajectories, seasonal cycles, and today's live benchmark prices
-- Incorporates Sunday mandi closures and realistic rural reporting gaps
+PROVENANCE TRANSPARENCY:
+This dataset is a Calibrated Market Simulation anchored to:
+- Real 2026 daily weather observations from Open-Meteo ERA5 (temperature, rainfall, humidity)
+- Official Agmarknet September 2026 benchmark modal prices for Maharashtra
+- Sunday mandi closure cycles and realistic rural APMC reporting intervals
+It serves as a controlled calibration series for temporal walk-forward evaluation.
 """
 
 import os

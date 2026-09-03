@@ -22,3 +22,7 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Scratch & Personal uploads
+WhatsApp Image*
+

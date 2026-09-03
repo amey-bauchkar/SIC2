@@ -82,24 +82,50 @@ export async function fetchLiveMandiPrice(
     }
   }
 
-  // Fallback: If cache exists (even stale), return with isStale: true
+  // Fallback 1: If memory cache exists (even stale), return with isStale: true
   if (cached) {
     return { observation: cached.data, isStale: true };
   }
 
-  // If completely offline and unprimed, use verified last-known observation for demo continuity
-  const fallbackObservation: PriceObservation = {
-    source: 'data.gov.in-live',
-    market,
-    commodity,
-    variety: 'Standard',
-    grade: 'FAQ',
-    date: new Date().toISOString().split('T')[0],
-    minPrice: 2200,
-    maxPrice: 2600,
-    modalPrice: 2400,
-    retrievedAt: new Date().toISOString()
-  };
+  // Fallback 2: Check verified real Agmarknet price files on disk
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const commLower = commodity.toLowerCase();
+    let priceFile = 'onion_maharashtra.json';
+    if (commLower.includes('tomato')) priceFile = 'tomato_maharashtra.json';
+    else if (commLower.includes('soya')) priceFile = 'soyabean_maharashtra.json';
 
-  return { observation: fallbackObservation, isStale: true };
+    const diskPath = path.resolve(process.cwd(), 'data', 'prices', priceFile);
+    if (fs.existsSync(diskPath)) {
+      const pData = JSON.parse(fs.readFileSync(diskPath, 'utf-8'));
+      const mNameLower = market.name.toLowerCase();
+      const match = (pData.records || []).find((r: any) => {
+        const rMarket = (r.market || '').toLowerCase();
+        return rMarket.includes(mNameLower) || mNameLower.includes(rMarket);
+      });
+
+      if (match && match.modal_price) {
+        const observation: PriceObservation = {
+          source: 'agmarknet-verified-cache',
+          market,
+          commodity,
+          variety: match.variety || 'Standard',
+          grade: match.grade || 'FAQ',
+          date: match.arrival_date || new Date().toISOString().split('T')[0],
+          minPrice: Number(match.min_price || match.modal_price),
+          maxPrice: Number(match.max_price || match.modal_price),
+          modalPrice: Number(match.modal_price),
+          retrievedAt: match.fetched_at || new Date().toISOString()
+        };
+        apiCache.set(cacheKey, observation, 3600000);
+        return { observation, isStale: true };
+      }
+    }
+  } catch (err) {
+    console.warn(`Disk cache lookup failed for ${marketId}:`, err);
+  }
+
+  // If no verified record exists anywhere, throw an explicit error rather than inventing a price
+  throw new Error(`NO_PRICE_DATA: No verified Agmarknet observation available for market '${market.name}' (${commodity}).`);
 }
