@@ -13,6 +13,7 @@ import { renderEvidenceView } from '../features/evidence/EvidenceView';
 import { renderMarketsView } from '../features/markets/MarketsView';
 import { renderSettingsView } from '../features/settings/SettingsView';
 import { renderBacktestView } from '../features/backtest/BacktestView';
+import { wrapHomeLandingPage } from '../components/LandingPageWrapper';
 
 export class Router {
   private mountPoint: HTMLElement;
@@ -46,7 +47,8 @@ export class Router {
     let view: HTMLElement;
     switch (route) {
       case '/':
-        view = renderEntryView();
+        // Wrap the entry form inside the rich landing page shell
+        view = wrapHomeLandingPage(renderEntryView());
         break;
       case '/decision':
         view = renderDecisionView();
@@ -64,11 +66,12 @@ export class Router {
         view = renderBacktestView();
         break;
       default:
-        view = renderEntryView();
+        view = wrapHomeLandingPage(renderEntryView());
     }
 
     this.mountPoint.appendChild(view);
     this.updateActiveNav(route);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   private updateActiveNav(route: AppRoute): void {

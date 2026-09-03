@@ -1,49 +1,72 @@
 /**
  * MandiMitra Design System Tokens
- * Core CSS Custom Properties for theme, typography, elevation, and responsiveness.
+ * Strictly constrained to:
+ * - Sage green: #8B9271
+ * - Soft yellow: #FEF3A3
+ * - White: #FFFFFF
+ * - Black / near-black text: #1A1A1A
  * 
  * OWNER: Janhvi (Frontend Lead)
  */
 
 :root {
-  /* Color Palette - Vibrant Agricultural & Trust Spectrum */
-  --color-brand-primary: #15803d;       /* Lush farm green */
-  --color-brand-primary-hover: #166534;
-  --color-brand-accent: #eab308;        /* Golden harvest */
-  --color-brand-accent-soft: #fef08a;
-  
-  /* Semantic Status Colors */
-  --color-status-success: #16a34a;      /* Good data / Sell Today */
-  --color-status-success-bg: #dcfce7;
-  --color-status-info: #0284c7;         /* Wait recommendation */
-  --color-status-info-bg: #e0f2fe;
-  --color-status-warning: #d97706;      /* Moderate data / Caution */
-  --color-status-warning-bg: #fef3c7;
-  --color-status-abstain: #dc2626;      /* Abstain / Poor data */
-  --color-status-abstain-bg: #fee2e2;
+  /* Strict 3-Color + Black Palette */
+  --color-sage: #8B9271;
+  --color-sage-hover: #7A8160;
+  --color-sage-tint: rgba(139, 146, 113, 0.08);
+  --color-sage-light: rgba(139, 146, 113, 0.16);
 
-  /* Neutrals & Surfaces */
-  --color-bg-canvas: #f8fafc;           /* Light canvas */
-  --color-bg-surface: #ffffff;          /* Card surface */
-  --color-bg-surface-elevated: #ffffff;
-  --color-bg-muted: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  --color-yellow: #FEF3A3;
+  --color-yellow-hover: #FDF08A;
+  --color-yellow-tint: rgba(254, 243, 163, 0.25);
 
-  /* Typography Colors */
-  --color-text-main: #0f172a;           /* Deep slate */
-  --color-text-muted: #64748b;
-  --color-text-inverted: #ffffff;
+  --color-white: #FFFFFF;
+  --color-black: #1A1A1A;
+  --color-black-muted: rgba(26, 26, 26, 0.65);
+  --color-black-subtle: rgba(26, 26, 26, 0.45);
+  --color-black-border: rgba(26, 26, 26, 0.12);
 
-  /* Typography Hierarchy */
-  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Semantic Mappings constrained to the 3-color palette */
+  --color-brand-primary: var(--color-sage);
+  --color-brand-primary-hover: var(--color-sage-hover);
+  --color-brand-accent: var(--color-yellow);
+  --color-brand-accent-soft: var(--color-yellow);
+
+  /* Semantic Status Indicators - strictly 3-color */
+  --color-status-success: var(--color-sage);
+  --color-status-success-bg: var(--color-yellow);
+  --color-status-info: var(--color-sage);
+  --color-status-info-bg: var(--color-yellow);
+  --color-status-warning: var(--color-black);
+  --color-status-warning-bg: var(--color-yellow);
+  --color-status-abstain: var(--color-black);
+  --color-status-abstain-bg: var(--color-sage-light);
+
+  /* Canvas & Surfaces */
+  --color-bg-canvas: #FAFBF9;
+  --color-bg-surface: var(--color-white);
+  --color-bg-surface-elevated: var(--color-white);
+  --color-bg-muted: var(--color-sage-tint);
+  --color-border: var(--color-black-border);
+  --color-border-subtle: rgba(26, 26, 26, 0.08);
+
+  /* Text Colors */
+  --color-text-main: var(--color-black);
+  --color-text-muted: var(--color-black-muted);
+  --color-text-inverted: var(--color-white);
+
+  /* Typography */
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-heading: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px */
   --font-size-lg: 1.125rem;   /* 18px */
   --font-size-xl: 1.25rem;    /* 20px */
   --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-3xl: 2rem;      /* 32px */
+  --font-size-stat: 2.25rem;  /* 36px */
 
   /* Spacing Scale */
   --space-1: 0.25rem;   /* 4px */
@@ -56,17 +79,17 @@
   --space-10: 2.5rem;   /* 40px */
 
   /* Border Radii */
-  --radius-sm: 0.375rem; /* 6px */
-  --radius-md: 0.5rem;   /* 8px */
-  --radius-lg: 0.75rem;  /* 12px */
-  --radius-xl: 1rem;     /* 16px */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Elevations & Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  /* Shadows - Soft black only, no colored shadows */
+  --shadow-sm: 0 1px 3px rgba(26, 26, 26, 0.04);
+  --shadow-md: 0 4px 16px rgba(26, 26, 26, 0.06);
+  --shadow-lg: 0 10px 30px rgba(26, 26, 26, 0.07);
+  --shadow-glass: 0 8px 32px rgba(26, 26, 26, 0.06);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
