@@ -1,0 +1,71 @@
+{
+  "description": "Synthetic farmer pooling cluster profiles for Shared Logistics / Group Transport demo (Niphad Taluka, Nashik)",
+  "cluster_name": "Niphad Onion Farmers Collective",
+  "hub_mandi": "Lasalgaon APMC",
+  "truck_capacity_quintals": 50.0,
+  "standard_truck_charter_rate_rs": 2800.0,
+  "individual_haulage_per_quintal_rs": 85.0,
+  "pooled_haulage_per_quintal_rs": 56.0,
+  "net_savings_per_quintal_rs": 29.0,
+  "farmers": [
+    {
+      "farmer_id": "f_nsk_01",
+      "name": "Ramesh Kisan Shinde",
+      "village": "Pimpalgaon Tarf Niphad",
+      "taluka": "Niphad",
+      "district": "Nashik",
+      "latitude": 20.1250,
+      "longitude": 74.1950,
+      "crop": "Onion",
+      "variety": "Unhali (Summer)",
+      "quantity_quintals": 18.0,
+      "harvest_date": "2026-09-02",
+      "preferred_sell_window": "2026-09-04 to 2026-09-06",
+      "individual_transport_cost_rs": 1530.0,
+      "pooled_transport_cost_rs": 1008.0,
+      "estimated_savings_rs": 522.0
+    },
+    {
+      "farmer_id": "f_nsk_02",
+      "name": "Suresh Bhaurao Jadhav",
+      "village": "Vinchur",
+      "taluka": "Niphad",
+      "district": "Nashik",
+      "latitude": 20.1180,
+      "longitude": 74.2410,
+      "crop": "Onion",
+      "variety": "Garva",
+      "quantity_quintals": 22.0,
+      "harvest_date": "2026-09-03",
+      "preferred_sell_window": "2026-09-04 to 2026-09-06",
+      "individual_transport_cost_rs": 1870.0,
+      "pooled_transport_cost_rs": 1232.0,
+      "estimated_savings_rs": 638.0
+    },
+    {
+      "farmer_id": "f_nsk_03",
+      "name": "Dnyaneshwar Vitthal Patil",
+      "village": "Khadak Malegaon",
+      "taluka": "Niphad",
+      "district": "Nashik",
+      "latitude": 20.0950,
+      "longitude": 74.1800,
+      "crop": "Onion",
+      "variety": "Unhali",
+      "quantity_quintals": 10.0,
+      "harvest_date": "2026-09-03",
+      "preferred_sell_window": "2026-09-04 to 2026-09-06",
+      "individual_transport_cost_rs": 850.0,
+      "pooled_transport_cost_rs": 560.0,
+      "estimated_savings_rs": 290.0
+    }
+  ],
+  "cluster_summary": {
+    "total_pooled_quantity_quintals": 50.0,
+    "truck_utilization_pct": 100.0,
+    "total_individual_cost_rs": 4250.0,
+    "total_pooled_charter_cost_rs": 2800.0,
+    "total_collective_savings_rs": 1450.0,
+    "average_savings_pct": 34.1
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "source": "State Agricultural Produce Marketing Acts & State Directorate of Marketing Reports",
+  "description": "Cross-state APMC cess, commission agent fee, and statutory deduction benchmark",
+  "states": [
+    {
+      "state": "Maharashtra",
+      "apmc_cess_pct": 1.05,
+      "supervision_fee_pct": 0.05,
+      "total_mandi_cess_pct": 1.10,
+      "commission_rate_pct": 6.0,
+      "commission_paid_by": "Buyer (Farmer exempt under direct marketing reforms)",
+      "typical_handling_hamali_per_qtl": 9.0,
+      "typical_weighment_tolai_per_qtl": 3.5
+    },
+    {
+      "state": "Uttar Pradesh",
+      "apmc_cess_pct": 1.50,
+      "supervision_fee_pct": 0.50,
+      "total_mandi_cess_pct": 2.00,
+      "commission_rate_pct": 5.0,
+      "commission_paid_by": "Buyer / Trader",
+      "typical_handling_hamali_per_qtl": 8.0,
+      "typical_weighment_tolai_per_qtl": 3.0
+    },
+    {
+      "state": "Punjab",
+      "apmc_cess_pct": 3.00,
+      "rural_dev_fund_pct": 3.00,
+      "total_mandi_cess_pct": 6.00,
+      "commission_rate_pct": 2.5,
+      "commission_paid_by": "Buyer",
+      "typical_handling_hamali_per_qtl": 10.0,
+      "typical_weighment_tolai_per_qtl": 4.0
+    },
+    {
+      "state": "Haryana",
+      "apmc_cess_pct": 2.00,
+      "rural_dev_fund_pct": 2.00,
+      "total_mandi_cess_pct": 4.00,
+      "commission_rate_pct": 2.5,
+      "commission_paid_by": "Buyer",
+      "typical_handling_hamali_per_qtl": 9.5,
+      "typical_weighment_tolai_per_qtl": 3.5
+    },
+    {
+      "state": "Karnataka",
+      "apmc_cess_pct": 1.50,
+      "supervision_fee_pct": 0.00,
+      "total_mandi_cess_pct": 1.50,
+      "commission_rate_pct": 2.0,
+      "commission_paid_by": "Buyer",
+      "typical_handling_hamali_per_qtl": 8.5,
+      "typical_weighment_tolai_per_qtl": 3.0
+    },
+    {
+      "state": "Madhya Pradesh",
+      "apmc_cess_pct": 1.50,
+      "supervision_fee_pct": 0.20,
+      "total_mandi_cess_pct": 1.70,
+      "commission_rate_pct": 4.0,
+      "commission_paid_by": "Buyer",
+      "typical_handling_hamali_per_qtl": 8.0,
+      "typical_weighment_tolai_per_qtl": 3.0
+    }
+  ]
+}
