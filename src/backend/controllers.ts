@@ -100,13 +100,26 @@ export async function evaluateController(req: Request, res: Response): Promise<v
       }
     }
 
-    // 2. Real OSRM distance matrix
+    // 2. Real OSRM distance matrix - select rows matching the user's nearest origin district
     const distPath = path.resolve(process.cwd(), 'data', 'distance_matrix_all.json');
     if (fs.existsSync(distPath)) {
       const dData = JSON.parse(fs.readFileSync(distPath, 'utf-8'));
+      let closestOrigin = 'Nashik';
+      let minOriginDistSq = Infinity;
       for (const r of dData) {
-        const key = (r.destination_mandi || '').toLowerCase();
-        if (r.distance_km) distanceMap.set(key, r.distance_km);
+        if (r.origin_coords && Array.isArray(r.origin_coords)) {
+          const dSq = Math.pow(r.origin_coords[0] - userLat, 2) + Math.pow(r.origin_coords[1] - userLon, 2);
+          if (dSq < minOriginDistSq) {
+            minOriginDistSq = dSq;
+            closestOrigin = r.origin_district;
+          }
+        }
+      }
+      for (const r of dData) {
+        if (r.origin_district === closestOrigin) {
+          const key = (r.destination_mandi || '').toLowerCase();
+          if (r.distance_km) distanceMap.set(key, r.distance_km);
+        }
       }
     }
   } catch (err) {

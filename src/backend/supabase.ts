@@ -95,15 +95,27 @@ export async function getFarmerPools(): Promise<{ data: FarmerPoolRecord[]; sour
 /**
  * Inserts a new farmer into the shared pooling collective.
  */
-export async function insertFarmerPool(record: FarmerPoolRecord): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function insertFarmerPool(record: any): Promise<{ success: boolean; data?: any; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not configured' };
   }
 
+  // Normalize incoming fields to match Supabase schema exactly
+  const cleanRecord: FarmerPoolRecord = {
+    farmer_name: record.farmer_name || record.name || 'Farmer',
+    phone: record.phone || record.farmer_phone || '9822012345',
+    village: record.village || record.origin_village || 'Niphad',
+    taluka: record.taluka || 'Niphad',
+    crop: record.crop || record.commodity || 'Onion',
+    quantity_quintals: Number(record.quantity_quintals || record.quantity || 25),
+    target_mandi: record.target_mandi || record.destination_mandi || record.mandi || 'Lasalgaon',
+    status: record.status || 'open'
+  };
+
   try {
     const { data, error } = await supabase
       .from('farmer_pools')
-      .insert([record])
+      .insert([cleanRecord])
       .select();
 
     if (error) {
@@ -118,15 +130,24 @@ export async function insertFarmerPool(record: FarmerPoolRecord): Promise<{ succ
 /**
  * Inserts a new farmer price trigger alert.
  */
-export async function insertPriceAlert(alert: PriceAlertRecord): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function insertPriceAlert(alert: any): Promise<{ success: boolean; data?: any; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not configured' };
   }
 
+  // Normalize incoming fields to match Supabase schema exactly
+  const cleanAlert: PriceAlertRecord = {
+    phone: alert.phone || alert.farmer_phone || '9822012345',
+    crop: alert.crop || alert.commodity || 'Onion',
+    target_mandi: alert.target_mandi || alert.mandi || alert.market_id || 'lasalgaon',
+    trigger_price: Number(alert.trigger_price || alert.threshold_price || 3000),
+    status: alert.status || 'active'
+  };
+
   try {
     const { data, error } = await supabase
       .from('price_alerts')
-      .insert([alert])
+      .insert([cleanAlert])
       .select();
 
     if (error) {
