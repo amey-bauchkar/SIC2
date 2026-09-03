@@ -14,6 +14,26 @@ export function renderQualityBadge(props: QualityBadgeProps): HTMLElement {
   let label: string = assessment.tier;
   if (!compact) {
     label = `${assessment.tier} DATA (${assessment.coverage30d.toFixed(0)}% coverage, ${assessment.daysSinceLastReport}d ago)`;
+    if (assessment.priceProvenance) {
+      const short: Record<string, string> = {
+        AGMARKNET_MARKET_OBSERVED: 'observed',
+        HISTORICAL_SERIES_OBSERVED: 'historical series',
+        DISTRICT_PEER_CALIBRATED: 'district-calibrated',
+        DIVISION_PEER_CALIBRATED: 'division-calibrated',
+        STATE_BENCHMARK_CALIBRATED: 'state-calibrated',
+        UNAVAILABLE: 'unavailable'
+      };
+      const tag = short[assessment.priceProvenance] || assessment.priceProvenance.toLowerCase();
+      label += ` · ${tag}`;
+      if (assessment.observationCount !== undefined) {
+        label += ` ×${assessment.observationCount}`;
+      }
+    }
+  }
+
+  // The provenance note explains exactly which Agmarknet records back this price.
+  if (assessment.provenanceNote) {
+    badge.title = assessment.provenanceNote;
   }
 
   badge.textContent = label;

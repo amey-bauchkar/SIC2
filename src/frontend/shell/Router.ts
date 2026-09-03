@@ -17,6 +17,7 @@ import { renderEvidenceView } from '../features/evidence/EvidenceView';
 import { renderMarketsView } from '../features/markets/MarketsView';
 import { renderSettingsView } from '../features/settings/SettingsView';
 import { renderBacktestView } from '../features/backtest/BacktestView';
+import { renderSajhaBazaarTab } from '../features/sajha/SajhaBazaarView';
 
 export type RouteRenderer = () => HTMLElement;
 
@@ -36,6 +37,7 @@ export class Router {
     this.routes.set('/markets', renderMarketsView);
     this.routes.set('/settings', renderSettingsView);
     this.routes.set('/backtest', renderBacktestView);
+    this.routes.set('/sajha', () => renderSajhaBazaarTab('en'));
 
     window.addEventListener('hashchange', () => this.handleHashChange());
     store.subscribe((state) => {

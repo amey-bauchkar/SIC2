@@ -42,8 +42,9 @@ export function renderBacktestView(): HTMLElement {
         </h4>
         <div style="display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-main); line-height: 1.6;">
           <p>• <strong>Naive Baseline:</strong> Sells immediately on Day 0 at the closest geographic APMC without timing or price forecasting.</p>
-          <p>• <strong>Directional Accuracy:</strong> Proportion of days where forecast direction aligned with actual market movement (3-class: +4.7pp edge).</p>
-          <p>• <strong>Coverage & Abstention:</strong> Honest abstention triggered whenever mandi reporting exhibits multi-day gaps or suspicious stagnation.</p>
+          <p>• <strong>Directional Accuracy:</strong> Proportion of days where forecast direction aligned with actual market movement (3-class), compared against the naive persistence baseline below.</p>
+          <p>• <strong>Coverage:</strong> Share of calendar days in the held-out window that carry an actual reported quote. Gaps are real reporting gaps, not filled in.</p>
+          <p>• <strong>Honest Abstention:</strong> Live recommendations are withheld whenever mandi reporting exhibits multi-day gaps or suspicious stagnation.</p>
         </div>
       </div>
 
@@ -63,11 +64,15 @@ export function renderBacktestView(): HTMLElement {
     .then((response) => {
       renderMetrics(response.result, response.citationNotice);
     })
-    .catch(() => {
+    .catch((err) => {
       if (grid) {
         grid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: var(--space-6); color: var(--color-text-muted); font-size: var(--font-size-sm);">
-            Connecting to backtest validation runner for ${currentCrop}...
+            <strong>No walk-forward backtest exists for ${currentCrop}.</strong><br>
+            MandiMitra trained and validated three commodity-mandi series (Onion · Lasalgaon,
+            Tomato · Junnar/Narayangaon, Soyabean · Latur). Rather than show a placeholder
+            performance figure for an unvalidated crop, it reports nothing.
+            <div style="font-size: var(--font-size-xs); margin-top: 6px; opacity: 0.75;">${err instanceof Error ? err.message : String(err)}</div>
           </div>
         `;
       }
@@ -94,14 +99,18 @@ export function renderBacktestView(): HTMLElement {
     grid.appendChild(renderStatCard({
       label: 'Directional Accuracy',
       value: `${res.directionalAccuracy.toFixed(1)}%`,
-      subtext: 'vs Naive Baseline: +4.7pp edge (3-class)',
+      subtext: res.persistenceBaselineAccuracy !== undefined && res.accuracyEdgePts !== undefined
+        ? `vs naive persistence ${res.persistenceBaselineAccuracy.toFixed(1)}% → ${res.accuracyEdgePts >= 0 ? '+' : ''}${res.accuracyEdgePts.toFixed(1)}pp edge (3-class)`
+        : '3-class directional hit rate',
       variant: res.directionalAccuracy >= 40 ? 'positive' : 'neutral'
     }));
 
     grid.appendChild(renderStatCard({
-      label: 'Decision Coverage',
+      label: 'Held-Out Series Coverage',
       value: `${res.coverage.toFixed(1)}%`,
-      subtext: `${(100 - res.coverage).toFixed(1)}% honest abstention rate on stale data`,
+      subtext: res.profitableWaitRatePct !== undefined && res.waitRecommendations !== undefined
+        ? `${res.waitRecommendations} wait calls issued · ${res.profitableWaitRatePct.toFixed(1)}% were profitable`
+        : 'Calendar days in the window carrying a reported quote',
       variant: 'neutral'
     }));
 

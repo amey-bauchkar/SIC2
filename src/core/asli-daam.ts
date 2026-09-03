@@ -1,39 +1,51 @@
 /**
  * MandiMitra: AsliDaam ("असली दाम") Net Realizable Value Engine
- * 
+ *
  * Computes the true farmer in-hand payout across Candidate Mandis × Day-Offset (0-3 days).
- * Subtracts real haulage freight, statutory APMC market cess (1.10%), hamali (₹9/q), 
- * electronic weighbridge tolai (₹3.5/q), and biological crop spoilage decay per day.
- * 
+ * Subtracts real haulage freight, statutory APMC market cess (1.10%), hamali (₹9/q),
+ * electronic weighbridge tolai (₹3.5/q), biological crop spoilage decay per day, and the
+ * commercial "market-perceived freshness" discount buyers apply to non-same-day stock.
+ *
  * Compares every option against Default Baseline (Selling Today at Nearest Mandi)
  * to output total wallet rupees (+₹ Cash in pocket for Q quintals).
+ *
+ * ZERO-MOCK CONTRACT:
+ * - This engine never manufactures a price trajectory. Expected gross prices per day must be
+ *   supplied by the caller from the backend forecast (`netRealisationByDay[].expectedPrice`).
+ *   When a trajectory is absent the price is held FLAT — never synthetically appreciated.
+ * - The recommended option is constrained by the backend decision policy action so the
+ *   Decision Hub can never contradict the model that produced it.
  */
 
-import { Market } from '../contracts/domain';
+import { Market, RecommendationAction } from '../contracts/domain';
 import { getCropConfig } from '../config/crops';
 
 export interface AsliDaamBreakdown {
   market: Market;
   dayOffset: number; // 0 (today), 1, 2, 3
   grossPricePerQtl: number;
-  
+
   // Deductions per quintal
   roadFreightPerQtl: number;
   apmcCessPerQtl: number; // 1.10% statutory cess
   hamaliAndTolaiPerQtl: number; // ₹9.00 hamali + ₹3.50 tolai = ₹12.50
-  holdingAndSpoilagePerQtl: number; // Daily storage + biological decay
-  
+  holdingAndSpoilagePerQtl: number; // Daily storage rent + biological decay
+  storageRentPerQtl: number; // Daily storage rent component
+  physicalDecayLossPerQtl: number; // Biological weight/rot loss component
+  freshnessDiscountPerQtl: number; // Commercial market-perceived freshness penalty
+
   // Net per quintal
   asliDaamPerQtl: number;
-  
+
   // Total wallet numbers for quantity Q
   quantityQuintals: number;
   totalGrossValue: number;
   totalTransportCost: number;
   totalApmcDeductions: number;
   totalHoldingSpoilageLoss: number;
+  totalFreshnessDiscount: number;
   totalNetPayout: number; // Real rupees in farmer's pocket
-  
+
   // Comparison vs baseline
   netGainPerQtlVsDefault: number;
   totalPocketGainVsDefault: number;
@@ -44,8 +56,14 @@ export interface AsliDaamBreakdown {
 }
 
 export interface CropDecayProfile {
-  dailyDecayRatePct: number; // Fraction per day (e.g. 0.02 = 2%)
+  dailyDecayRatePct: number; // Physical loss fraction per day (e.g. 0.02 = 2%)
   dailyStorageRentRs: number; // INR per quintal per day
+  /**
+   * Market-perceived freshness discount: the commercial haircut mandi buyers apply
+   * per day of storage even when the produce has NOT physically spoiled.
+   * "Not physically spoiled" != "economically equivalent to fresh harvest".
+   */
+  dailyFreshnessDiscountPct: number;
   shelfLifeDays: number;
   holdingAdvisability: string;
 }
@@ -54,18 +72,21 @@ export const CATEGORY_DECAY_FALLBACKS: Record<string, CropDecayProfile> = {
   'PERISHABLE': {
     dailyDecayRatePct: 0.020, // 2% weight & soft rot loss per day
     dailyStorageRentRs: 1.25,
+    dailyFreshnessDiscountPct: 0.035, // Buyers heavily penalise non-same-day harvest
     shelfLifeDays: 5,
-    holdingAdvisability: 'Extremely Low — perishable commodity. Waiting >48h risks rapid deterioration.'
+    holdingAdvisability: 'Extremely Low — perishable commodity. Waiting >48h risks rapid deterioration and a steep buyer freshness haircut.'
   },
   'SEMI_PERISHABLE': {
     dailyDecayRatePct: 0.003, // 0.3% moisture loss per day in ventilated storage
     dailyStorageRentRs: 0.45,
+    dailyFreshnessDiscountPct: 0.003, // Mild curing / skin shrinkage discount
     shelfLifeDays: 90,
     holdingAdvisability: 'Moderate — safe to hold 2-3 days if terminal market spread covers weight shrinkage.'
   },
   'DRY_GRAIN': {
     dailyDecayRatePct: 0.000, // Non-perishable dry grain/pulse/oilseed/spice
     dailyStorageRentRs: 0.25,
+    dailyFreshnessDiscountPct: 0.000, // Bulk commodities retain full market value over 1-3 days
     shelfLifeDays: 365,
     holdingAdvisability: 'Very High — dry non-perishable crop with zero near-term shelf loss.'
   }
@@ -73,39 +94,44 @@ export const CATEGORY_DECAY_FALLBACKS: Record<string, CropDecayProfile> = {
 
 export const CROP_DECAY_PROFILES: Record<string, CropDecayProfile> = {
   'Tomato': {
-    dailyDecayRatePct: 0.020, // 2% weight & soft rot loss per day
+    dailyDecayRatePct: 0.020,
     dailyStorageRentRs: 1.25,
+    dailyFreshnessDiscountPct: 0.035,
     shelfLifeDays: 5,
-    holdingAdvisability: 'Extremely Low — perishable fruit. Waiting >48h risks rapid deterioration.'
+    holdingAdvisability: 'Extremely Low — perishable fruit. Waiting >48h risks rapid deterioration and a steep buyer freshness haircut.'
   },
   'Onion': {
-    dailyDecayRatePct: 0.003, // 0.3% moisture loss per day in ventilated storage
+    dailyDecayRatePct: 0.003,
     dailyStorageRentRs: 0.45,
+    dailyFreshnessDiscountPct: 0.003,
     shelfLifeDays: 90,
     holdingAdvisability: 'Moderate — safe to hold 2-3 days if terminal market spread covers weight shrinkage.'
   },
   'Soyabean': {
-    dailyDecayRatePct: 0.000, // Non-perishable grain
+    dailyDecayRatePct: 0.000,
     dailyStorageRentRs: 0.25,
+    dailyFreshnessDiscountPct: 0.000,
     shelfLifeDays: 365,
-    holdingAdvisability: 'Very High — non-perishable grain. Can wait days or weeks for favorable price cycle.'
+    holdingAdvisability: 'Very High — non-perishable grain. Can wait days or weeks for a favourable price cycle.'
   },
   'Wheat': {
     dailyDecayRatePct: 0.000,
     dailyStorageRentRs: 0.25,
+    dailyFreshnessDiscountPct: 0.000,
     shelfLifeDays: 365,
     holdingAdvisability: 'Very High — dry grain with zero near-term shelf loss.'
   },
   'Gram': {
     dailyDecayRatePct: 0.000,
     dailyStorageRentRs: 0.25,
+    dailyFreshnessDiscountPct: 0.000,
     shelfLifeDays: 365,
     holdingAdvisability: 'High — stable pulse with minimal short-term holding decay.'
   }
 };
 
 /**
- * Resolves crop decay profile using specific overrides or category-level defaults
+ * Resolves crop decay profile using specific overrides or category-level defaults.
  */
 export function getCropDecayProfile(commodity: string): CropDecayProfile {
   // 1. Direct match in specific profiles
@@ -113,18 +139,20 @@ export function getCropDecayProfile(commodity: string): CropDecayProfile {
     return CROP_DECAY_PROFILES[commodity];
   }
 
-  // 2. Lookup crop catalog metadata
+  // 2. Lookup crop catalog metadata (all 99 Maharashtra commodities carry a decayType)
   const config = getCropConfig(commodity);
   if (config && config.decayType && CATEGORY_DECAY_FALLBACKS[config.decayType]) {
     return CATEGORY_DECAY_FALLBACKS[config.decayType];
   }
 
-  // 3. Fallback to Onion (semi-perishable)
-  return CROP_DECAY_PROFILES['Onion'];
+  // 3. Fallback to semi-perishable category profile
+  return CATEGORY_DECAY_FALLBACKS['SEMI_PERISHABLE'];
 }
 
 /**
  * Calculates AsliDaam Net Realizable Value breakdown for a single mandi on a given day.
+ *
+ * AsliDaam = Gross - RoadFreight - APMCDeductions - StorageRent - PhysicalDecayLoss - FreshnessDiscount
  */
 export function calculateAsliDaamForMandiDay(
   market: Market,
@@ -135,36 +163,56 @@ export function calculateAsliDaamForMandiDay(
   transportCostPerKmPerQtl: number = 3.0,
   roadDistanceKm?: number,
   isStaleOrAbstained: boolean = false,
-  abstentionReason?: string
+  abstentionReason?: string,
+  /**
+   * Explicit freight in INR/quintal. Supplied by SajhaBazaar, where haulage comes from a
+   * non-linear vehicle dispatch model rather than a flat per-km-per-quintal rate. When given,
+   * it replaces `distKm * transportCostPerKmPerQtl` entirely (including at zero distance, where
+   * a dedicated vehicle still costs its minimum trip charge).
+   */
+  roadFreightPerQtlOverride?: number
 ): AsliDaamBreakdown {
-  const distKm = roadDistanceKm ?? market.estimatedRoadDistanceKm ?? 25.0;
+  const distKm = roadDistanceKm ?? market.estimatedRoadDistanceKm ?? 0;
   const decayProfile = getCropDecayProfile(commodity);
 
   // 1. Gross price
   const grossPricePerQtl = Math.round(expectedModalPrice * 10) / 10;
 
   // 2. Transport Freight
-  const roadFreightPerQtl = Math.round(distKm * transportCostPerKmPerQtl * 10) / 10;
+  const roadFreightPerQtl = (roadFreightPerQtlOverride !== undefined && Number.isFinite(roadFreightPerQtlOverride))
+    ? Math.round(roadFreightPerQtlOverride * 10) / 10
+    : Math.round(distKm * transportCostPerKmPerQtl * 10) / 10;
 
   // 3. APMC Statutory Tariffs: 1.10% total cess + ₹12.50 handling (hamali ₹9 + tolai ₹3.5)
   const apmcCessPerQtl = Math.round(grossPricePerQtl * 0.0110 * 10) / 10;
   const hamaliAndTolaiPerQtl = 12.50;
 
-  // 4. Holding & Biological Decay Loss
-  const decayLossPerQtl = grossPricePerQtl * decayProfile.dailyDecayRatePct * dayOffset;
-  const storageRentPerQtl = decayProfile.dailyStorageRentRs * dayOffset;
-  const holdingAndSpoilagePerQtl = Math.round((decayLossPerQtl + storageRentPerQtl) * 10) / 10;
+  // 4. Holding: physical biological decay + warehouse storage rent
+  const physicalDecayLossPerQtl = Math.round(grossPricePerQtl * decayProfile.dailyDecayRatePct * dayOffset * 10) / 10;
+  const storageRentPerQtl = Math.round(decayProfile.dailyStorageRentRs * dayOffset * 10) / 10;
+  const holdingAndSpoilagePerQtl = Math.round((physicalDecayLossPerQtl + storageRentPerQtl) * 10) / 10;
 
-  // 5. AsliDaam Net Realisation per quintal
-  const asliDaamPerQtl = Math.round(
-    (grossPricePerQtl - roadFreightPerQtl - apmcCessPerQtl - hamaliAndTolaiPerQtl - holdingAndSpoilagePerQtl) * 10
+  // 5. Market-perceived freshness discount (commercial buyer haircut on aged stock)
+  const freshnessDiscountPerQtl = Math.round(
+    grossPricePerQtl * decayProfile.dailyFreshnessDiscountPct * dayOffset * 10
   ) / 10;
 
-  // 6. Total wallet rupees for quantity Q
+  // 6. AsliDaam Net Realisation per quintal
+  const asliDaamPerQtl = Math.round(
+    (grossPricePerQtl
+      - roadFreightPerQtl
+      - apmcCessPerQtl
+      - hamaliAndTolaiPerQtl
+      - holdingAndSpoilagePerQtl
+      - freshnessDiscountPerQtl) * 10
+  ) / 10;
+
+  // 7. Total wallet rupees for quantity Q
   const totalGrossValue = Math.round(grossPricePerQtl * quantityQuintals);
   const totalTransportCost = Math.round(roadFreightPerQtl * quantityQuintals);
   const totalApmcDeductions = Math.round((apmcCessPerQtl + hamaliAndTolaiPerQtl) * quantityQuintals);
   const totalHoldingSpoilageLoss = Math.round(holdingAndSpoilagePerQtl * quantityQuintals);
+  const totalFreshnessDiscount = Math.round(freshnessDiscountPerQtl * quantityQuintals);
   const totalNetPayout = Math.round(asliDaamPerQtl * quantityQuintals);
 
   return {
@@ -175,12 +223,16 @@ export function calculateAsliDaamForMandiDay(
     apmcCessPerQtl,
     hamaliAndTolaiPerQtl,
     holdingAndSpoilagePerQtl,
+    storageRentPerQtl,
+    physicalDecayLossPerQtl,
+    freshnessDiscountPerQtl,
     asliDaamPerQtl,
     quantityQuintals,
     totalGrossValue,
     totalTransportCost,
     totalApmcDeductions,
     totalHoldingSpoilageLoss,
+    totalFreshnessDiscount,
     totalNetPayout,
     netGainPerQtlVsDefault: 0,
     totalPocketGainVsDefault: 0,
@@ -191,6 +243,20 @@ export function calculateAsliDaamForMandiDay(
   };
 }
 
+/**
+ * A candidate mandi fed into the AsliDaam grid.
+ * `expectedPriceByDay` carries the REAL backend forecast trajectory (index = day offset).
+ */
+export interface AsliDaamCandidate {
+  market: Market;
+  currentModalPrice: number;
+  roadDistKm: number;
+  isStale?: boolean;
+  staleReason?: string;
+  /** Genuine backend forecast gross modal price for day offsets 0..3. */
+  expectedPriceByDay?: number[];
+}
+
 export interface AsliDaamOptimizationResult {
   commodity: string;
   quantityQuintals: number;
@@ -199,6 +265,13 @@ export interface AsliDaamOptimizationResult {
   allCombinations: AsliDaamBreakdown[];
   totalPocketCashGain: number; // ₹ extra in pocket vs baseline
   gainPerQtl: number;
+  /** Backend decision-policy action this optimisation was synchronised with. */
+  policyAction: RecommendationAction | 'UNCONSTRAINED';
+  /** Maximum day offset the recommendation was allowed to use. */
+  maxDayOffsetAllowed: number;
+  isAbstained: boolean;
+  abstentionNote?: string;
+  decayProfile: CropDecayProfile;
   headlineSummary: {
     en: string;
     mr: string;
@@ -206,73 +279,157 @@ export interface AsliDaamOptimizationResult {
   };
 }
 
+const MAX_DAY_OFFSET = 3;
+
+/**
+ * Maps the backend decision-policy action to the maximum day offset AsliDaam may recommend.
+ * This guarantees the Decision Hub headline can never contradict the ML/heuristic policy.
+ */
+export function policyActionToMaxDayOffset(action?: RecommendationAction | null): number {
+  switch (action) {
+    case 'SELL_TODAY':
+      return 0;
+    case 'WAIT_1_DAY':
+      return 1;
+    case 'WAIT_2_DAYS':
+      return 2;
+    case 'WAIT_3_DAYS':
+      return 3;
+    case 'NO_RECOMMENDATION':
+      return 0;
+    default:
+      return MAX_DAY_OFFSET;
+  }
+}
+
+function buildAbstainedResult(
+  commodity: string,
+  quantityQuintals: number,
+  policyAction: RecommendationAction | 'UNCONSTRAINED',
+  decayProfile: CropDecayProfile
+): AsliDaamOptimizationResult {
+  const placeholderMarket: Market = {
+    id: 'none',
+    name: 'No Eligible Mandi',
+    state: 'Maharashtra',
+    district: '—',
+    lat: 0,
+    lon: 0,
+    estimatedRoadDistanceKm: 0
+  };
+  const empty = calculateAsliDaamForMandiDay(
+    placeholderMarket, commodity, quantityQuintals, 0, 0, 0, 0, true,
+    'No candidate mandi within the search radius has verifiable price data.'
+  );
+  empty.isBaseline = true;
+
+  return {
+    commodity,
+    quantityQuintals,
+    baseline: empty,
+    recommended: empty,
+    allCombinations: [],
+    totalPocketCashGain: 0,
+    gainPerQtl: 0,
+    policyAction,
+    maxDayOffsetAllowed: 0,
+    isAbstained: true,
+    abstentionNote: 'No candidate mandi within the search radius has verifiable price data. MandiMitra abstains rather than guess.',
+    decayProfile,
+    headlineSummary: {
+      en: 'No reliable mandi data in range — MandiMitra abstains rather than guess.',
+      mr: 'परिसरात विश्वसनीय बाजार माहिती नाही — अंदाज लावण्याऐवजी मंडीमित्र सल्ला देत नाही.',
+      hi: 'क्षेत्र में विश्वसनीय मंडी डेटा नहीं — अनुमान लगाने के बजाय मंडीमित्र सलाह नहीं देता.'
+    }
+  };
+}
+
 /**
  * Runs the complete AsliDaam joint optimization across Mandi × Day (0..3) grid.
+ *
+ * @param candidateMandis Candidates carrying the REAL backend forecast trajectory.
+ * @param policyAction    Backend decision-policy action to synchronise the headline with.
  */
 export function runAsliDaamOptimization(
-  candidateMandis: Array<{ market: Market; currentModalPrice: number; roadDistKm: number; isStale?: boolean; staleReason?: string }>,
+  candidateMandis: AsliDaamCandidate[],
   commodity: string = 'Onion',
   quantityQuintals: number = 25,
   transportCostPerKmPerQtl: number = 3.0,
-  predictedDirection: 'UP' | 'FLAT' | 'DOWN' = 'UP'
+  policyAction?: RecommendationAction | null
 ): AsliDaamOptimizationResult {
+  const decayProfile = getCropDecayProfile(commodity);
+  const effectivePolicy: RecommendationAction | 'UNCONSTRAINED' = policyAction || 'UNCONSTRAINED';
+  const maxDayOffsetAllowed = policyActionToMaxDayOffset(policyAction);
+
+  if (!candidateMandis || candidateMandis.length === 0) {
+    return buildAbstainedResult(commodity, quantityQuintals, effectivePolicy, decayProfile);
+  }
+
   const allCombinations: AsliDaamBreakdown[] = [];
 
-  // Sort candidate mandis by distance to identify default local mandi
+  // Sort candidate mandis by distance to identify the default local mandi
   const sortedByDist = [...candidateMandis].sort((a, b) => a.roadDistKm - b.roadDistKm);
-  const defaultCandidate = sortedByDist[0] || {
-    market: { id: 'default', name: 'Local Mandi', state: 'MH', district: 'Nashik', lat: 20.0, lon: 73.8 },
-    currentModalPrice: 3100,
-    roadDistKm: 5.0
-  };
+  const defaultCandidate = sortedByDist[0];
 
-  // Evaluate every combination: mandi × day 0..3
+  // Evaluate every combination: mandi × day 0..3 using the genuine forecast trajectory
   for (const cand of candidateMandis) {
-    for (let day = 0; day <= 3; day++) {
-      // Expected price trajectory based on trend
-      let dayPriceMultiplier = 1.0;
-      if (day > 0) {
-        if (predictedDirection === 'UP') {
-          dayPriceMultiplier = 1.0 + (day * 0.022); // +2.2% per day appreciation
-        } else if (predictedDirection === 'DOWN') {
-          dayPriceMultiplier = 1.0 - (day * 0.018); // -1.8% per day depreciation
-        }
-      }
+    for (let day = 0; day <= MAX_DAY_OFFSET; day++) {
+      // ZERO-MOCK: use the backend forecast price for this day. If the backend supplied no
+      // trajectory, hold the price FLAT — never invent an appreciation curve.
+      const trajectoryPrice = cand.expectedPriceByDay && cand.expectedPriceByDay.length > day
+        ? cand.expectedPriceByDay[day]
+        : undefined;
+      const expectedPrice = (trajectoryPrice !== undefined && Number.isFinite(trajectoryPrice))
+        ? trajectoryPrice
+        : cand.currentModalPrice;
 
-      const expectedPrice = cand.currentModalPrice * dayPriceMultiplier;
-      const breakdown = calculateAsliDaamForMandiDay(
-        cand.market,
-        commodity,
-        quantityQuintals,
-        day,
-        expectedPrice,
-        transportCostPerKmPerQtl,
-        cand.roadDistKm,
-        cand.isStale || false,
-        cand.staleReason
+      allCombinations.push(
+        calculateAsliDaamForMandiDay(
+          cand.market,
+          commodity,
+          quantityQuintals,
+          day,
+          expectedPrice,
+          transportCostPerKmPerQtl,
+          cand.roadDistKm,
+          cand.isStale || false,
+          cand.staleReason
+        )
       );
-
-      allCombinations.push(breakdown);
     }
   }
 
   // Baseline is nearest mandi at Day 0
-  const baseline = allCombinations.find(c => c.market.id === defaultCandidate.market.id && c.dayOffset === 0) 
-    || allCombinations[0];
+  const baseline = allCombinations.find(
+    c => c.market.id === defaultCandidate.market.id && c.dayOffset === 0
+  ) || allCombinations[0];
   baseline.isBaseline = true;
 
-  // Filter out abstained/stale mandis from recommendation eligibility
-  const eligibleCombinations = allCombinations.filter(c => !c.isStaleOrAbstained);
+  // Only non-abstained mandis within the policy-allowed horizon are eligible to be recommended
+  const eligibleCombinations = allCombinations.filter(
+    c => !c.isStaleOrAbstained && c.dayOffset <= maxDayOffsetAllowed
+  );
 
-  // Pick combination with highest totalNetPayout
-  let recommended = eligibleCombinations.reduce((best, curr) => {
-    return curr.totalNetPayout > best.totalNetPayout ? curr : best;
-  }, eligibleCombinations[0] || baseline);
+  let recommended: AsliDaamBreakdown;
+  let isAbstained = false;
+  let abstentionNote: string | undefined;
 
-  // If gain from waiting or traveling doesn't exceed friction threshold (₹20/q), stick to local sell today
-  const minGainThreshold = 20.0 * quantityQuintals;
-  if (recommended.totalNetPayout - baseline.totalNetPayout < minGainThreshold) {
+  if (eligibleCombinations.length === 0) {
     recommended = baseline;
+    isAbstained = true;
+    abstentionNote = 'Every candidate mandi in range failed the data-quality gate. Showing the nearest local mandi for reference only.';
+  } else {
+    recommended = eligibleCombinations.reduce(
+      (best, curr) => (curr.totalNetPayout > best.totalNetPayout ? curr : best),
+      eligibleCombinations[0]
+    );
+
+    // Friction guard: do not send a farmer travelling or waiting for a trivial gain (< ₹20/qtl)
+    const minGainThreshold = 20.0 * quantityQuintals;
+    const baselineIsEligible = !baseline.isStaleOrAbstained && baseline.dayOffset <= maxDayOffsetAllowed;
+    if (baselineIsEligible && recommended.totalNetPayout - baseline.totalNetPayout < minGainThreshold) {
+      recommended = baseline;
+    }
   }
 
   recommended.isRecommended = true;
@@ -284,21 +441,27 @@ export function runAsliDaamOptimization(
   }
 
   const totalPocketCashGain = Math.max(0, recommended.totalNetPayout - baseline.totalNetPayout);
-  const gainPerQtl = Math.max(0, recommended.asliDaamPerQtl - baseline.asliDaamPerQtl);
+  const gainPerQtl = Math.max(0, Math.round((recommended.asliDaamPerQtl - baseline.asliDaamPerQtl) * 10) / 10);
 
-  // Multilingual Headlines
+  // Multilingual headlines — day 0 is stated unequivocally as "Sell Today / आजच विका"
   const isWait = recommended.dayOffset > 0;
   const mandiName = recommended.market.name;
   const days = recommended.dayOffset;
 
   let headlineEn = `Sell Today at ${mandiName} APMC`;
-  let headlineMr = `आजच ${mandiName} कृषी उत्पन्न बाजार समितीत विका`;
-  let headlineHi = `आज ही ${mandiName} मंडी में बेचें`;
+  let headlineMr = `आजच विका — ${mandiName} कृषी उत्पन्न बाजार समितीत`;
+  let headlineHi = `आज ही बेचें — ${mandiName} मंडी में`;
 
   if (isWait && totalPocketCashGain > 0) {
     headlineEn = `Wait ${days} Day${days > 1 ? 's' : ''}, Sell at ${mandiName} APMC: +₹${totalPocketCashGain.toLocaleString('en-IN')} Extra in Pocket`;
     headlineMr = `${days} दिवस थांबा, ${mandiName} येथे विका: खिशात +₹${totalPocketCashGain.toLocaleString('en-IN')} जास्तीचा निव्वळ नफा`;
     headlineHi = `${days} दिन रुकें, ${mandiName} में बेचें: जेब में +₹${totalPocketCashGain.toLocaleString('en-IN')} अतिरिक्त फायदा`;
+  }
+
+  if (isAbstained) {
+    headlineEn = 'No reliable mandi data in range — MandiMitra abstains rather than guess.';
+    headlineMr = 'परिसरात विश्वसनीय बाजार माहिती नाही — अंदाज लावण्याऐवजी मंडीमित्र सल्ला देत नाही.';
+    headlineHi = 'क्षेत्र में विश्वसनीय मंडी डेटा नहीं — अनुमान लगाने के बजाय मंडीमित्र सलाह नहीं देता.';
   }
 
   return {
@@ -309,6 +472,11 @@ export function runAsliDaamOptimization(
     allCombinations,
     totalPocketCashGain,
     gainPerQtl,
+    policyAction: effectivePolicy,
+    maxDayOffsetAllowed,
+    isAbstained,
+    abstentionNote,
+    decayProfile,
     headlineSummary: {
       en: headlineEn,
       mr: headlineMr,

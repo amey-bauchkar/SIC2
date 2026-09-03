@@ -1,0 +1,58 @@
+{
+  "description": "Vehicle dispatch economics used by the SajhaBazaar shared-freight engine. Per-km running cost is DERIVED from the real Maharashtra retail diesel prices in data/diesel_rates_maharashtra.json rather than hardcoded, so freight tracks fuel.",
+  "source": "IOCL/HPCL/BPCL Maharashtra retail diesel RSP (2026-09-03) combined with All India Motor Transport Congress (AIMTC) light-commercial operating-cost norms and the 50-quintal truck charter rate corroborated in data/farmer_pooling_profiles.json.",
+  "effective_date": "2026-09-03",
+  "currency": "INR",
+  "cost_model": {
+    "equation": "TripCost(Q, D) = max(MinTripCharge, FixedVehicleBase + D * RatePerKm + Q * D * IncrementalPerQtlKm)",
+    "rate_per_km_derivation": "RatePerKm = (dieselPricePerLitre / mileageKmPerLitre) / (fuelCostSharePct / 100) * roundTripFactor",
+    "notes": [
+      "FixedVehicleBase covers driver mobilisation, loading labour and APMC gate entry — it is incurred whether the vehicle carries 3 quintals or 30.",
+      "MinTripCharge is the floor a transporter will accept for a dedicated dispatch. This floor is what makes sub-scale individual haulage uneconomic and is the entire reason pooling creates value.",
+      "IncrementalPerQtlKm captures the extra fuel burn from payload weight; it is small, which is precisely why sharing a vehicle is close to free at the margin.",
+      "roundTripFactor is 2.0 because the vehicle must return empty from the APMC."
+    ]
+  },
+  "fuel_cost_share_pct": 58.0,
+  "round_trip_factor": 2.0,
+  "state_average_diesel_price": 92.45,
+  "vehicles": [
+    {
+      "id": "chhota_hathi",
+      "name": "Tata Ace / Chhota Hathi",
+      "nameMr": "छोटा हत्ती (टेम्पो)",
+      "nameHi": "छोटा हाथी (टेम्पो)",
+      "capacityQuintals": 12.0,
+      "mileageKmPerLitre": 9.5,
+      "fixedVehicleBaseRs": 350.0,
+      "minTripChargeRs": 1500.0,
+      "incrementalPerQtlKmRs": 0.28
+    },
+    {
+      "id": "pickup_1t",
+      "name": "Mahindra Bolero Pickup (1-Tonne)",
+      "nameMr": "पिकअप (१ टन)",
+      "nameHi": "पिकअप (1 टन)",
+      "capacityQuintals": 25.0,
+      "mileageKmPerLitre": 7.0,
+      "fixedVehicleBaseRs": 500.0,
+      "minTripChargeRs": 2200.0,
+      "incrementalPerQtlKmRs": 0.22
+    },
+    {
+      "id": "medium_truck",
+      "name": "Eicher / Tata 407 Medium Truck",
+      "nameMr": "मध्यम ट्रक",
+      "nameHi": "मध्यम ट्रक",
+      "capacityQuintals": 50.0,
+      "mileageKmPerLitre": 4.2,
+      "fixedVehicleBaseRs": 800.0,
+      "minTripChargeRs": 2800.0,
+      "incrementalPerQtlKmRs": 0.18
+    }
+  ],
+  "pickup_corridor": {
+    "description": "Extra road distance the vehicle drives to collect each additional farmer on the pooled route, on top of the direct origin-to-mandi leg.",
+    "per_additional_pickup_km": 2.5
+  }
+}

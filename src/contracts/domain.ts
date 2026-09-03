@@ -41,12 +41,32 @@ export interface PriceObservation {
 
 export type DataQualityTier = 'GOOD' | 'MODERATE' | 'POOR';
 
+/**
+ * How the modal price backing an evaluation was established.
+ * Peer-calibrated tiers are arithmetic combinations of real Agmarknet observations —
+ * never invented constants — but they can never be graded GOOD.
+ */
+export type PriceProvenanceTier =
+  | 'AGMARKNET_MARKET_OBSERVED'
+  | 'HISTORICAL_SERIES_OBSERVED'
+  | 'DISTRICT_PEER_CALIBRATED'
+  | 'DIVISION_PEER_CALIBRATED'
+  | 'STATE_BENCHMARK_CALIBRATED'
+  | 'UNAVAILABLE';
+
+/** Which evidence produced the coverage figure (the live feed is a single-day snapshot). */
+export type CoverageSource = 'historical-series' | 'live-snapshot-recency' | 'peer-calibrated';
+
 export interface DataQualityAssessment {
   tier: DataQualityTier;
   daysSinceLastReport: number;
   coverage30d: number; // percentage (0.0 to 100.0)
   missingDays: number; // count of non-reporting days in past 30 days
   isEligibleForRecommendation: boolean; // true if tier !== 'POOR'
+  priceProvenance?: PriceProvenanceTier;
+  coverageSource?: CoverageSource;
+  observationCount?: number; // real Agmarknet records backing the price
+  provenanceNote?: string;
 }
 
 export type ModelVersion = 'v0-heuristic' | 'v1-gbm';
@@ -106,11 +126,20 @@ export interface BacktestResult {
   baselineNetRealisation: number; // INR/quintal (naive sell-today strategy)
   netGainVsBaseline: number; // avgNetRealisation - baselineNetRealisation
   directionalAccuracy: number; // Percentage (0.0 to 100.0)
-  coverage: number; // Percentage of days system gave advice vs abstaining
+  coverage: number; // Reporting coverage of the held-out window (% of calendar days with a quote)
   evaluatedPeriod: {
     start: string;
     end: string;
   };
+  /** Mandi whose series was backtested. */
+  mandi?: string;
+  /** Naive persistence baseline's directional accuracy, for an honest edge comparison. */
+  persistenceBaselineAccuracy?: number;
+  /** directionalAccuracy - persistenceBaselineAccuracy, in percentage points. */
+  accuracyEdgePts?: number;
+  waitRecommendations?: number;
+  profitableWaitRatePct?: number;
+  topPredictiveFeatures?: Array<{ feature: string; importancePct: number }>;
 }
 
 /**
