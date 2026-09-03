@@ -12,7 +12,8 @@ import {
   getNearbyMarketsController, 
   getLivePriceController, 
   evaluateController, 
-  getBacktestController 
+  getBacktestController,
+  stressTestController
 } from './controllers';
 import { config } from '../config';
 
@@ -34,6 +35,7 @@ import {
 app.get('/api/markets/nearby', getNearbyMarketsController);
 app.get('/api/prices/live', getLivePriceController);
 app.post('/api/evaluate', evaluateController);
+app.post('/api/evaluate/stress-test', stressTestController);
 app.get('/api/backtest', getBacktestController);
 
 // Supabase Cloud Routes (SajhaBazaar Farmer Pooling & Price Alerts)
