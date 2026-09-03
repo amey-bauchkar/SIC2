@@ -40,6 +40,7 @@ From spoken Marathi, Hindi, or English, extract:
 4. "quantityQuintals": number (CRITICAL CONVERSION: 1 Bag/Goni/Bori = 0.5 Quintals [50kg]; 1 Crate/Pethi = 0.25 Quintals [25kg]; 1 Trolley/Tractor = 40 Quintals; 1 Tempo/Chhota Hathi = 12 Quintals; 1 Quintal = 1 Quintal).
 5. "district": Canonical Maharashtra district from the 36 districts (e.g., "Nashik", "Pune", "Ahilyanagar", "Latur", "Solapur", "Kolhapur", "Nagpur").
 6. "displaySummaryMr": e.g. "कांदा • 40 गोणी (20 क्विंटल) • नाशिक"
+7. "displaySummaryHi": e.g. "प्याज • 40 बोरी (20 क्विंटल) • नासिक"
 Return pure JSON adhering to the schema.`;
 
 export interface VoiceProcessResponse {
@@ -162,7 +163,8 @@ async function extractWithGemini(transcript: string): Promise<Record<string, unk
           originalUnit: { type: 'STRING', enum: ['Bags', 'Crates', 'Quintals', 'Trolley', 'Tempo'] },
           quantityQuintals: { type: 'NUMBER' },
           district: { type: 'STRING' },
-          displaySummaryMr: { type: 'STRING' }
+          displaySummaryMr: { type: 'STRING' },
+          displaySummaryHi: { type: 'STRING' }
         },
         required: ['crop', 'originalQuantity', 'originalUnit', 'quantityQuintals', 'district', 'displaySummaryMr']
       }
