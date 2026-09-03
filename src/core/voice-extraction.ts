@@ -121,7 +121,11 @@ const CROP_SYNONYMS: Record<string, string[]> = {
   'Red gram/Arhar/Tur(whole)': ['तूर', 'तुर', 'तूरडाळ', 'toor', 'turdal', 'arhar', 'tur', 'अरहर', 'तुअर', 'अरहर दाल'],
   'Jowar(Sorghum)': ['ज्वारी', 'जोंधळा', 'ज्वार', 'jowar', 'jwari', 'jondhal'],
   'Bajra(Pearl Millet/Cumbu)': ['बाजरी', 'बाजरा', 'bajra', 'bajri', 'bajari'],
-  'Groundnut': ['भुईमूग', 'शेंगदाणा', 'मूंगफली', 'मुंगफली', 'मूँगफली', 'moongfali', 'shengdana', 'groundnut', 'मूंगफली दाना']
+  'Groundnut': ['भुईमूग', 'शेंगदाणा', 'मूंगफली', 'मुंगफली', 'मूँगफली', 'moongfali', 'shengdana', 'groundnut', 'मूंगफली दाना'],
+  'Orange': ['संत्री', 'संतरा', 'संत्रे', 'orange', 'oranges', 'santra', 'santri', 'नागपुरी संत्री'],
+  'Banana': ['केळी', 'केला', 'केले', 'banana', 'bananas', 'kela', 'keli'],
+  'Gur(Jaggery)': ['गूळ', 'गुळ', 'गुळाच्या', 'गुळाची', 'गुड़', 'गुड़', 'gur', 'jaggery', 'gud'],
+  'Ginger(Green)': ['आले', 'आलं', 'अदरक', 'adrak', 'aale', 'ginger', 'green ginger']
 };
 
 // ============================================================================
@@ -415,6 +419,69 @@ function findLexiconMatch(text: string, lexicon: LexiconEntry[]): { canonicalId:
 // Extraction
 // ============================================================================
 
+/**
+ * Automatically detects whether an utterance is Marathi, Hindi, or English
+ * using distinctive vocabulary, grammatical markers, and script density.
+ */
+export function detectLanguage(text: string): { lang: 'mr' | 'hi' | 'en'; display: string } {
+  const lower = (text || '').toLowerCase().trim();
+
+  // Check for English characters (ASCII letters a-z)
+  const englishMatches = lower.match(/[a-z]/g);
+  const devanagariMatches = lower.match(/[\u0900-\u097F]/g);
+  const englishLen = englishMatches ? englishMatches.length : 0;
+  const devanagariLen = devanagariMatches ? devanagariMatches.length : 0;
+
+  if (englishLen > devanagariLen && englishLen > 3) {
+    return { lang: 'en', display: '🇬🇧 English' };
+  }
+
+  // Strong Marathi distinctive vocabulary / grammatical postpositions
+  const marathiMarkers = [
+    'मध्ये', 'मधे', 'मधून', 'मधल्या', 'पासून', 'आहे', 'आहेत',
+    'गोणी', 'पोती', 'गहू', 'हरभरा', 'कांदे', 'कांद्या', 'कांद्याचा', 'बटाटे', 'डाळींब',
+    'धुळे', 'धुळ्य', 'पुण्यात', 'सातार', 'अकोल', 'जालन', 'भंडार', 'बुलढाण', 'पंढरपूर', 'पिंपळगाव',
+    'चाळीस', 'ऐंशी', 'दहा', 'अकरा', 'बारा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'वीस',
+    'शंभर', 'दोन', 'तीन', 'पाच', 'सहा', 'नऊ'
+  ];
+
+  // Strong Hindi distinctive vocabulary / grammatical postpositions
+  const hindiMarkers = [
+    'में', 'मे', 'से', 'पर', 'पे', 'को', 'का', 'के', 'की', 'है', 'हैं', 'था', 'थी',
+    'बोरी', 'बोरियां', 'कट्टा', 'कट्टे', 'कट्टी', 'पेटी', 'पेटियां', 'छोटा हाथी', 'पिकअप', 'डब्बे',
+    'प्याज', 'प्याज़', 'गेहूं', 'गेहू', 'चना', 'चने', 'आलू', 'अनार', 'मक्का', 'मक्के',
+    'चालीस', 'पचास', 'साठ', 'सत्तर', 'अस्सी', 'नब्बे', 'सौ', 'ग्यारह', 'बारह', 'तेरह', 'चौदह',
+    'पंद्रह', 'उन्नीस', 'बीस', 'इक्कीस', 'पच्चीस', 'डेढ़', 'ढाई', 'नासिक', 'पूना', 'धुलिया', 'धुले'
+  ];
+
+  let marathiScore = 0;
+  for (const m of marathiMarkers) {
+    if (lower.includes(m)) marathiScore += 2;
+  }
+
+  let hindiScore = 0;
+  for (const h of hindiMarkers) {
+    if (lower.includes(h)) hindiScore += 2;
+  }
+
+  // Specific single-word checks for fused words or tokens
+  if (/\b(bags|crates|trolley|quintal|quintals|tempo|onion|tomato|wheat|potato)\b/i.test(lower)) {
+    return { lang: 'en', display: '🇬🇧 English' };
+  }
+
+  if (marathiScore > hindiScore) {
+    return { lang: 'mr', display: '🇮🇳 मराठी' };
+  } else if (hindiScore > marathiScore) {
+    return { lang: 'hi', display: '🇮🇳 हिन्दी' };
+  }
+
+  // Default heuristic: if Devanagari is present, default to Marathi (primary state language), else English
+  if (devanagariLen > 0) {
+    return { lang: 'mr', display: '🇮🇳 मराठी' };
+  }
+  return { lang: 'en', display: '🇬🇧 English' };
+}
+
 export interface VoiceExtraction {
   transcript: string;
   crop: string | null;
@@ -426,6 +493,9 @@ export interface VoiceExtraction {
   districtDisplay: string | null;
   displaySummaryMr: string;
   displaySummaryHi: string;
+  displaySummaryEn: string;
+  detectedLanguage: 'mr' | 'hi' | 'en';
+  detectedLanguageDisplay: string;
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   matched: {
     cropToken: string | null;
@@ -571,6 +641,19 @@ export function extractAgrarianSlots(rawText: string): VoiceExtraction {
   }
   if (districtItem) partsHi.push(districtItem.displayName.split('(')[0].trim());
 
+  const partsEn: string[] = [];
+  if (cropItem) partsEn.push(cropItem.nameEn);
+  if (quantity !== null && effectiveUnit) {
+    partsEn.push(
+      effectiveUnit === 'Quintals'
+        ? `${quantity} Quintals`
+        : `${quantity} ${effectiveUnit} (${quantityQuintals} Quintals)`
+    );
+  }
+  if (districtItem) partsEn.push(districtItem.name);
+
+  const detected = detectLanguage(transcript);
+
   return {
     transcript,
     crop: cropItem ? cropItem.id : null,
@@ -582,6 +665,9 @@ export function extractAgrarianSlots(rawText: string): VoiceExtraction {
     districtDisplay: districtItem ? districtItem.displayName : null,
     displaySummaryMr: parts.length > 0 ? parts.join(' • ') : 'काहीही ओळखता आले नाही',
     displaySummaryHi: partsHi.length > 0 ? partsHi.join(' • ') : 'कुछ भी पहचाना नहीं जा सका',
+    displaySummaryEn: partsEn.length > 0 ? partsEn.join(' • ') : 'Nothing recognized',
+    detectedLanguage: detected.lang,
+    detectedLanguageDisplay: detected.display,
     confidence,
     matched: {
       cropToken,
@@ -608,6 +694,7 @@ export function reconcileLlmExtraction(
     district: string;
     displaySummaryMr: string;
     displaySummaryHi: string;
+    displaySummaryEn: string;
   }>
 ): VoiceExtraction {
   const deterministic = extractAgrarianSlots(transcript);
@@ -675,6 +762,17 @@ export function reconcileLlmExtraction(
   }
   if (district) partsHi.push(district.displayName.split('(')[0].trim());
 
+  const partsEn: string[] = [];
+  if (crop) partsEn.push(crop.nameEn);
+  if (originalQuantity !== null && originalQuantity !== undefined && originalUnit) {
+    partsEn.push(
+      originalUnit === 'Quintals'
+        ? `${originalQuantity} Quintals`
+        : `${originalQuantity} ${originalUnit} (${quantityQuintals} Quintals)`
+    );
+  }
+  if (district) partsEn.push(district.name);
+
   return {
     transcript,
     crop: crop ? crop.id : null,
@@ -686,6 +784,9 @@ export function reconcileLlmExtraction(
     districtDisplay: district ? district.displayName : null,
     displaySummaryMr: parts.length > 0 ? parts.join(' • ') : (llm.displaySummaryMr || 'काहीही ओळखता आले नाही'),
     displaySummaryHi: partsHi.length > 0 ? partsHi.join(' • ') : (llm.displaySummaryHi || 'कुछ भी पहचाना नहीं जा सका'),
+    displaySummaryEn: partsEn.length > 0 ? partsEn.join(' • ') : 'Nothing recognized',
+    detectedLanguage: deterministic.detectedLanguage,
+    detectedLanguageDisplay: deterministic.detectedLanguageDisplay,
     confidence: filled === 3 ? 'HIGH' : filled === 2 ? 'MEDIUM' : 'LOW',
     matched: deterministic.matched,
     warnings

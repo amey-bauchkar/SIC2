@@ -122,7 +122,10 @@ async function transcribeWithWhisper(
   const blob = new Blob([new Uint8Array(audio.buffer)], { type: audio.mimeType });
   form.append('file', blob, `speech.${extensionFor(audio.mimeType)}`);
   form.append('model', model);
-  form.append('language', language);
+  if (language && language !== 'auto') {
+    form.append('language', language);
+  }
+  form.append('prompt', 'कांदा, प्याज, onion, टोमॅटो, टमाटर, tomato, सोयाबीन, soyabean, गेहूं, wheat, गहू, गोणी, बोरी, कट्टा, क्रेट, crates, bags, क्विंटल, quintals, नाशिक, पुणे, लातूर, ट्रॅक्टर, टेम्पो');
   form.append('response_format', 'json');
 
   const res = await withTimeout(
@@ -202,7 +205,7 @@ export async function voiceProcessController(req: Request, res: Response): Promi
 
   try {
     const body = (Buffer.isBuffer(req.body) ? {} : (req.body || {})) as Record<string, unknown>;
-    const language = typeof body.language === 'string' ? body.language : 'mr';
+    const language = typeof body.language === 'string' ? body.language : 'auto';
 
     // ---------- Step A: obtain a transcript ----------
     let transcript = typeof body.text === 'string' ? body.text.trim() : '';
