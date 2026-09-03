@@ -20,6 +20,7 @@ class Store {
   private state: AppState = {
     currentRoute: '/',
     selectedCrop: 'Onion',
+    harvestQuantityQuintals: 25,
     userLocation: {
       district: 'Nashik',
       lat: 19.9975,
@@ -56,6 +57,11 @@ class Store {
 
   public setSelectedCrop(crop: string): void {
     this.state.selectedCrop = crop;
+    this.notify();
+  }
+
+  public setHarvestQuantity(qty: number): void {
+    this.state.harvestQuantityQuintals = qty;
     this.notify();
   }
 

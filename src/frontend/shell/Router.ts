@@ -1,6 +1,6 @@
 /**
  * MandiMitra Client-Side Hash Router
- * Routes between /, /markets, /decision, /evidence, /backtest, /settings.
+ * Routes between /, /hub, /markets, /decision, /evidence, /backtest, /settings.
  * 
  * Supports dynamic route registration so team members can add new routes
  * without creating merge conflicts in a monolithic switch-statement.
@@ -10,6 +10,7 @@
 
 import { AppRoute } from '../../contracts/frontend';
 import { store } from '../state/store';
+import { renderDecisionHubView } from '../features/hub/DecisionHubView';
 import { renderEntryView } from '../features/entry/EntryView';
 import { renderDecisionView } from '../features/decision/DecisionView';
 import { renderEvidenceView } from '../features/evidence/EvidenceView';
@@ -26,8 +27,10 @@ export class Router {
   constructor(mountPoint: HTMLElement) {
     this.mountPoint = mountPoint;
 
-    // Register standard default routes
-    this.routes.set('/', renderEntryView);
+    // Register standard default routes (Default / and /hub load the Decision Hub)
+    this.routes.set('/', renderDecisionHubView);
+    this.routes.set('/hub', renderDecisionHubView);
+    this.routes.set('/entry', renderEntryView);
     this.routes.set('/decision', renderDecisionView);
     this.routes.set('/evidence', renderEvidenceView);
     this.routes.set('/markets', renderMarketsView);
@@ -64,7 +67,7 @@ export class Router {
   private render(route: string): void {
     this.mountPoint.innerHTML = '';
 
-    const renderer = this.routes.get(route) || this.routes.get('/') || renderEntryView;
+    const renderer = this.routes.get(route) || this.routes.get('/') || renderDecisionHubView;
     const view = renderer();
 
     this.mountPoint.appendChild(view);
@@ -75,7 +78,7 @@ export class Router {
     const links = document.querySelectorAll('.nav-link');
     links.forEach(link => {
       const href = link.getAttribute('href')?.replace('#', '');
-      if (href === route) {
+      if (href === route || (route === '/' && href === '/hub')) {
         link.classList.add('active');
       } else {
         link.classList.remove('active');

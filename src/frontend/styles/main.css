@@ -27,7 +27,7 @@ body {
 }
 
 .app-container {
-  max-width: 640px; /* Mobile-first farmer view, responsive to tablet/desktop */
+  max-width: 860px; /* Responsive farmer cockpit, comfortably accommodates data tables & cards */
   width: 100%;
   margin: 0 auto;
   padding: var(--space-4);
@@ -126,3 +126,59 @@ body {
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--space-4);
 }
+
+/* Decision Hub Cockpit Tabs */
+.hub-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.hub-tab-btn:hover {
+  color: var(--color-brand-primary);
+  background-color: var(--color-bg-muted);
+}
+
+.hub-tab-btn.active {
+  color: var(--color-brand-primary);
+  border-bottom-color: var(--color-brand-primary);
+  background-color: var(--color-bg-muted);
+}
+
+/* Cockpit Data Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-2);
+}
+
+.data-table th, .data-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th {
+  background-color: var(--color-bg-muted);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+

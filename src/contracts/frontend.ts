@@ -17,6 +17,7 @@ import { EvaluateResponse } from './api';
 
 export type AppRoute = 
   | '/'
+  | '/hub'
   | '/markets'
   | '/decision'
   | '/evidence'
@@ -38,6 +39,7 @@ export interface UserCostConfig {
 export interface AppState {
   currentRoute: AppRoute;
   selectedCrop: string;
+  harvestQuantityQuintals?: number;
   userLocation: UserLocation | null;
   costConfig: UserCostConfig;
   evaluationData: EvaluateResponse | null;
