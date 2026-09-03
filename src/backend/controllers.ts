@@ -13,7 +13,9 @@ import {
   LivePriceResponse, 
   BacktestResponse,
   StressTestRequestBody,
-  StressTestResponse
+  StressTestResponse,
+  BhedVivekRequestBody,
+  BhedVivekResponse
 } from '../contracts/api';
 import { MarketEvaluation, BacktestResult } from '../contracts/domain';
 import { getAllMarkets, findMarketById } from '../data-pipeline/registry';
@@ -24,6 +26,7 @@ import { calculateNetRealisationForMarket } from '../core/net-realisation';
 import { evaluateDecisionPolicy } from '../core/decision';
 import { formatExplanationSummary } from '../core/explain';
 import { evaluateNirnayKawach } from '../core/nirnay-kawach';
+import { evaluateBhedVivek } from '../core/bhed-vivek';
 import { fetchLiveMandiPrice } from './agmarknet-client';
 import { config } from '../config';
 
@@ -191,6 +194,14 @@ export async function evaluateController(req: Request, res: Response): Promise<v
     500
   );
 
+  // 5. Bhed Vivek (Market Congestion Intelligence)
+  const bhedVivek = evaluateBhedVivek(
+    evaluations,
+    commodity,
+    25,
+    'HIGH'
+  );
+
   const response: EvaluateResponse = {
     recommendation: finalRecommendation,
     evaluations,
@@ -202,7 +213,8 @@ export async function evaluateController(req: Request, res: Response): Promise<v
       storageCostPerDayPerQtl: storageCost,
       radiusKm: searchRadius
     },
-    nirnayKawach
+    nirnayKawach,
+    bhedVivek
   };
 
   res.json(response);
@@ -299,6 +311,61 @@ export async function stressTestController(req: Request, res: Response): Promise
   };
 
   res.json(response);
+}
+
+export async function bhedVivekAnalyzeController(req: Request, res: Response): Promise<void> {
+  const body = req.body as BhedVivekRequestBody;
+  const commodity = body.commodity || 'Onion';
+  const userLat = body.latitude || 19.9975;
+  const userLon = body.longitude || 73.7898;
+  const quantity = body.quantityQuintals || 25;
+  const supplyPressure = body.supplyPressure || 'HIGH';
+  const transportCost = body.transportCostPerKmPerQtl ?? config.defaultTransportCostPerKmPerQtl;
+  const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
+  const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
+
+  // Build candidate evaluations
+  const candidateMarkets = getAllMarkets().map(m => ({
+    ...m,
+    estimatedRoadDistanceKm: Math.round(estimateRoadDistanceKm(userLat, userLon, m.lat, m.lon) * 10) / 10
+  })).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadius);
+
+  const evaluations: MarketEvaluation[] = [];
+
+  for (const market of candidateMarkets) {
+    const mLower = market.name.toLowerCase();
+    const isManmad = mLower.includes('manmad');
+    const isMajorMandi = mLower.includes('lasalgaon') || mLower.includes('pimpalgaon') || mLower.includes('narayangaon') || mLower.includes('latur');
+
+    const daysSince = isManmad ? 9 : (isMajorMandi ? 1 : 3);
+    const reportingDaysCount = isManmad ? 10 : (isMajorMandi ? 28 : 22);
+    const quality = assessDataQuality(daysSince, reportingDaysCount);
+
+    const basePrice = isMajorMandi ? 3250 : 3120;
+    const slopeDirection = commodity.toLowerCase() === 'onion' ? 35 : -15;
+    const trailing7Prices = [
+      basePrice - slopeDirection * 6,
+      basePrice - slopeDirection * 5,
+      basePrice - slopeDirection * 4,
+      basePrice - slopeDirection * 3,
+      basePrice - slopeDirection * 2,
+      basePrice - slopeDirection * 1,
+      basePrice
+    ];
+
+    const forecast = generateForecast(trailing7Prices, basePrice);
+    const netRealisationByDay = calculateNetRealisationForMarket(market, forecast, transportCost, storageCost);
+
+    evaluations.push({
+      market,
+      dataQuality: quality,
+      forecast,
+      netRealisationByDay
+    });
+  }
+
+  const result = evaluateBhedVivek(evaluations, commodity, quantity, supplyPressure);
+  res.json(result);
 }
 
 export async function getBacktestController(req: Request, res: Response): Promise<void> {

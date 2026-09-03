@@ -13,7 +13,8 @@ import {
   getLivePriceController, 
   evaluateController, 
   getBacktestController,
-  stressTestController
+  stressTestController,
+  bhedVivekAnalyzeController
 } from './controllers';
 import { config } from '../config';
 
@@ -36,6 +37,7 @@ app.get('/api/markets/nearby', getNearbyMarketsController);
 app.get('/api/prices/live', getLivePriceController);
 app.post('/api/evaluate', evaluateController);
 app.post('/api/evaluate/stress-test', stressTestController);
+app.post('/api/bhed-vivek/analyze', bhedVivekAnalyzeController);
 app.get('/api/backtest', getBacktestController);
 
 // Supabase Cloud Routes (SajhaBazaar Farmer Pooling & Price Alerts)

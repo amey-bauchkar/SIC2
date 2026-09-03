@@ -151,3 +151,39 @@ export interface NirnayKawachResult {
   };
 }
 
+/**
+ * Bhed Vivek (Crowd-Aware / Market Congestion Intelligence)
+ */
+export type SupplyPressureLevel = 'LOW' | 'MEDIUM' | 'HIGH';
+export type CongestionRiskStatus = 'LOW_RISK' | 'HIGH_RISK' | 'UNKNOWN';
+
+export interface BhedVivekEvaluation {
+  status: CongestionRiskStatus;
+  statusLabel: string;
+  supplyPressure: SupplyPressureLevel;
+  supplyPressureNumeric: number; // 0.20 (Low), 0.50 (Med), 0.85 (High)
+  originalWinner: {
+    marketId: string;
+    marketName: string;
+    day: number;
+    normalNrv: number;
+    grossPrice: number;
+  };
+  adjustedWinner: {
+    marketId: string;
+    marketName: string;
+    day: number;
+    adjustedNrv: number;
+    adjustedGrossPrice: number;
+  };
+  isFlipped: boolean;
+  congestionImpactPerQtl: number;
+  totalPocketImpact: number;
+  pcs: number;
+  absorptionCapacity: string;
+  alertMessage: string;
+  diversionAdvice?: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+

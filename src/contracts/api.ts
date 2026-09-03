@@ -68,6 +68,7 @@ export interface EvaluateResponse {
     radiusKm: number;
   };
   nirnayKawach?: import('./domain').NirnayKawachResult;
+  bhedVivek?: import('./domain').BhedVivekEvaluation;
 }
 
 // ==========================================
@@ -102,6 +103,22 @@ export interface StressTestResponse {
     netRealisation: number;
   }>;
 }
+
+// ==========================================
+// 5. /api/bhed-vivek/analyze (Congestion Intelligence)
+// ==========================================
+export interface BhedVivekRequestBody {
+  commodity: string;
+  latitude?: number;
+  longitude?: number;
+  quantityQuintals?: number;
+  supplyPressure?: import('./domain').SupplyPressureLevel;
+  transportCostPerKmPerQtl?: number;
+  storageCostPerDayPerQtl?: number;
+  radiusKm?: number;
+}
+
+export type BhedVivekResponse = import('./domain').BhedVivekEvaluation;
 
 // ==========================================
 // 4. /api/backtest
