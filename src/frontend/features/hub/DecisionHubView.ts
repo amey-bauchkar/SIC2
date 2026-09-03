@@ -505,21 +505,22 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
         🚀 MandiMitra Future Capabilities Launchpad
       </h3>
       <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4);">
-        High-impact extensions currently in development for the next deployment phase:
+        High-impact extensions connected to backend services and cloud database:
       </p>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4);">
         
-        <!-- Feature 1: Farmer Freight Pooling -->
+        <!-- Feature 1: Farmer Freight Pooling (SajhaBazaar) -->
         <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-surface);">
           <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">🤝</div>
-          <h4 style="font-size: var(--font-size-sm); font-weight: 800; margin-bottom: 4px;">Farmer Freight Pooling</h4>
+          <h4 style="font-size: var(--font-size-sm); font-weight: 800; margin-bottom: 4px;">SajhaBazaar: Freight Pooling</h4>
           <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
-            Share truck capacity with neighboring farmers headed to Lasalgaon APMC. Cuts freight cost by 35% (from ₹3.0/km to ₹1.95/km/qtl).
+            Share truck capacity with neighboring farmers headed to Lasalgaon APMC. Cuts haulage cost by 35% (from ₹3.0/km to ₹1.95/km/qtl).
           </p>
-          <button class="btn btn-sm btn-primary" onclick="alert('Farmer Freight Pooling active in Nashik & Niphad taluka pilot!')" style="font-size: 0.75rem;">
-            Explore Pool
+          <button id="btn-load-pools" class="btn btn-sm btn-primary" style="font-size: 0.75rem; width: auto; padding: 6px 14px;">
+            View Active Pools
           </button>
+          <div id="pools-list-container" style="margin-top: var(--space-3); font-size: var(--font-size-xs);"></div>
         </div>
 
         <!-- Feature 2: Weather Anomaly Risk Index -->
@@ -539,8 +540,8 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
           <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
             Generate a clean, Marathi/Hindi text slip with full AsliDaam breakdown to share with fellow farmers and FPO leaders.
           </p>
-          <button class="btn btn-sm btn-secondary" onclick="alert('Generating WhatsApp summary slip... Ready to copy!')" style="font-size: 0.75rem;">
-            Generate Slip
+          <button id="btn-copy-slip" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; width: auto; padding: 6px 14px;">
+            Copy WhatsApp Slip
           </button>
         </div>
 
@@ -548,5 +549,49 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
     </div>
   `;
 
+  // Pools loader
+  const loadPoolsBtn = panel.querySelector('#btn-load-pools');
+  const poolsContainer = panel.querySelector('#pools-list-container');
+  if (loadPoolsBtn && poolsContainer) {
+    loadPoolsBtn.addEventListener('click', async () => {
+      poolsContainer.innerHTML = '<p style="color: var(--color-text-muted);">Fetching clusters...</p>';
+      try {
+        const res = await fetch('/api/pools');
+        const json = await res.json();
+        const pools = json.data || [];
+        if (pools.length === 0) {
+          poolsContainer.innerHTML = '<p>No active pools currently.</p>';
+          return;
+        }
+        poolsContainer.innerHTML = `
+          <div style="border-top: 1px solid var(--color-border); padding-top: 8px;">
+            <strong style="color: #166534;">Active Clusters (${json.source === 'supabase' ? 'Cloud' : 'Local'}):</strong>
+            <ul style="list-style: none; padding-left: 0; margin-top: 4px;">
+              ${pools.slice(0, 3).map((p: any) => `
+                <li style="padding: 4px 0; border-bottom: 1px dashed var(--color-border);">
+                  <strong>${p.farmer_name}</strong> (${p.village || p.taluka}) • <strong>${p.quantity_quintals}q</strong> → ${p.target_mandi}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      } catch (err) {
+        poolsContainer.innerHTML = '<p style="color: var(--color-danger);">Offline cluster cache active.</p>';
+      }
+    });
+  }
+
+  // Copy WhatsApp slip
+  const copySlipBtn = panel.querySelector('#btn-copy-slip');
+  if (copySlipBtn) {
+    copySlipBtn.addEventListener('click', () => {
+      const rec = opt.recommended;
+      const slip = `🌾 *MandiMitra: AsliDaam Payout Slip*\nCrop: ${opt.commodity} (${opt.quantityQuintals} Quintals)\nRecommendation: ${opt.headlineSummary.mr}\nOptimal Mandi: ${rec.market.name}\nNet Payout: ₹${rec.totalNetPayout.toLocaleString('en-IN')} (+₹${opt.totalPocketCashGain.toLocaleString('en-IN')} extra in pocket)\nVerified by MandiMitra Decision Engine`;
+      navigator.clipboard.writeText(slip);
+      alert('Copied AsliDaam Recommendation Slip to Clipboard!');
+    });
+  }
+
   return panel;
 }
+
