@@ -60,6 +60,12 @@ export async function sajhaBazaarEvaluateController(req: Request, res: Response)
     const commodity = body.commodity || 'Tomato';
     const quantityQuintals = Number(body.quantityQuintals) > 0 ? Number(body.quantityQuintals) : 3;
 
+    // Reset caches in development so newly added clusters are immediately picked up
+    if (config.env === 'development') {
+      const { resetSajhaCaches } = await import('../core/sajha-bazaar');
+      resetSajhaCaches();
+    }
+
     // Resolve the origin: explicit coordinates win, otherwise the canonical district centroid.
     let latitude = Number(body.latitude);
     let longitude = Number(body.longitude);
