@@ -23,11 +23,47 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+import { 
+  getFarmerPools, 
+  insertFarmerPool, 
+  insertPriceAlert, 
+  getPriceAlerts 
+} from './supabase';
+
 // API Routes
 app.get('/api/markets/nearby', getNearbyMarketsController);
 app.get('/api/prices/live', getLivePriceController);
 app.post('/api/evaluate', evaluateController);
 app.get('/api/backtest', getBacktestController);
+
+// Supabase Cloud Routes (SajhaBazaar Farmer Pooling & Price Alerts)
+app.get('/api/pools', async (_req, res) => {
+  const result = await getFarmerPools();
+  res.json(result);
+});
+
+app.post('/api/pools/join', async (req, res) => {
+  const result = await insertFarmerPool(req.body);
+  if (!result.success) {
+    res.status(400).json(result);
+    return;
+  }
+  res.status(201).json(result);
+});
+
+app.post('/api/alerts/subscribe', async (req, res) => {
+  const result = await insertPriceAlert(req.body);
+  if (!result.success) {
+    res.status(400).json(result);
+    return;
+  }
+  res.status(201).json(result);
+});
+
+app.get('/api/alerts', async (_req, res) => {
+  const alerts = await getPriceAlerts();
+  res.json({ alerts });
+});
 
 // Health check
 app.get('/api/health', (_req, res) => {
