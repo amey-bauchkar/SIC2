@@ -2,6 +2,9 @@
  * MandiMitra Client-Side Hash Router
  * Routes between /, /markets, /decision, /evidence, /backtest, /settings.
  * 
+ * Supports dynamic route registration so team members can add new routes
+ * without creating merge conflicts in a monolithic switch-statement.
+ * 
  * OWNER: Janhvi (Frontend Lead)
  */
 
@@ -14,11 +17,23 @@ import { renderMarketsView } from '../features/markets/MarketsView';
 import { renderSettingsView } from '../features/settings/SettingsView';
 import { renderBacktestView } from '../features/backtest/BacktestView';
 
+export type RouteRenderer = () => HTMLElement;
+
 export class Router {
   private mountPoint: HTMLElement;
+  private routes: Map<string, RouteRenderer> = new Map();
 
   constructor(mountPoint: HTMLElement) {
     this.mountPoint = mountPoint;
+
+    // Register standard default routes
+    this.routes.set('/', renderEntryView);
+    this.routes.set('/decision', renderDecisionView);
+    this.routes.set('/evidence', renderEvidenceView);
+    this.routes.set('/markets', renderMarketsView);
+    this.routes.set('/settings', renderSettingsView);
+    this.routes.set('/backtest', renderBacktestView);
+
     window.addEventListener('hashchange', () => this.handleHashChange());
     store.subscribe((state) => {
       const hash = `#${state.currentRoute}`;
@@ -29,49 +44,34 @@ export class Router {
     });
   }
 
+  /**
+   * Register a custom or experimental route dynamically without modifying core files.
+   */
+  public registerRoute(path: string, renderer: RouteRenderer): void {
+    this.routes.set(path, renderer);
+  }
+
   public init(): void {
     this.handleHashChange();
   }
 
   private handleHashChange(): void {
     const hash = window.location.hash.replace('#', '') || '/';
-    const validRoutes: AppRoute[] = ['/', '/markets', '/decision', '/evidence', '/backtest', '/settings'];
-    const targetRoute = validRoutes.includes(hash as AppRoute) ? (hash as AppRoute) : '/';
-    store.setRoute(targetRoute);
+    const targetRoute = this.routes.has(hash) ? hash : '/';
+    store.setRoute(targetRoute as AppRoute);
   }
 
-  private render(route: AppRoute): void {
+  private render(route: string): void {
     this.mountPoint.innerHTML = '';
 
-    let view: HTMLElement;
-    switch (route) {
-      case '/':
-        view = renderEntryView();
-        break;
-      case '/decision':
-        view = renderDecisionView();
-        break;
-      case '/evidence':
-        view = renderEvidenceView();
-        break;
-      case '/markets':
-        view = renderMarketsView();
-        break;
-      case '/settings':
-        view = renderSettingsView();
-        break;
-      case '/backtest':
-        view = renderBacktestView();
-        break;
-      default:
-        view = renderEntryView();
-    }
+    const renderer = this.routes.get(route) || this.routes.get('/') || renderEntryView;
+    const view = renderer();
 
     this.mountPoint.appendChild(view);
     this.updateActiveNav(route);
   }
 
-  private updateActiveNav(route: AppRoute): void {
+  private updateActiveNav(route: string): void {
     const links = document.querySelectorAll('.nav-link');
     links.forEach(link => {
       const href = link.getAttribute('href')?.replace('#', '');
