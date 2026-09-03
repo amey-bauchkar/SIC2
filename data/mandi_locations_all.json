@@ -1,0 +1,1313 @@
+[
+  {
+    "id": "nsk_lasalgaon",
+    "market_name": "Lasalgaon",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Niphad",
+    "state": "Maharashtra",
+    "market_type": "National Onion Terminal",
+    "latitude": 20.1477,
+    "longitude": 74.2254,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "nsk_pimpalgaon",
+    "market_name": "Pimpalgaon Baswant",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Niphad",
+    "state": "Maharashtra",
+    "market_type": "Major Onion/Tomato APMC",
+    "latitude": 20.1706,
+    "longitude": 73.9877,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "nsk_nashik",
+    "market_name": "Nashik (Dindori Road)",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Nashik",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 20.016,
+    "longitude": 73.7997,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "nsk_manmad",
+    "market_name": "Manmad",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Nandgaon",
+    "state": "Maharashtra",
+    "market_type": "Grain & Onion APMC",
+    "latitude": 20.2526,
+    "longitude": 74.4428,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "nsk_sinnar",
+    "market_name": "Sinnar",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Sinnar",
+    "state": "Maharashtra",
+    "market_type": "Onion & Veg APMC",
+    "latitude": 19.8475,
+    "longitude": 74.0006,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "nsk_yeola",
+    "market_name": "Yeola",
+    "district": "Nashik",
+    "division": "Nashik",
+    "taluka": "Yeola",
+    "state": "Maharashtra",
+    "market_type": "Onion & Maize APMC",
+    "latitude": 20.0425,
+    "longitude": 74.4897,
+    "primary_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes"
+    ]
+  },
+  {
+    "id": "ahn_ahmednagar",
+    "market_name": "Ahmednagar",
+    "district": "Ahilyanagar",
+    "division": "Nashik",
+    "taluka": "Nagar",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 19.0948,
+    "longitude": 74.7492,
+    "primary_commodities": [
+      "Onion",
+      "Soyabean",
+      "Pomegranate"
+    ]
+  },
+  {
+    "id": "ahn_rahata",
+    "market_name": "Rahata",
+    "district": "Ahilyanagar",
+    "division": "Nashik",
+    "taluka": "Rahata",
+    "state": "Maharashtra",
+    "market_type": "Major Onion & Pomegranate APMC",
+    "latitude": 19.6644,
+    "longitude": 74.4988,
+    "primary_commodities": [
+      "Onion",
+      "Soyabean",
+      "Pomegranate"
+    ]
+  },
+  {
+    "id": "ahn_sangamner",
+    "market_name": "Sangamner",
+    "district": "Ahilyanagar",
+    "division": "Nashik",
+    "taluka": "Sangamner",
+    "state": "Maharashtra",
+    "market_type": "Tomato & Veg APMC",
+    "latitude": 19.5772,
+    "longitude": 74.2144,
+    "primary_commodities": [
+      "Onion",
+      "Soyabean",
+      "Pomegranate"
+    ]
+  },
+  {
+    "id": "ahn_kopargaon",
+    "market_name": "Kopargaon",
+    "district": "Ahilyanagar",
+    "division": "Nashik",
+    "taluka": "Kopargaon",
+    "state": "Maharashtra",
+    "market_type": "Grain & Cash Crop APMC",
+    "latitude": 19.8895,
+    "longitude": 74.4789,
+    "primary_commodities": [
+      "Onion",
+      "Soyabean",
+      "Pomegranate"
+    ]
+  },
+  {
+    "id": "jlg_jalgaon",
+    "market_name": "Jalgaon",
+    "district": "Jalgaon",
+    "division": "Nashik",
+    "taluka": "Jalgaon",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 21.0055,
+    "longitude": 75.565,
+    "primary_commodities": [
+      "Banana",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "jlg_raver",
+    "market_name": "Raver",
+    "district": "Jalgaon",
+    "division": "Nashik",
+    "taluka": "Raver",
+    "state": "Maharashtra",
+    "market_type": "India's Banana Capital APMC",
+    "latitude": 21.2464,
+    "longitude": 76.0322,
+    "primary_commodities": [
+      "Banana",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "jlg_chalisgaon",
+    "market_name": "Chalisgaon",
+    "district": "Jalgaon",
+    "division": "Nashik",
+    "taluka": "Chalisgaon",
+    "state": "Maharashtra",
+    "market_type": "Maize & Cotton APMC",
+    "latitude": 20.4632,
+    "longitude": 75.0125,
+    "primary_commodities": [
+      "Banana",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "dhl_dhule",
+    "market_name": "Dhule",
+    "district": "Dhule",
+    "division": "Nashik",
+    "taluka": "Dhule",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 20.902,
+    "longitude": 74.776,
+    "primary_commodities": [
+      "Cotton",
+      "Chilli",
+      "Onion"
+    ]
+  },
+  {
+    "id": "dhl_dondaicha",
+    "market_name": "Dondaicha",
+    "district": "Dhule",
+    "division": "Nashik",
+    "taluka": "Sindkheda",
+    "state": "Maharashtra",
+    "market_type": "Major Chilli & Maize APMC",
+    "latitude": 21.3289,
+    "longitude": 74.5714,
+    "primary_commodities": [
+      "Cotton",
+      "Chilli",
+      "Onion"
+    ]
+  },
+  {
+    "id": "ndb_nandurbar",
+    "market_name": "Nandurbar",
+    "district": "Nandurbar",
+    "division": "Nashik",
+    "taluka": "Nandurbar",
+    "state": "Maharashtra",
+    "market_type": "Famous Red Chilli Market",
+    "latitude": 21.371,
+    "longitude": 74.242,
+    "primary_commodities": [
+      "Chilli",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "ndb_shahada",
+    "market_name": "Shahada",
+    "district": "Nandurbar",
+    "division": "Nashik",
+    "taluka": "Shahada",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Grain APMC",
+    "latitude": 21.5422,
+    "longitude": 74.4711,
+    "primary_commodities": [
+      "Chilli",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "pun_gultekdi",
+    "market_name": "Pune (Gultekdi)",
+    "district": "Pune",
+    "division": "Pune",
+    "taluka": "Haveli",
+    "state": "Maharashtra",
+    "market_type": "Mega Market Yard Terminal",
+    "latitude": 18.4908,
+    "longitude": 73.8647,
+    "primary_commodities": [
+      "Tomato",
+      "Onion",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "pun_narayangaon",
+    "market_name": "Junnar (Narayangaon)",
+    "district": "Pune",
+    "division": "Pune",
+    "taluka": "Junnar",
+    "state": "Maharashtra",
+    "market_type": "Western India Tomato Hub",
+    "latitude": 19.1177,
+    "longitude": 73.9785,
+    "primary_commodities": [
+      "Tomato",
+      "Onion",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "pun_baramati",
+    "market_name": "Baramati",
+    "district": "Pune",
+    "division": "Pune",
+    "taluka": "Baramati",
+    "state": "Maharashtra",
+    "market_type": "Sugarcane & Grain Hub",
+    "latitude": 18.1517,
+    "longitude": 74.5772,
+    "primary_commodities": [
+      "Tomato",
+      "Onion",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "pun_chakan",
+    "market_name": "Khed (Chakan)",
+    "district": "Pune",
+    "division": "Pune",
+    "taluka": "Khed",
+    "state": "Maharashtra",
+    "market_type": "Onion & Green Veg APMC",
+    "latitude": 18.761,
+    "longitude": 73.8596,
+    "primary_commodities": [
+      "Tomato",
+      "Onion",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "sol_solapur",
+    "market_name": "Solapur",
+    "district": "Solapur",
+    "division": "Pune",
+    "taluka": "Solapur North",
+    "state": "Maharashtra",
+    "market_type": "India's Pomegranate Hub APMC",
+    "latitude": 17.658,
+    "longitude": 75.908,
+    "primary_commodities": [
+      "Pomegranate",
+      "Onion",
+      "Jowar"
+    ]
+  },
+  {
+    "id": "sol_barshi",
+    "market_name": "Barshi",
+    "district": "Solapur",
+    "division": "Pune",
+    "taluka": "Barshi",
+    "state": "Maharashtra",
+    "market_type": "Pulses & Lentils Major APMC",
+    "latitude": 18.2325,
+    "longitude": 75.6942,
+    "primary_commodities": [
+      "Pomegranate",
+      "Onion",
+      "Jowar"
+    ]
+  },
+  {
+    "id": "sol_pandharpur",
+    "market_name": "Pandharpur",
+    "district": "Solapur",
+    "division": "Pune",
+    "taluka": "Pandharpur",
+    "state": "Maharashtra",
+    "market_type": "Vegetable & Jowar APMC",
+    "latitude": 17.6778,
+    "longitude": 75.3283,
+    "primary_commodities": [
+      "Pomegranate",
+      "Onion",
+      "Jowar"
+    ]
+  },
+  {
+    "id": "kop_kolhapur",
+    "market_name": "Kolhapur (Shahu Market)",
+    "district": "Kolhapur",
+    "division": "Pune",
+    "taluka": "Karveer",
+    "state": "Maharashtra",
+    "market_type": "National Jaggery Market",
+    "latitude": 16.702,
+    "longitude": 74.245,
+    "primary_commodities": [
+      "Jaggery",
+      "Sugarcane",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "kop_gadhinglaj",
+    "market_name": "Gadhinglaj",
+    "district": "Kolhapur",
+    "division": "Pune",
+    "taluka": "Gadhinglaj",
+    "state": "Maharashtra",
+    "market_type": "Southern Border Grain APMC",
+    "latitude": 16.2294,
+    "longitude": 74.3512,
+    "primary_commodities": [
+      "Jaggery",
+      "Sugarcane",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "sgl_sangli",
+    "market_name": "Sangli",
+    "district": "Sangli",
+    "division": "Pune",
+    "taluka": "Miraj",
+    "state": "Maharashtra",
+    "market_type": "Asia's Largest Turmeric & Raisin Hub",
+    "latitude": 16.85,
+    "longitude": 74.58,
+    "primary_commodities": [
+      "Turmeric",
+      "Grapes",
+      "Raisins"
+    ]
+  },
+  {
+    "id": "sgl_tasgaon",
+    "market_name": "Tasgaon",
+    "district": "Sangli",
+    "division": "Pune",
+    "taluka": "Tasgaon",
+    "state": "Maharashtra",
+    "market_type": "Famous Raisin/Grapes APMC",
+    "latitude": 17.0342,
+    "longitude": 74.6044,
+    "primary_commodities": [
+      "Turmeric",
+      "Grapes",
+      "Raisins"
+    ]
+  },
+  {
+    "id": "str_satara",
+    "market_name": "Satara",
+    "district": "Satara",
+    "division": "Pune",
+    "taluka": "Satara",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 17.68,
+    "longitude": 74.019,
+    "primary_commodities": [
+      "Ginger",
+      "Strawberry",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "str_karad",
+    "market_name": "Karad",
+    "district": "Satara",
+    "division": "Pune",
+    "taluka": "Karad",
+    "state": "Maharashtra",
+    "market_type": "Major South Satara APMC",
+    "latitude": 17.2885,
+    "longitude": 74.1844,
+    "primary_commodities": [
+      "Ginger",
+      "Strawberry",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "str_wai",
+    "market_name": "Wai",
+    "district": "Satara",
+    "division": "Pune",
+    "taluka": "Wai",
+    "state": "Maharashtra",
+    "market_type": "Turmeric & Ginger APMC",
+    "latitude": 17.9472,
+    "longitude": 73.8928,
+    "primary_commodities": [
+      "Ginger",
+      "Strawberry",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "csn_aurangabad",
+    "market_name": "Chh. Sambhajinagar (Jadhavwadi)",
+    "district": "Chhatrapati Sambhajinagar",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Aurangabad",
+    "state": "Maharashtra",
+    "market_type": "Central Marathwada APMC",
+    "latitude": 19.898,
+    "longitude": 75.362,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Maize"
+    ]
+  },
+  {
+    "id": "csn_paithan",
+    "market_name": "Paithan",
+    "district": "Chhatrapati Sambhajinagar",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Paithan",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Grain APMC",
+    "latitude": 19.4817,
+    "longitude": 75.3853,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Maize"
+    ]
+  },
+  {
+    "id": "jln_jalna",
+    "market_name": "Jalna",
+    "district": "Jalna",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Jalna",
+    "state": "Maharashtra",
+    "market_type": "Major Seed & Sweet Lime Capital",
+    "latitude": 19.835,
+    "longitude": 75.882,
+    "primary_commodities": [
+      "Mosambi (Sweet Lime)",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "jln_partur",
+    "market_name": "Partur",
+    "district": "Jalna",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Partur",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Soyabean APMC",
+    "latitude": 19.5934,
+    "longitude": 76.2163,
+    "primary_commodities": [
+      "Mosambi (Sweet Lime)",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "bed_beed",
+    "market_name": "Beed",
+    "district": "Beed",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Beed",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 18.99,
+    "longitude": 75.761,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur"
+    ]
+  },
+  {
+    "id": "bed_parli",
+    "market_name": "Parli Vaijnath",
+    "district": "Beed",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Parli",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Pulse APMC",
+    "latitude": 18.8524,
+    "longitude": 76.5367,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur"
+    ]
+  },
+  {
+    "id": "lat_latur",
+    "market_name": "Latur",
+    "district": "Latur",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Latur",
+    "state": "Maharashtra",
+    "market_type": "National Pulses & Soybean Hub",
+    "latitude": 18.3976,
+    "longitude": 76.5786,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur (Arhar)",
+      "Urad"
+    ]
+  },
+  {
+    "id": "lat_udgir",
+    "market_name": "Udgir",
+    "district": "Latur",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Udgir",
+    "state": "Maharashtra",
+    "market_type": "Oilseed & Grain Terminal",
+    "latitude": 18.3942,
+    "longitude": 77.1147,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur (Arhar)",
+      "Urad"
+    ]
+  },
+  {
+    "id": "lat_ahmedpur",
+    "market_name": "Ahmedpur",
+    "district": "Latur",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Ahmedpur",
+    "state": "Maharashtra",
+    "market_type": "Grain & Pulse APMC",
+    "latitude": 18.7051,
+    "longitude": 76.9318,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur (Arhar)",
+      "Urad"
+    ]
+  },
+  {
+    "id": "dhr_dharashiv",
+    "market_name": "Dharashiv",
+    "district": "Dharashiv",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Dharashiv",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 18.185,
+    "longitude": 76.042,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur",
+      "Chana"
+    ]
+  },
+  {
+    "id": "dhr_tuljapur",
+    "market_name": "Tuljapur",
+    "district": "Dharashiv",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Tuljapur",
+    "state": "Maharashtra",
+    "market_type": "Soyabean & Jowar APMC",
+    "latitude": 18.0076,
+    "longitude": 76.0754,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur",
+      "Chana"
+    ]
+  },
+  {
+    "id": "ndd_nanded",
+    "market_name": "Nanded",
+    "district": "Nanded",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Nanded",
+    "state": "Maharashtra",
+    "market_type": "Major Cotton & Turmeric APMC",
+    "latitude": 19.139,
+    "longitude": 77.322,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Turmeric"
+    ]
+  },
+  {
+    "id": "ndd_degloor",
+    "market_name": "Degloor",
+    "district": "Nanded",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Degloor",
+    "state": "Maharashtra",
+    "market_type": "Border Grain APMC",
+    "latitude": 18.5528,
+    "longitude": 77.5815,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Turmeric"
+    ]
+  },
+  {
+    "id": "pbn_parbhani",
+    "market_name": "Parbhani",
+    "district": "Parbhani",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Parbhani",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 19.269,
+    "longitude": 76.771,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Jowar"
+    ]
+  },
+  {
+    "id": "pbn_gangakhed",
+    "market_name": "Gangakhed",
+    "district": "Parbhani",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Gangakhed",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Soyabean APMC",
+    "latitude": 18.9567,
+    "longitude": 76.7533,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Jowar"
+    ]
+  },
+  {
+    "id": "hng_hingoli",
+    "market_name": "Hingoli",
+    "district": "Hingoli",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Hingoli",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 19.718,
+    "longitude": 77.148,
+    "primary_commodities": [
+      "Soyabean",
+      "Turmeric",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "hng_basmath",
+    "market_name": "Basmath",
+    "district": "Hingoli",
+    "division": "Chhatrapati Sambhajinagar",
+    "taluka": "Basmath",
+    "state": "Maharashtra",
+    "market_type": "Major Turmeric APMC",
+    "latitude": 19.5167,
+    "longitude": 77.1667,
+    "primary_commodities": [
+      "Soyabean",
+      "Turmeric",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "amt_amravati",
+    "market_name": "Amravati",
+    "district": "Amravati",
+    "division": "Amravati",
+    "taluka": "Amravati",
+    "state": "Maharashtra",
+    "market_type": "Vidarbha Soyabean Capital",
+    "latitude": 20.938,
+    "longitude": 77.78,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur"
+    ]
+  },
+  {
+    "id": "amt_warud",
+    "market_name": "Warud",
+    "district": "Amravati",
+    "division": "Amravati",
+    "taluka": "Warud",
+    "state": "Maharashtra",
+    "market_type": "Famous Orange Market (California of Vidarbha)",
+    "latitude": 21.4642,
+    "longitude": 78.2678,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur"
+    ]
+  },
+  {
+    "id": "akl_akola",
+    "market_name": "Akola",
+    "district": "Akola",
+    "division": "Amravati",
+    "taluka": "Akola",
+    "state": "Maharashtra",
+    "market_type": "Historical Cotton City APMC",
+    "latitude": 20.701,
+    "longitude": 77.009,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "akl_akot",
+    "market_name": "Akot",
+    "district": "Akola",
+    "division": "Amravati",
+    "taluka": "Akot",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Turmeric APMC",
+    "latitude": 21.0967,
+    "longitude": 77.0583,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "yvt_yavatmal",
+    "market_name": "Yavatmal",
+    "district": "Yavatmal",
+    "division": "Amravati",
+    "taluka": "Yavatmal",
+    "state": "Maharashtra",
+    "market_type": "White Gold (Cotton) Capital",
+    "latitude": 20.389,
+    "longitude": 78.121,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "yvt_wani",
+    "market_name": "Wani",
+    "district": "Yavatmal",
+    "division": "Amravati",
+    "taluka": "Wani",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Grain APMC",
+    "latitude": 20.0631,
+    "longitude": 78.9525,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "bld_khamgaon",
+    "market_name": "Khamgaon",
+    "district": "Buldhana",
+    "division": "Amravati",
+    "taluka": "Khamgaon",
+    "state": "Maharashtra",
+    "market_type": "Historic Cotton & Silver Hub",
+    "latitude": 20.6931,
+    "longitude": 76.5714,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "bld_malkapur",
+    "market_name": "Malkapur",
+    "district": "Buldhana",
+    "division": "Amravati",
+    "taluka": "Malkapur",
+    "state": "Maharashtra",
+    "market_type": "Major Grain APMC",
+    "latitude": 20.8842,
+    "longitude": 76.2025,
+    "primary_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Maize"
+    ]
+  },
+  {
+    "id": "wsh_washim",
+    "market_name": "Washim",
+    "district": "Washim",
+    "division": "Amravati",
+    "taluka": "Washim",
+    "state": "Maharashtra",
+    "market_type": "District Central Soyabean APMC",
+    "latitude": 20.112,
+    "longitude": 77.134,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur",
+      "Gram"
+    ]
+  },
+  {
+    "id": "wsh_karanja",
+    "market_name": "Karanja Lad",
+    "district": "Washim",
+    "division": "Amravati",
+    "taluka": "Karanja",
+    "state": "Maharashtra",
+    "market_type": "High Volume Soyabean APMC",
+    "latitude": 20.4833,
+    "longitude": 77.4833,
+    "primary_commodities": [
+      "Soyabean",
+      "Tur",
+      "Gram"
+    ]
+  },
+  {
+    "id": "ngp_kalamna",
+    "market_name": "Nagpur (Kalamna)",
+    "district": "Nagpur",
+    "division": "Nagpur",
+    "taluka": "Nagpur Urban",
+    "state": "Maharashtra",
+    "market_type": "Central India Mega Wholesale Market",
+    "latitude": 21.1789,
+    "longitude": 79.1432,
+    "primary_commodities": [
+      "Orange",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "ngp_katol",
+    "market_name": "Katol",
+    "district": "Nagpur",
+    "division": "Nagpur",
+    "taluka": "Katol",
+    "state": "Maharashtra",
+    "market_type": "Famous Orange & Cotton APMC",
+    "latitude": 21.2667,
+    "longitude": 78.5833,
+    "primary_commodities": [
+      "Orange",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "wrd_wardha",
+    "market_name": "Wardha",
+    "district": "Wardha",
+    "division": "Nagpur",
+    "taluka": "Wardha",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 20.746,
+    "longitude": 78.603,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "wrd_hinganghat",
+    "market_name": "Hinganghat",
+    "district": "Wardha",
+    "division": "Nagpur",
+    "taluka": "Hinganghat",
+    "state": "Maharashtra",
+    "market_type": "Major Cotton & Oilseed APMC",
+    "latitude": 20.55,
+    "longitude": 78.8333,
+    "primary_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur"
+    ]
+  },
+  {
+    "id": "chd_chandrapur",
+    "market_name": "Chandrapur",
+    "district": "Chandrapur",
+    "division": "Nagpur",
+    "taluka": "Chandrapur",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 19.962,
+    "longitude": 79.297,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "chd_warora",
+    "market_name": "Warora",
+    "district": "Chandrapur",
+    "division": "Nagpur",
+    "taluka": "Warora",
+    "state": "Maharashtra",
+    "market_type": "Cotton & Grain APMC",
+    "latitude": 20.2333,
+    "longitude": 79.0,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Cotton"
+    ]
+  },
+  {
+    "id": "bhn_bhandara",
+    "market_name": "Bhandara",
+    "district": "Bhandara",
+    "division": "Nagpur",
+    "taluka": "Bhandara",
+    "state": "Maharashtra",
+    "market_type": "Paddy & Rice Bowl APMC",
+    "latitude": 21.172,
+    "longitude": 79.655,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Wheat"
+    ]
+  },
+  {
+    "id": "bhn_tumsar",
+    "market_name": "Tumsar",
+    "district": "Bhandara",
+    "division": "Nagpur",
+    "taluka": "Tumsar",
+    "state": "Maharashtra",
+    "market_type": "Major Rice Mill & Grain APMC",
+    "latitude": 21.3833,
+    "longitude": 79.7333,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Wheat"
+    ]
+  },
+  {
+    "id": "gnd_gondia",
+    "market_name": "Gondia",
+    "district": "Gondia",
+    "division": "Nagpur",
+    "taluka": "Gondia",
+    "state": "Maharashtra",
+    "market_type": "Rice City Terminal APMC",
+    "latitude": 21.46,
+    "longitude": 80.197,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Linseed",
+      "Wheat"
+    ]
+  },
+  {
+    "id": "gnd_tirora",
+    "market_name": "Tirora",
+    "district": "Gondia",
+    "division": "Nagpur",
+    "taluka": "Tirora",
+    "state": "Maharashtra",
+    "market_type": "Paddy APMC",
+    "latitude": 21.4167,
+    "longitude": 79.9333,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Linseed",
+      "Wheat"
+    ]
+  },
+  {
+    "id": "gdc_gadchiroli",
+    "market_name": "Gadchiroli",
+    "district": "Gadchiroli",
+    "division": "Nagpur",
+    "taluka": "Gadchiroli",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 20.185,
+    "longitude": 80.004,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Minor Forest Produce",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "gdc_chamorshi",
+    "market_name": "Chamorshi",
+    "district": "Gadchiroli",
+    "division": "Nagpur",
+    "taluka": "Chamorshi",
+    "state": "Maharashtra",
+    "market_type": "Paddy APMC",
+    "latitude": 19.9333,
+    "longitude": 79.9167,
+    "primary_commodities": [
+      "Paddy (Rice)",
+      "Minor Forest Produce",
+      "Soyabean"
+    ]
+  },
+  {
+    "id": "bom_vashi",
+    "market_name": "Navi Mumbai (Vashi APMC)",
+    "district": "Mumbai Suburban",
+    "division": "Konkan",
+    "taluka": "Thane/Navi Mumbai",
+    "state": "Maharashtra",
+    "market_type": "Apex Wholesale Terminal for entire Maharashtra",
+    "latitude": 19.0736,
+    "longitude": 73.0086,
+    "primary_commodities": [
+      "All Fruits",
+      "All Vegetables",
+      "Spices"
+    ]
+  },
+  {
+    "id": "bom_byculla",
+    "market_name": "Mumbai (Byculla Market)",
+    "district": "Mumbai City",
+    "division": "Konkan",
+    "taluka": "Mumbai City",
+    "state": "Maharashtra",
+    "market_type": "Historic Vegetable Wholesale Market",
+    "latitude": 18.9774,
+    "longitude": 72.8335,
+    "primary_commodities": [
+      "Consumption Terminal",
+      "Fish & Export Hub"
+    ]
+  },
+  {
+    "id": "thn_kalyan",
+    "market_name": "Kalyan",
+    "district": "Thane",
+    "division": "Konkan",
+    "taluka": "Kalyan",
+    "state": "Maharashtra",
+    "market_type": "Major Vegetable Wholesale APMC",
+    "latitude": 19.2437,
+    "longitude": 73.1355,
+    "primary_commodities": [
+      "Vegetables",
+      "Paddy",
+      "Fruits"
+    ]
+  },
+  {
+    "id": "thn_murbad",
+    "market_name": "Murbad",
+    "district": "Thane",
+    "division": "Konkan",
+    "taluka": "Murbad",
+    "state": "Maharashtra",
+    "market_type": "Paddy & Grain APMC",
+    "latitude": 19.25,
+    "longitude": 73.4,
+    "primary_commodities": [
+      "Vegetables",
+      "Paddy",
+      "Fruits"
+    ]
+  },
+  {
+    "id": "plg_dahanu",
+    "market_name": "Dahanu (Gholvad)",
+    "district": "Palghar",
+    "division": "Konkan",
+    "taluka": "Dahanu",
+    "state": "Maharashtra",
+    "market_type": "National GI Chiku Capital",
+    "latitude": 19.97,
+    "longitude": 72.73,
+    "primary_commodities": [
+      "Chiku (Sapota)",
+      "Paddy",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "plg_palghar",
+    "market_name": "Palghar",
+    "district": "Palghar",
+    "division": "Konkan",
+    "taluka": "Palghar",
+    "state": "Maharashtra",
+    "market_type": "District Central APMC",
+    "latitude": 19.697,
+    "longitude": 72.77,
+    "primary_commodities": [
+      "Chiku (Sapota)",
+      "Paddy",
+      "Vegetables"
+    ]
+  },
+  {
+    "id": "rgd_panvel",
+    "market_name": "Panvel",
+    "district": "Raigad",
+    "division": "Konkan",
+    "taluka": "Panvel",
+    "state": "Maharashtra",
+    "market_type": "Key Urban Gate APMC",
+    "latitude": 18.9894,
+    "longitude": 73.1175,
+    "primary_commodities": [
+      "Paddy",
+      "Mango (Alphonso)",
+      "Coconut"
+    ]
+  },
+  {
+    "id": "rgd_pen",
+    "market_name": "Pen",
+    "district": "Raigad",
+    "division": "Konkan",
+    "taluka": "Pen",
+    "state": "Maharashtra",
+    "market_type": "Paddy & Salt Terminal",
+    "latitude": 18.7333,
+    "longitude": 73.0833,
+    "primary_commodities": [
+      "Paddy",
+      "Mango (Alphonso)",
+      "Coconut"
+    ]
+  },
+  {
+    "id": "rtn_ratnagiri",
+    "market_name": "Ratnagiri",
+    "district": "Ratnagiri",
+    "division": "Konkan",
+    "taluka": "Ratnagiri",
+    "state": "Maharashtra",
+    "market_type": "GI Alphonso Mango Terminal",
+    "latitude": 16.991,
+    "longitude": 73.313,
+    "primary_commodities": [
+      "Hapus Mango (Alphonso)",
+      "Cashewnut",
+      "Coconut"
+    ]
+  },
+  {
+    "id": "rtn_chiplun",
+    "market_name": "Chiplun",
+    "district": "Ratnagiri",
+    "division": "Konkan",
+    "taluka": "Chiplun",
+    "state": "Maharashtra",
+    "market_type": "Mid-Konkan Agricultural Hub",
+    "latitude": 17.5333,
+    "longitude": 73.5167,
+    "primary_commodities": [
+      "Hapus Mango (Alphonso)",
+      "Cashewnut",
+      "Coconut"
+    ]
+  },
+  {
+    "id": "snd_kudal",
+    "market_name": "Kudal",
+    "district": "Sindhudurg",
+    "division": "Konkan",
+    "taluka": "Kudal",
+    "state": "Maharashtra",
+    "market_type": "South Konkan Mango & Cashew APMC",
+    "latitude": 16.0167,
+    "longitude": 73.6833,
+    "primary_commodities": [
+      "Alphonso Mango",
+      "Cashew",
+      "Coconut"
+    ]
+  },
+  {
+    "id": "snd_sawantwadi",
+    "market_name": "Sawantwadi",
+    "district": "Sindhudurg",
+    "division": "Konkan",
+    "taluka": "Sawantwadi",
+    "state": "Maharashtra",
+    "market_type": "Border Horticultural APMC",
+    "latitude": 15.9,
+    "longitude": 73.8167,
+    "primary_commodities": [
+      "Alphonso Mango",
+      "Cashew",
+      "Coconut"
+    ]
+  }
+]

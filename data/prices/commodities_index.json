@@ -1,0 +1,1584 @@
+{
+  "state": "Maharashtra",
+  "unique_commodities_count": 101,
+  "generated_at": "2026-09-03T17:24:46.872760",
+  "commodities": [
+    {
+      "commodity": "Wheat",
+      "records_count": 40,
+      "districts_count": 20,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Amarawati",
+        "Buldhana",
+        "Chattrapati Sambhajinagar",
+        "Dharashiv",
+        "Dhule",
+        "Jalgaon",
+        "Jalna",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Nandurbar",
+        "Nashik",
+        "Pune",
+        "Solapur",
+        "Thane",
+        "Wardha",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 37,
+      "min_price": 2000.0,
+      "max_price": 5500.0,
+      "avg_modal_price": 2744.8
+    },
+    {
+      "commodity": "Onion",
+      "records_count": 32,
+      "districts_count": 14,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Dhule",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Nashik",
+        "Pune",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 30,
+      "min_price": 990.0,
+      "max_price": 6000.0,
+      "avg_modal_price": 3791.8
+    },
+    {
+      "commodity": "Bengal Gram(Gram)(Whole)",
+      "records_count": 27,
+      "districts_count": 16,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Amarawati",
+        "Buldhana",
+        "Chattrapati Sambhajinagar",
+        "Dhule",
+        "Jalgaon",
+        "Latur",
+        "Mumbai",
+        "Nagpur",
+        "Nandurbar",
+        "Nashik",
+        "Pune",
+        "Wardha",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 25,
+      "min_price": 3800.0,
+      "max_price": 7800.0,
+      "avg_modal_price": 5670.5
+    },
+    {
+      "commodity": "Tomato",
+      "records_count": 24,
+      "districts_count": 12,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 24,
+      "min_price": 200.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 1278.4
+    },
+    {
+      "commodity": "Green Chilli",
+      "records_count": 24,
+      "districts_count": 13,
+      "districts_list": [
+        "Ahilyanagar",
+        "Amarawati",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 24,
+      "min_price": 1000.0,
+      "max_price": 5500.0,
+      "avg_modal_price": 2871.2
+    },
+    {
+      "commodity": "Brinjal",
+      "records_count": 22,
+      "districts_count": 12,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 22,
+      "min_price": 500.0,
+      "max_price": 7000.0,
+      "avg_modal_price": 2187.0
+    },
+    {
+      "commodity": "Bhindi(Ladies Finger)",
+      "records_count": 21,
+      "districts_count": 11,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Sangli",
+        "Solapur",
+        "Thane"
+      ],
+      "markets_count": 21,
+      "min_price": 500.0,
+      "max_price": 4500.0,
+      "avg_modal_price": 2127.0
+    },
+    {
+      "commodity": "Bajra(Pearl Millet/Cumbu)",
+      "records_count": 20,
+      "districts_count": 9,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Dhule",
+        "Jalgaon",
+        "Jalna",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Yavatmal"
+      ],
+      "markets_count": 19,
+      "min_price": 2000.0,
+      "max_price": 3800.0,
+      "avg_modal_price": 2579.5
+    },
+    {
+      "commodity": "Jowar(Sorghum)",
+      "records_count": 20,
+      "districts_count": 13,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chattrapati Sambhajinagar",
+        "Dharashiv",
+        "Jalgaon",
+        "Jalna",
+        "Kolhapur",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Solapur",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 19,
+      "min_price": 1781.0,
+      "max_price": 6600.0,
+      "avg_modal_price": 3386.6
+    },
+    {
+      "commodity": "Green Gram(Moong)(Whole)",
+      "records_count": 19,
+      "districts_count": 12,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chattrapati Sambhajinagar",
+        "Dharashiv",
+        "Jalgaon",
+        "Mumbai",
+        "Nandurbar",
+        "Nashik",
+        "Pune",
+        "Solapur",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 18,
+      "min_price": 5700.0,
+      "max_price": 14000.0,
+      "avg_modal_price": 8712.8
+    },
+    {
+      "commodity": "Red gram/Arhar/Tur(whole)",
+      "records_count": 19,
+      "districts_count": 12,
+      "districts_list": [
+        "Akola",
+        "Amarawati",
+        "Buldhana",
+        "Chattrapati Sambhajinagar",
+        "Hingoli",
+        "Jalna",
+        "Latur",
+        "Nagpur",
+        "Nashik",
+        "Wardha",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 19,
+      "min_price": 3100.0,
+      "max_price": 9001.0,
+      "avg_modal_price": 7809.2
+    },
+    {
+      "commodity": "Potato",
+      "records_count": 18,
+      "districts_count": 11,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 18,
+      "min_price": 500.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 1247.2
+    },
+    {
+      "commodity": "Cabbage",
+      "records_count": 18,
+      "districts_count": 10,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Solapur"
+      ],
+      "markets_count": 18,
+      "min_price": 400.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 1066.9
+    },
+    {
+      "commodity": "Cucumbar(Kheera)",
+      "records_count": 18,
+      "districts_count": 9,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Raigad",
+        "Solapur"
+      ],
+      "markets_count": 18,
+      "min_price": 500.0,
+      "max_price": 6500.0,
+      "avg_modal_price": 1896.9
+    },
+    {
+      "commodity": "Cauliflower",
+      "records_count": 17,
+      "districts_count": 10,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Solapur"
+      ],
+      "markets_count": 17,
+      "min_price": 480.0,
+      "max_price": 4500.0,
+      "avg_modal_price": 1583.8
+    },
+    {
+      "commodity": "Soyabean",
+      "records_count": 15,
+      "districts_count": 11,
+      "districts_list": [
+        "Akola",
+        "Amarawati",
+        "Buldhana",
+        "Hingoli",
+        "Jalgaon",
+        "Latur",
+        "Nagpur",
+        "Nanded",
+        "Wardha",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 15,
+      "min_price": 4310.0,
+      "max_price": 6700.0,
+      "avg_modal_price": 5627.1
+    },
+    {
+      "commodity": "Bitter gourd",
+      "records_count": 15,
+      "districts_count": 8,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Raigad",
+        "Ratnagiri",
+        "Solapur"
+      ],
+      "markets_count": 15,
+      "min_price": 500.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 2503.3
+    },
+    {
+      "commodity": "Ginger(Green)",
+      "records_count": 15,
+      "districts_count": 11,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Sangli",
+        "Satara",
+        "Solapur"
+      ],
+      "markets_count": 15,
+      "min_price": 4000.0,
+      "max_price": 16500.0,
+      "avg_modal_price": 9540.0
+    },
+    {
+      "commodity": "Pomegranate",
+      "records_count": 14,
+      "districts_count": 8,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 14,
+      "min_price": 250.0,
+      "max_price": 25700.0,
+      "avg_modal_price": 8067.9
+    },
+    {
+      "commodity": "Guar",
+      "records_count": 14,
+      "districts_count": 8,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Pune",
+        "Raigad",
+        "Ratnagiri",
+        "Solapur"
+      ],
+      "markets_count": 14,
+      "min_price": 1500.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 5160.7
+    },
+    {
+      "commodity": "Chilly Capsicum",
+      "records_count": 13,
+      "districts_count": 7,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Ratnagiri",
+        "Solapur"
+      ],
+      "markets_count": 13,
+      "min_price": 500.0,
+      "max_price": 4500.0,
+      "avg_modal_price": 2184.6
+    },
+    {
+      "commodity": "Bottle gourd",
+      "records_count": 13,
+      "districts_count": 6,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nagpur",
+        "Pune"
+      ],
+      "markets_count": 13,
+      "min_price": 500.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 1268.5
+    },
+    {
+      "commodity": "Methi(Leaves)",
+      "records_count": 13,
+      "districts_count": 8,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 13,
+      "min_price": 6.0,
+      "max_price": 7000.0,
+      "avg_modal_price": 1364.2
+    },
+    {
+      "commodity": "Carrot",
+      "records_count": 12,
+      "districts_count": 7,
+      "districts_list": [
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 12,
+      "min_price": 1000.0,
+      "max_price": 4000.0,
+      "avg_modal_price": 2287.5
+    },
+    {
+      "commodity": "Spinach",
+      "records_count": 12,
+      "districts_count": 6,
+      "districts_list": [
+        "Ahilyanagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 12,
+      "min_price": 3.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 675.3
+    },
+    {
+      "commodity": "Coriander(Leaves)",
+      "records_count": 12,
+      "districts_count": 7,
+      "districts_list": [
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune"
+      ],
+      "markets_count": 12,
+      "min_price": 2.0,
+      "max_price": 3500.0,
+      "avg_modal_price": 1074.8
+    },
+    {
+      "commodity": "Black Gram(Urd Beans)(Whole)",
+      "records_count": 11,
+      "districts_count": 7,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chattrapati Sambhajinagar",
+        "Dharashiv",
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 10,
+      "min_price": 7000.0,
+      "max_price": 11600.0,
+      "avg_modal_price": 8378.6
+    },
+    {
+      "commodity": "Ridgeguard(Tori)",
+      "records_count": 11,
+      "districts_count": 6,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 11,
+      "min_price": 500.0,
+      "max_price": 4500.0,
+      "avg_modal_price": 2566.5
+    },
+    {
+      "commodity": "Rice",
+      "records_count": 11,
+      "districts_count": 7,
+      "districts_list": [
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Raigad",
+        "Solapur",
+        "Thane"
+      ],
+      "markets_count": 11,
+      "min_price": 1900.0,
+      "max_price": 11000.0,
+      "avg_modal_price": 5486.8
+    },
+    {
+      "commodity": "Garlic",
+      "records_count": 10,
+      "districts_count": 6,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Chattrapati Sambhajinagar",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 10,
+      "min_price": 6000.0,
+      "max_price": 26000.0,
+      "avg_modal_price": 13200.0
+    },
+    {
+      "commodity": "Apple",
+      "records_count": 10,
+      "districts_count": 9,
+      "districts_list": [
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Kolhapur",
+        "Mumbai",
+        "Nagpur",
+        "Nashik",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 10,
+      "min_price": 4000.0,
+      "max_price": 20000.0,
+      "avg_modal_price": 11750.0
+    },
+    {
+      "commodity": "Maize",
+      "records_count": 10,
+      "districts_count": 8,
+      "districts_list": [
+        "Ahilyanagar",
+        "Akola",
+        "Dhule",
+        "Jalgaon",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Sangli"
+      ],
+      "markets_count": 10,
+      "min_price": 2000.0,
+      "max_price": 3400.0,
+      "avg_modal_price": 2502.8
+    },
+    {
+      "commodity": "Beetroot",
+      "records_count": 8,
+      "districts_count": 5,
+      "districts_list": [
+        "Chandrapur",
+        "Jalgaon",
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 8,
+      "min_price": 600.0,
+      "max_price": 3000.0,
+      "avg_modal_price": 2262.5
+    },
+    {
+      "commodity": "Mousambi(Sweet Lime)",
+      "records_count": 8,
+      "districts_count": 6,
+      "districts_list": [
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 8,
+      "min_price": 1000.0,
+      "max_price": 7000.0,
+      "avg_modal_price": 3334.4
+    },
+    {
+      "commodity": "Lime",
+      "records_count": 7,
+      "districts_count": 6,
+      "districts_list": [
+        "Chattrapati Sambhajinagar",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 7,
+      "min_price": 400.0,
+      "max_price": 15000.0,
+      "avg_modal_price": 5083.3
+    },
+    {
+      "commodity": "Banana",
+      "records_count": 7,
+      "districts_count": 6,
+      "districts_list": [
+        "Chandrapur",
+        "Jalgaon",
+        "Mumbai",
+        "Nagpur",
+        "Nashik",
+        "Pune"
+      ],
+      "markets_count": 7,
+      "min_price": 500.0,
+      "max_price": 8000.0,
+      "avg_modal_price": 2322.9
+    },
+    {
+      "commodity": "Guava",
+      "records_count": 7,
+      "districts_count": 7,
+      "districts_list": [
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Nashik",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 7,
+      "min_price": 2000.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 5250.0
+    },
+    {
+      "commodity": "Drumstick",
+      "records_count": 7,
+      "districts_count": 5,
+      "districts_list": [
+        "Ahilyanagar",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 7,
+      "min_price": 1000.0,
+      "max_price": 4500.0,
+      "avg_modal_price": 3457.1
+    },
+    {
+      "commodity": "Beans",
+      "records_count": 7,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 7,
+      "min_price": 1000.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 2592.9
+    },
+    {
+      "commodity": "Water Melon",
+      "records_count": 6,
+      "districts_count": 4,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Sangli",
+        "Solapur"
+      ],
+      "markets_count": 6,
+      "min_price": 400.0,
+      "max_price": 1500.0,
+      "avg_modal_price": 883.3
+    },
+    {
+      "commodity": "Pumpkin",
+      "records_count": 6,
+      "districts_count": 4,
+      "districts_list": [
+        "Chandrapur",
+        "Mumbai",
+        "Nagpur",
+        "Pune"
+      ],
+      "markets_count": 6,
+      "min_price": 850.0,
+      "max_price": 2500.0,
+      "avg_modal_price": 1528.3
+    },
+    {
+      "commodity": "Papaya",
+      "records_count": 6,
+      "districts_count": 5,
+      "districts_list": [
+        "Chandrapur",
+        "Chattrapati Sambhajinagar",
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 6,
+      "min_price": 1000.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 2625.0
+    },
+    {
+      "commodity": "Sesamum(Sesame,Gingelly,Til)",
+      "records_count": 5,
+      "districts_count": 4,
+      "districts_list": [
+        "Akola",
+        "Mumbai",
+        "Washim",
+        "Yavatmal"
+      ],
+      "markets_count": 5,
+      "min_price": 10800.0,
+      "max_price": 20000.0,
+      "avg_modal_price": 12162.0
+    },
+    {
+      "commodity": "Paddy(Common)",
+      "records_count": 5,
+      "districts_count": 4,
+      "districts_list": [
+        "Bhandara",
+        "Chandrapur",
+        "Gadchiroli",
+        "Raigad"
+      ],
+      "markets_count": 4,
+      "min_price": 2050.0,
+      "max_price": 3890.0,
+      "avg_modal_price": 2806.0
+    },
+    {
+      "commodity": "Turmeric",
+      "records_count": 4,
+      "districts_count": 4,
+      "districts_list": [
+        "Akola",
+        "Hingoli",
+        "Mumbai",
+        "Washim"
+      ],
+      "markets_count": 4,
+      "min_price": 10100.0,
+      "max_price": 23000.0,
+      "avg_modal_price": 16683.8
+    },
+    {
+      "commodity": "Onion Green",
+      "records_count": 4,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 4,
+      "min_price": 5.0,
+      "max_price": 1200.0,
+      "avg_modal_price": 481.8
+    },
+    {
+      "commodity": "Raddish",
+      "records_count": 4,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Nagpur",
+        "Pune"
+      ],
+      "markets_count": 4,
+      "min_price": 7.0,
+      "max_price": 4000.0,
+      "avg_modal_price": 1220.8
+    },
+    {
+      "commodity": "Peas Wet",
+      "records_count": 4,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 4,
+      "min_price": 4000.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 6375.0
+    },
+    {
+      "commodity": "Pineapple",
+      "records_count": 4,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 4,
+      "min_price": 1000.0,
+      "max_price": 7000.0,
+      "avg_modal_price": 3575.0
+    },
+    {
+      "commodity": "Little gourd(Kundru)",
+      "records_count": 4,
+      "districts_count": 4,
+      "districts_list": [
+        "Chandrapur",
+        "Jalgaon",
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 4,
+      "min_price": 1000.0,
+      "max_price": 4000.0,
+      "avg_modal_price": 2375.0
+    },
+    {
+      "commodity": "Seetapal",
+      "records_count": 4,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 4,
+      "min_price": 3000.0,
+      "max_price": 8000.0,
+      "avg_modal_price": 5625.0
+    },
+    {
+      "commodity": "Sweet Pumpkin",
+      "records_count": 3,
+      "districts_count": 3,
+      "districts_list": [
+        "Jalgaon",
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 500.0,
+      "max_price": 1500.0,
+      "avg_modal_price": 950.0
+    },
+    {
+      "commodity": "Orange",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 4000.0,
+      "max_price": 20000.0,
+      "avg_modal_price": 9500.0
+    },
+    {
+      "commodity": "Corriander seed",
+      "records_count": 3,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Nagpur",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 11000.0,
+      "max_price": 22500.0,
+      "avg_modal_price": 15333.3
+    },
+    {
+      "commodity": "Gur(Jaggery)",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 4615.0,
+      "max_price": 6400.0,
+      "avg_modal_price": 5465.0
+    },
+    {
+      "commodity": "Pointed gourd(Parval)",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 2000.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 4000.0
+    },
+    {
+      "commodity": "Ground Nut Seed",
+      "records_count": 3,
+      "districts_count": 3,
+      "districts_list": [
+        "Kolhapur",
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 8000.0,
+      "max_price": 15000.0,
+      "avg_modal_price": 12333.3
+    },
+    {
+      "commodity": "Groundnut",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Nagpur",
+        "Nashik"
+      ],
+      "markets_count": 3,
+      "min_price": 5203.0,
+      "max_price": 7500.0,
+      "avg_modal_price": 7263.7
+    },
+    {
+      "commodity": "Sweet Potato",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 1600.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 3266.7
+    },
+    {
+      "commodity": "Green Peas",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 2,
+      "min_price": 4400.0,
+      "max_price": 7800.0,
+      "avg_modal_price": 5900.0
+    },
+    {
+      "commodity": "Chikoos(Sapota)",
+      "records_count": 3,
+      "districts_count": 3,
+      "districts_list": [
+        "Mumbai",
+        "Pune",
+        "Solapur"
+      ],
+      "markets_count": 3,
+      "min_price": 1500.0,
+      "max_price": 6000.0,
+      "avg_modal_price": 3500.0
+    },
+    {
+      "commodity": "Elephant Yam(Suran)/Amorphophallus",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 1500.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 2850.0
+    },
+    {
+      "commodity": "Mint(Pudina)",
+      "records_count": 3,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 3,
+      "min_price": 2.0,
+      "max_price": 800.0,
+      "avg_modal_price": 254.0
+    },
+    {
+      "commodity": "Lentil(Masur)(Whole)",
+      "records_count": 2,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 2,
+      "min_price": 7000.0,
+      "max_price": 7200.0,
+      "avg_modal_price": 7100.0
+    },
+    {
+      "commodity": "Tender Coconut",
+      "records_count": 2,
+      "districts_count": 2,
+      "districts_list": [
+        "Nashik",
+        "Pune"
+      ],
+      "markets_count": 2,
+      "min_price": 1300.0,
+      "max_price": 6000.0,
+      "avg_modal_price": 3075.0
+    },
+    {
+      "commodity": "Mango(Raw-Ripe)",
+      "records_count": 2,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 2,
+      "min_price": 1000.0,
+      "max_price": 6000.0,
+      "avg_modal_price": 4000.0
+    },
+    {
+      "commodity": "French Beans(Frasbean)",
+      "records_count": 2,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Ratnagiri"
+      ],
+      "markets_count": 2,
+      "min_price": 2500.0,
+      "max_price": 6000.0,
+      "avg_modal_price": 4000.0
+    },
+    {
+      "commodity": "Snakeguard",
+      "records_count": 2,
+      "districts_count": 2,
+      "districts_list": [
+        "Mumbai",
+        "Pune"
+      ],
+      "markets_count": 2,
+      "min_price": 1500.0,
+      "max_price": 3000.0,
+      "avg_modal_price": 2225.0
+    },
+    {
+      "commodity": "Green Gram Dal(Moong Dal)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 9100.0,
+      "max_price": 10500.0,
+      "avg_modal_price": 10300.0
+    },
+    {
+      "commodity": "Red gram split/Arhar dal/Tur dal",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 8500.0,
+      "max_price": 12500.0,
+      "avg_modal_price": 11000.0
+    },
+    {
+      "commodity": "Karbuja(Musk Melon)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 2000.0,
+      "max_price": 3000.0,
+      "avg_modal_price": 2500.0
+    },
+    {
+      "commodity": "Grapes",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 4000.0,
+      "max_price": 14000.0,
+      "avg_modal_price": 9000.0
+    },
+    {
+      "commodity": "Ragi(Finger Millet)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 5400.0,
+      "max_price": 5900.0,
+      "avg_modal_price": 5650.0
+    },
+    {
+      "commodity": "Safflower",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Akola"
+      ],
+      "markets_count": 1,
+      "min_price": 5251.0,
+      "max_price": 5251.0,
+      "avg_modal_price": 5251.0
+    },
+    {
+      "commodity": "Cowpea(Lobia/Karamani)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 7000.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 8700.0
+    },
+    {
+      "commodity": "Soanf",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 15000.0,
+      "max_price": 32000.0,
+      "avg_modal_price": 23500.0
+    },
+    {
+      "commodity": "Tamarind Fruit",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 8000.0,
+      "max_price": 14000.0,
+      "avg_modal_price": 11000.0
+    },
+    {
+      "commodity": "Arecanut(Betelnut/Supari)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 36000.0,
+      "max_price": 90500.0,
+      "avg_modal_price": 63250.0
+    },
+    {
+      "commodity": "Pear(Marasebu)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 10000.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 10000.0
+    },
+    {
+      "commodity": "Ox",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Amarawati"
+      ],
+      "markets_count": 1,
+      "min_price": 23600.0,
+      "max_price": 45600.0,
+      "avg_modal_price": 35200.0
+    },
+    {
+      "commodity": "Bengal Gram Dal(Chana Dal)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 7100.0,
+      "max_price": 8500.0,
+      "avg_modal_price": 7900.0
+    },
+    {
+      "commodity": "Banana - Green",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 2600.0,
+      "max_price": 3600.0,
+      "avg_modal_price": 3100.0
+    },
+    {
+      "commodity": "Cummin Seed(Jeera)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 22000.0,
+      "max_price": 40000.0,
+      "avg_modal_price": 31000.0
+    },
+    {
+      "commodity": "Chili Red",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 28000.0,
+      "max_price": 50000.0,
+      "avg_modal_price": 39000.0
+    },
+    {
+      "commodity": "Black pepper",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 65000.0,
+      "max_price": 85000.0,
+      "avg_modal_price": 75000.0
+    },
+    {
+      "commodity": "Mango",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 10000.0,
+      "max_price": 16000.0,
+      "avg_modal_price": 13000.0
+    },
+    {
+      "commodity": "Plum",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 3000.0,
+      "max_price": 10000.0,
+      "avg_modal_price": 6500.0
+    },
+    {
+      "commodity": "Marigold(Calcutta)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Nagpur"
+      ],
+      "markets_count": 1,
+      "min_price": 2000.0,
+      "max_price": 4000.0,
+      "avg_modal_price": 2925.0
+    },
+    {
+      "commodity": "Masur Dal",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 7000.0,
+      "max_price": 7600.0,
+      "avg_modal_price": 7400.0
+    },
+    {
+      "commodity": "Black Gram Dal(Urd Dal)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 10000.0,
+      "max_price": 12900.0,
+      "avg_modal_price": 12000.0
+    },
+    {
+      "commodity": "Coconut",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 3050.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 4025.0
+    },
+    {
+      "commodity": "Sugar",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 4900.0,
+      "max_price": 5200.0,
+      "avg_modal_price": 5050.0
+    },
+    {
+      "commodity": "Ghee",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 60000.0,
+      "max_price": 80000.0,
+      "avg_modal_price": 70000.0
+    },
+    {
+      "commodity": "Cashewnuts",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 85000.0,
+      "max_price": 145000.0,
+      "avg_modal_price": 115000.0
+    },
+    {
+      "commodity": "Cardamom",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 200000.0,
+      "max_price": 395000.0,
+      "avg_modal_price": 297500.0
+    },
+    {
+      "commodity": "Almond(Badam)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 75000.0,
+      "max_price": 115000.0,
+      "avg_modal_price": 95000.0
+    },
+    {
+      "commodity": "Linseed",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Chattrapati Sambhajinagar"
+      ],
+      "markets_count": 1,
+      "min_price": 6501.0,
+      "max_price": 6501.0,
+      "avg_modal_price": 6501.0
+    },
+    {
+      "commodity": "Sabu Dan",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Mumbai"
+      ],
+      "markets_count": 1,
+      "min_price": 7000.0,
+      "max_price": 8000.0,
+      "avg_modal_price": 7600.0
+    },
+    {
+      "commodity": "Amla(Nelli Kai)",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 3000.0,
+      "max_price": 5000.0,
+      "avg_modal_price": 4000.0
+    },
+    {
+      "commodity": "Rajgir",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 4.0,
+      "max_price": 7.0,
+      "avg_modal_price": 5.0
+    },
+    {
+      "commodity": "Cow",
+      "records_count": 1,
+      "districts_count": 1,
+      "districts_list": [
+        "Pune"
+      ],
+      "markets_count": 1,
+      "min_price": 15000.0,
+      "max_price": 75500.0,
+      "avg_modal_price": 37500.0
+    }
+  ]
+}

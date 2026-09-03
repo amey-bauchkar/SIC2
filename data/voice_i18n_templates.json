@@ -1,0 +1,36 @@
+{
+  "project": "MandiMitra Low-Literacy Speech Engine",
+  "supported_languages": ["mr-IN", "hi-IN", "en-IN"],
+  "templates": {
+    "decision_wait": {
+      "mr": "{wait_days} दिवस थांबा. {best_mandi} मंडीत विका. वाहतूक खर्च वजा जाता प्रति क्विंटल {net_gain_rs} रुपये अधिक मिळतील. विश्वासार्हता: {confidence_mr}.",
+      "hi": "{wait_days} दिन रुकें. {best_mandi} मंडी में बेचें. ढुलाई खर्च काटकर प्रति क्विंटल {net_gain_rs} रुपये ज्यादा मिलेंगे. विश्वसनीयता: {confidence_hi}.",
+      "en": "WAIT {wait_days} DAYS. Sell at {best_mandi}. Expected net gain of Rs {net_gain_rs} per quintal after transport. Confidence: {confidence_en}."
+    },
+    "decision_sell_today": {
+      "mr": "आजच विका. जवळच्या {best_mandi} मंडीत विका. पुढील २ दिवसांत दर घसरण्याची शक्यता आहे. आजचा निव्वळ भाव: प्रति क्विंटल {net_price} रुपये.",
+      "hi": "आज ही बेचें. नजदीकी {best_mandi} मंडी में बेचें. अगले २ दिनों में दाम गिरने की आशंका है. आज का शुद्ध भाव: प्रति क्विंटल {net_price} रुपये.",
+      "en": "SELL TODAY. Sell at nearby {best_mandi}. Prices are expected to decline over the next 2 days. Today's net realization: Rs {net_price} per quintal."
+    },
+    "decision_abstain": {
+      "mr": "सल्ला देणे शक्य नाही. {mandi_name} मंडीने मागील {missing_days} दिवसांपासून दर नोंदवले नाहीत. जवळची विश्वासार्ह मंडी: {fallback_mandi}.",
+      "hi": "सलाह देना संभव नहीं है. {mandi_name} मंडी ने पिछले {missing_days} दिनों से भाव दर्ज नहीं किए हैं. नजदीकी विश्वसनीय मंडी: {fallback_mandi}.",
+      "en": "CANNOT ADVISE. {mandi_name} has not reported prices for {missing_days} days. Nearest reliable alternative: {fallback_mandi}."
+    },
+    "why_explanation": {
+      "mr": "कारण: मागील ७ दिवसांत भाव {trend_pct}% ने बदलले आहेत. हवामान: {weather_summary_mr}. वाहतूक अंतर: {distance_km} किमी.",
+      "hi": "कारण: पिछले ७ दिनों में भाव {trend_pct}% बदला है. मौसम: {weather_summary_hi}. ढुलाई दूरी: {distance_km} किमी.",
+      "en": "Reason: Prices shifted {trend_pct}% over the last 7 days. Weather: {weather_summary_en}. Transport distance: {distance_km} km."
+    }
+  },
+  "confidence_translations": {
+    "HIGH": {"mr": "उच्च", "hi": "उच्च", "en": "HIGH"},
+    "MEDIUM": {"mr": "मध्यम", "hi": "मध्यम", "en": "MEDIUM"},
+    "LOW": {"mr": "कमी", "hi": "कम", "en": "LOW"}
+  },
+  "commodity_translations": {
+    "Onion": {"mr": "कांदा", "hi": "प्याज", "en": "Onion"},
+    "Tomato": {"mr": "टोमॅटो", "hi": "टमाटर", "en": "Tomato"},
+    "Soyabean": {"mr": "सोयाबीन", "hi": "सोयाबीन", "en": "Soyabean"}
+  }
+}

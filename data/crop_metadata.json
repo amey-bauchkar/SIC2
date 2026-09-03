@@ -1,0 +1,60 @@
+{
+  "source": "ICAR-DOGR (Directorate of Onion and Garlic Research), National Horticulture Board (NHB)",
+  "description": "Biological and economic holding constraints for decision support logic",
+  "crops": {
+    "Onion": {
+      "marathi_name": "कांदा (Kanda)",
+      "crop_type": "Semi-perishable Bulb",
+      "varieties": {
+        "Garwa / Unhali (Rabi)": {
+          "shelf_life_days": 120,
+          "holding_advisability": "High — can be safely held in ventilated chawls for 30-90 days",
+          "max_recommended_wait_days": 14,
+          "weight_loss_rate_pct_per_month": 3.5
+        },
+        "Pol / Rangada (Kharif/Late Kharif)": {
+          "shelf_life_days": 20,
+          "holding_advisability": "Low — high moisture content, rots quickly without cold chain",
+          "max_recommended_wait_days": 3,
+          "weight_loss_rate_pct_per_month": 12.0
+        }
+      },
+      "weather_sensitivity": {
+        "rain_risk": "Severe — moisture triggers bulb rot and black mold",
+        "heat_risk": "Moderate — causes shrinkage/sprouting"
+      }
+    },
+    "Tomato": {
+      "marathi_name": "टोमॅटो (Tomato)",
+      "crop_type": "Highly Perishable Vegetable",
+      "varieties": {
+        "Hybrid / Table": {
+          "shelf_life_days": 5,
+          "holding_advisability": "Extremely Low — must sell within 48-72 hours of harvesting",
+          "max_recommended_wait_days": 2,
+          "weight_loss_rate_pct_per_day": 2.0
+        }
+      },
+      "weather_sensitivity": {
+        "rain_risk": "High — causes fruit cracking and fungal infection",
+        "heat_risk": "Severe — accelerates overripening and softness"
+      }
+    },
+    "Soyabean": {
+      "marathi_name": "सोयाबीन (Soyabean)",
+      "crop_type": "Non-perishable Oilseed / Grain",
+      "varieties": {
+        "Yellow Soyabean": {
+          "shelf_life_days": 365,
+          "holding_advisability": "Very High — farmers can wait weeks or months for favorable price cycle",
+          "max_recommended_wait_days": 30,
+          "moisture_content_threshold_pct": 10.0
+        }
+      },
+      "weather_sensitivity": {
+        "rain_risk": "Moderate — dampness reduces oil content and germination",
+        "heat_risk": "Low — well-tolerated in gunny bags"
+      }
+    }
+  }
+}

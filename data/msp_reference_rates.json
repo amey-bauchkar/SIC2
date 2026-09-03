@@ -1,0 +1,92 @@
+{
+  "source": "Commission for Agricultural Costs and Prices (CACP), Ministry of Agriculture & Farmers Welfare, GoI",
+  "approved_by": "Cabinet Committee on Economic Affairs (CCEA)",
+  "reference_year": "2025-2026",
+  "unit": "Rs/Quintal",
+  "description": "Official Minimum Support Prices (MSP) mandated by Government of India for benchmark price comparison",
+  "crops": {
+    "Soyabean (Yellow)": {
+      "season": "Kharif",
+      "msp_rate": 4892.0,
+      "cost_of_production_a2_fl": 3261.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["NAFED", "NCCF", "FCI"]
+    },
+    "Cotton (Medium Staple)": {
+      "season": "Kharif",
+      "msp_rate": 7121.0,
+      "cost_of_production_a2_fl": 4747.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["Cotton Corporation of India (CCI)"]
+    },
+    "Tur / Arhar (Pigeon Pea)": {
+      "season": "Kharif",
+      "msp_rate": 7550.0,
+      "cost_of_production_a2_fl": 5033.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["NAFED", "FCI"]
+    },
+    "Moong (Green Gram)": {
+      "season": "Kharif",
+      "msp_rate": 8682.0,
+      "cost_of_production_a2_fl": 5788.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["NAFED"]
+    },
+    "Urad (Black Gram)": {
+      "season": "Kharif",
+      "msp_rate": 7400.0,
+      "cost_of_production_a2_fl": 4933.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["NAFED"]
+    },
+    "Maize": {
+      "season": "Kharif",
+      "msp_rate": 2225.0,
+      "cost_of_production_a2_fl": 1483.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["FCI", "State Agencies"]
+    },
+    "Jowar (Hybrid)": {
+      "season": "Kharif",
+      "msp_rate": 3371.0,
+      "cost_of_production_a2_fl": 2247.0,
+      "margin_over_cost_pct": 50.0,
+      "procurement_agencies": ["FCI"]
+    },
+    "Bajra": {
+      "season": "Kharif",
+      "msp_rate": 2625.0,
+      "cost_of_production_a2_fl": 1520.0,
+      "margin_over_cost_pct": 73.0,
+      "procurement_agencies": ["FCI"]
+    },
+    "Wheat": {
+      "season": "Rabi",
+      "msp_rate": 2425.0,
+      "cost_of_production_a2_fl": 1180.0,
+      "margin_over_cost_pct": 105.0,
+      "procurement_agencies": ["FCI", "State Civil Supplies"]
+    },
+    "Gram (Chana)": {
+      "season": "Rabi",
+      "msp_rate": 5650.0,
+      "cost_of_production_a2_fl": 3485.0,
+      "margin_over_cost_pct": 62.0,
+      "procurement_agencies": ["NAFED", "FCI"]
+    }
+  },
+  "market_intervention_scheme_crops": {
+    "Onion": {
+      "mechanism": "Market Intervention Scheme (MIS) / Price Stabilization Fund (PSF)",
+      "procurement_bodies": ["NAFED", "NCCF"],
+      "strategic_buffer_target_mt": 500000,
+      "benchmark_support_range": "Cost of Production + 20-30% buffer rate"
+    },
+    "Tomato": {
+      "mechanism": "Operation Greens / Market Intervention Scheme",
+      "procurement_bodies": ["NAFED", "Direct Consumer Intervention"],
+      "benchmark_support_range": "Market volatility stabilization"
+    }
+  }
+}

@@ -1,0 +1,519 @@
+[
+  {
+    "district_name": "Nashik",
+    "division": "Nashik",
+    "headquarter_name": "Nashik",
+    "latitude": 19.9975,
+    "longitude": 73.7898,
+    "major_commodities": [
+      "Onion",
+      "Tomato",
+      "Grapes",
+      "Pomegranate",
+      "Maize"
+    ],
+    "apmc_count": 6
+  },
+  {
+    "district_name": "Ahilyanagar",
+    "division": "Nashik",
+    "headquarter_name": "Ahilyanagar (Ahmednagar)",
+    "latitude": 19.0952,
+    "longitude": 74.748,
+    "major_commodities": [
+      "Onion",
+      "Soyabean",
+      "Pomegranate",
+      "Sugarcane",
+      "Wheat"
+    ],
+    "apmc_count": 4
+  },
+  {
+    "district_name": "Jalgaon",
+    "division": "Nashik",
+    "headquarter_name": "Jalgaon",
+    "latitude": 21.0077,
+    "longitude": 75.5626,
+    "major_commodities": [
+      "Banana",
+      "Cotton",
+      "Maize",
+      "Soyabean",
+      "Jowar"
+    ],
+    "apmc_count": 3
+  },
+  {
+    "district_name": "Dhule",
+    "division": "Nashik",
+    "headquarter_name": "Dhule",
+    "latitude": 20.9042,
+    "longitude": 74.7749,
+    "major_commodities": [
+      "Cotton",
+      "Chilli",
+      "Onion",
+      "Maize",
+      "Bajra"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Nandurbar",
+    "division": "Nashik",
+    "headquarter_name": "Nandurbar",
+    "latitude": 21.3739,
+    "longitude": 74.2405,
+    "major_commodities": [
+      "Chilli",
+      "Cotton",
+      "Maize",
+      "Soyabean"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Pune",
+    "division": "Pune",
+    "headquarter_name": "Pune",
+    "latitude": 18.5204,
+    "longitude": 73.8567,
+    "major_commodities": [
+      "Tomato",
+      "Onion",
+      "Vegetables",
+      "Sugarcane",
+      "Wheat"
+    ],
+    "apmc_count": 4
+  },
+  {
+    "district_name": "Solapur",
+    "division": "Pune",
+    "headquarter_name": "Solapur",
+    "latitude": 17.6599,
+    "longitude": 75.9064,
+    "major_commodities": [
+      "Pomegranate",
+      "Onion",
+      "Jowar",
+      "Chilli",
+      "Grape"
+    ],
+    "apmc_count": 3
+  },
+  {
+    "district_name": "Kolhapur",
+    "division": "Pune",
+    "headquarter_name": "Kolhapur",
+    "latitude": 16.705,
+    "longitude": 74.2433,
+    "major_commodities": [
+      "Jaggery",
+      "Sugarcane",
+      "Soyabean",
+      "Groundnut",
+      "Rice"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Sangli",
+    "division": "Pune",
+    "headquarter_name": "Sangli",
+    "latitude": 16.8524,
+    "longitude": 74.5815,
+    "major_commodities": [
+      "Turmeric",
+      "Grapes",
+      "Raisins",
+      "Soyabean",
+      "Maize"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Satara",
+    "division": "Pune",
+    "headquarter_name": "Satara",
+    "latitude": 17.6805,
+    "longitude": 74.0183,
+    "major_commodities": [
+      "Ginger",
+      "Strawberry",
+      "Soyabean",
+      "Onion",
+      "Sugarcane"
+    ],
+    "apmc_count": 3
+  },
+  {
+    "district_name": "Chhatrapati Sambhajinagar",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Chhatrapati Sambhajinagar",
+    "latitude": 19.8762,
+    "longitude": 75.3433,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Maize",
+      "Ginger",
+      "Mosambi"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Jalna",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Jalna",
+    "latitude": 19.8347,
+    "longitude": 75.8816,
+    "major_commodities": [
+      "Mosambi (Sweet Lime)",
+      "Soyabean",
+      "Cotton",
+      "Chilli",
+      "Maize"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Beed",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Beed",
+    "latitude": 18.9891,
+    "longitude": 75.7601,
+    "major_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur",
+      "Jowar",
+      "Sugarcane"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Latur",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Latur",
+    "latitude": 18.4088,
+    "longitude": 76.5604,
+    "major_commodities": [
+      "Soyabean",
+      "Tur (Arhar)",
+      "Urad",
+      "Chana (Bengal Gram)"
+    ],
+    "apmc_count": 3
+  },
+  {
+    "district_name": "Dharashiv",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Dharashiv",
+    "latitude": 18.1861,
+    "longitude": 76.0419,
+    "major_commodities": [
+      "Soyabean",
+      "Tur",
+      "Chana",
+      "Sugarcane",
+      "Jowar"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Nanded",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Nanded",
+    "latitude": 19.1383,
+    "longitude": 77.321,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Turmeric",
+      "Banana",
+      "Jowar"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Parbhani",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Parbhani",
+    "latitude": 19.2686,
+    "longitude": 76.7708,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Jowar",
+      "Tur"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Hingoli",
+    "division": "Chhatrapati Sambhajinagar",
+    "headquarter_name": "Hingoli",
+    "latitude": 19.7188,
+    "longitude": 77.1475,
+    "major_commodities": [
+      "Soyabean",
+      "Turmeric",
+      "Cotton",
+      "Jowar"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Amravati",
+    "division": "Amravati",
+    "headquarter_name": "Amravati",
+    "latitude": 20.9374,
+    "longitude": 77.7796,
+    "major_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Tur",
+      "Orange",
+      "Gram"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Akola",
+    "division": "Amravati",
+    "headquarter_name": "Akola",
+    "latitude": 20.7002,
+    "longitude": 77.0082,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur",
+      "Gram (Chana)",
+      "Jowar"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Yavatmal",
+    "division": "Amravati",
+    "headquarter_name": "Yavatmal",
+    "latitude": 20.3888,
+    "longitude": 78.1204,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur",
+      "Wheat"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Buldhana",
+    "division": "Amravati",
+    "headquarter_name": "Buldhana",
+    "latitude": 20.53,
+    "longitude": 76.18,
+    "major_commodities": [
+      "Soyabean",
+      "Cotton",
+      "Maize",
+      "Ginger",
+      "Chilli"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Washim",
+    "division": "Amravati",
+    "headquarter_name": "Washim",
+    "latitude": 20.1111,
+    "longitude": 77.1333,
+    "major_commodities": [
+      "Soyabean",
+      "Tur",
+      "Gram",
+      "Wheat"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Nagpur",
+    "division": "Nagpur",
+    "headquarter_name": "Nagpur",
+    "latitude": 21.1458,
+    "longitude": 79.0882,
+    "major_commodities": [
+      "Orange",
+      "Soyabean",
+      "Cotton",
+      "Tur",
+      "Paddy"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Wardha",
+    "division": "Nagpur",
+    "headquarter_name": "Wardha",
+    "latitude": 20.7453,
+    "longitude": 78.6022,
+    "major_commodities": [
+      "Cotton",
+      "Soyabean",
+      "Tur",
+      "Wheat"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Chandrapur",
+    "division": "Nagpur",
+    "headquarter_name": "Chandrapur",
+    "latitude": 19.9615,
+    "longitude": 79.2961,
+    "major_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Cotton",
+      "Tur"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Bhandara",
+    "division": "Nagpur",
+    "headquarter_name": "Bhandara",
+    "latitude": 21.1714,
+    "longitude": 79.6547,
+    "major_commodities": [
+      "Paddy (Rice)",
+      "Soyabean",
+      "Wheat",
+      "Chana"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Gondia",
+    "division": "Nagpur",
+    "headquarter_name": "Gondia",
+    "latitude": 21.4598,
+    "longitude": 80.1961,
+    "major_commodities": [
+      "Paddy (Rice)",
+      "Linseed",
+      "Wheat"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Gadchiroli",
+    "division": "Nagpur",
+    "headquarter_name": "Gadchiroli",
+    "latitude": 20.1849,
+    "longitude": 80.003,
+    "major_commodities": [
+      "Paddy (Rice)",
+      "Minor Forest Produce",
+      "Soyabean"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Mumbai Suburban",
+    "division": "Konkan",
+    "headquarter_name": "Navi Mumbai (Vashi APMC)",
+    "latitude": 19.076,
+    "longitude": 72.8777,
+    "major_commodities": [
+      "All Fruits",
+      "All Vegetables",
+      "Spices",
+      "Grain Terminal"
+    ],
+    "apmc_count": 1
+  },
+  {
+    "district_name": "Mumbai City",
+    "division": "Konkan",
+    "headquarter_name": "Mumbai City",
+    "latitude": 18.9388,
+    "longitude": 72.8354,
+    "major_commodities": [
+      "Consumption Terminal",
+      "Fish & Export Hub"
+    ],
+    "apmc_count": 1
+  },
+  {
+    "district_name": "Thane",
+    "division": "Konkan",
+    "headquarter_name": "Thane",
+    "latitude": 19.2183,
+    "longitude": 72.9781,
+    "major_commodities": [
+      "Vegetables",
+      "Paddy",
+      "Fruits"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Palghar",
+    "division": "Konkan",
+    "headquarter_name": "Palghar",
+    "latitude": 19.6967,
+    "longitude": 72.7699,
+    "major_commodities": [
+      "Chiku (Sapota)",
+      "Paddy",
+      "Vegetables",
+      "Grass"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Raigad",
+    "division": "Konkan",
+    "headquarter_name": "Alibaug",
+    "latitude": 18.656,
+    "longitude": 72.869,
+    "major_commodities": [
+      "Paddy",
+      "Mango (Alphonso)",
+      "Coconut",
+      "Vegetables"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Ratnagiri",
+    "division": "Konkan",
+    "headquarter_name": "Ratnagiri",
+    "latitude": 16.9902,
+    "longitude": 73.312,
+    "major_commodities": [
+      "Hapus Mango (Alphonso)",
+      "Cashewnut",
+      "Coconut",
+      "Paddy"
+    ],
+    "apmc_count": 2
+  },
+  {
+    "district_name": "Sindhudurg",
+    "division": "Konkan",
+    "headquarter_name": "Oros",
+    "latitude": 16.1158,
+    "longitude": 73.6976,
+    "major_commodities": [
+      "Alphonso Mango",
+      "Cashew",
+      "Coconut",
+      "Betel Nut"
+    ],
+    "apmc_count": 2
+  }
+]

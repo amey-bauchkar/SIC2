@@ -1,0 +1,39 @@
+{
+  "source": "Maharashtra Agricultural Produce Marketing (Development and Regulation) Act, 1963 (with subsequent amendments)",
+  "jurisdiction": "Government of Maharashtra, Directorate of Marketing",
+  "description": "Statutory APMC market cess, weighment, and handling tariffs for accurate Net In-Hand Realisation modeling",
+  "statutory_tariff_schedule": {
+    "apmc_market_cess_rate_pct": 1.05,
+    "mandi_supervision_fee_pct": 0.05,
+    "total_mandi_cess_pct": 1.10,
+    "handling_and_unloading_hamali": {
+      "gunny_bag_50kg_rs": 4.50,
+      "plastic_crate_20kg_rs": 2.25,
+      "per_quintal_effective_rs": 9.00
+    },
+    "electronic_weighbridge_tolai": {
+      "per_quintal_charge_rs": 3.50
+    },
+    "cleaning_and_grading_charge_rs_per_quintal": 5.00,
+    "commission_agent_adath": {
+      "regulatory_status": "Paid by Buyer under modern Maharashtra APMC rules; farmer is exempt",
+      "historical_rate_pct": 6.0
+    }
+  },
+  "net_realisation_formula": {
+    "equation": "Net_Realisation_Per_Quintal = Modal_Price - Transport_Freight - (Modal_Price * Mandi_Cess_Pct) - Hamali - Tolai - (Daily_Storage_Rent * Wait_Days)",
+    "example_calculation": {
+      "crop": "Onion",
+      "mandi": "Lasalgaon",
+      "gross_modal_price": 3200.0,
+      "distance_km": 57.4,
+      "transport_freight_per_quintal": 86.75,
+      "mandi_cess_deduction": 35.20,
+      "hamali_deduction": 9.00,
+      "tolai_deduction": 3.50,
+      "wait_days": 2,
+      "storage_rent": 0.90,
+      "net_in_hand_per_quintal": 3064.65
+    }
+  }
+}

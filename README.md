@@ -1,93 +1,46 @@
-# MandiMitra 🌾
+# MandiMitra — Smart Crop Price Selling Decision Support System
 
-> **Smart Crop Price Selling Decision Support System**  
-> IGNITE 8.0 Hackathon — Problem Statement SIC 2
-
-MandiMitra is a farmer-centric decision support application that assists growers in determining the optimal time and market to sell their harvest. Rather than presenting raw nominal prices, MandiMitra computes true **Net Realisation** (nominal price minus road-adjusted haulage costs and storage holding depreciation), enforces **Data Quality Tiering** to abstain when information is stale, and offers transparent, verifiable single-holdout backtesting.
-
----
-
-## 👥 Team & Ownership
-
-- **Amay (Team Lead)**: Backend REST services, algorithmic decision engine, v0/v1 forecasting, data quality tiering, historical pipeline integration, and backtest runner.
-- **Janhvi (Frontend Lead)**: Application shell, responsive layout, CSS design token system, shared component primitives, and client-side routing.
-- **Tanmay (Frontend Feature Engineer)**: Feature Vertical 1 — Crop & Location Entry (`/`), Decision Card (`/decision`), and Granular "Why?" Explanation Screen (`/evidence`).
-- **Purva (Frontend Feature Engineer)**: Feature Vertical 2 — Market Shortlist & Quality Tiers (`/markets`), Cost Configuration (`/settings`), and Backtest Empirical Audits (`/backtest`).
+**Problem Statement:** SIC 2 — IGNITE 8.0, SVKM Shri Bhagubhai Mafatlal Polytechnic & CoE  
+**Event:** 24-hour hackathon · 3–4 September 2026 · Vile Parle, Mumbai  
+**Team:** Amey (Architecture/Backend/AI-ML) · Janhavi (UI-UX) · Purva (Feature 1) · Tanmay (Feature 2)
 
 ---
 
-## 🏛️ Core Architecture & Tech Stack
+## What Is MandiMitra?
 
-- **Frontend**: Vanilla TypeScript + Component-scoped Vanilla CSS design system + Semantic HTML5.
-- **Backend**: Node.js + Express + TypeScript.
-- **Data Sources**:
-  - Live Mandi Prices: data.gov.in Agmarknet API (`Resource ID: 9ef84268-d588-465a-a308-a864a43d0070`).
-  - Historical Prices & Arrivals: CEDA Agri-Market Data (CEDA-AMD, Ashoka University).
-  - Geodesics: Earth Haversine $\times$ 1.35 Road Factor approximation.
+A **decision-support system** that tells a farmer: **Sell today, or wait? At which mandi? For how many more rupees in hand after transport?**
 
----
+It is NOT a price chart. It is NOT an LSTM prediction dashboard. It is a **net-realisation decision engine with calibrated abstention** — it optimises ₹-in-hand after transport cost, knows when Agmarknet's data is too thin to advise, and says so openly.
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
-/
-├── docs/                     # Authoritative system documentation
-│   ├── problem-statement.md  # Verbatim problem statement & domain analysis
-│   ├── solution.md           # Ingested solution spec & capability mapping
-│   └── architecture.md       # Complete architectural and algorithmic design
-├── data/                     # Managed by parallel data track (DO NOT TOUCH)
-│   ├── raw/                  # Raw exports from Agmarknet & CEDA
-│   └── processed/            # Cleaned, standardized historical time-series
-├── src/
-│   ├── contracts/            # Canonical domain & API TypeScript interfaces
-│   ├── config/               # System configuration & operational defaults
-│   ├── core/                 # Pure mathematical & business logic engines
-│   ├── data-pipeline/        # Ingestion, cleaning & alias resolution
-│   ├── backend/              # Express REST controllers & external clients
-│   └── frontend/             # Client application
-│       ├── shell/            # App shell & routing
-│       ├── styles/           # CSS design tokens & global themes
-│       ├── components/       # Janhvi: Shared visual primitives
-│       ├── state/            # Reactive client state management
-│       ├── fixtures/         # Strongly-typed development test fixtures
-│       └── features/         # Isolated feature verticals
-│           ├── entry/        # Tanmay: Crop & location entry
-│           ├── decision/     # Tanmay: Primary recommendation card
-│           ├── evidence/     # Tanmay: "Why?" explanation screen
-│           ├── markets/      # Purva: Market shortlist & quality badges
-│           ├── settings/     # Purva: Cost & radius overrides
-│           └── backtest/     # Purva: Real backtest performance display
-├── TEAM-RULES.md             # Collaboration & contract protection protocols
-├── .github/CODEOWNERS        # Strict physical ownership mappings
-├── .env.example              # Environment variables template
-└── package.json              # Project dependencies & launch scripts
+docs/
+├── problem-statement.md          # Full problem statement context & analysis
+├── data-sources.md               # All verified data sources with API details
+├── competitors.md                # Existing solutions & gap analysis
+├── evidence.md                   # Statistical evidence & academic references
+├── differentiation.md            # What makes our approach unique
+├── architecture.md               # Technical architecture & stack decisions
+├── build-schedule.md             # 24-hour build timeline & team split
+├── demo-script.md                # 3-minute demo flow
+├── judge-qa.md                   # 18 anticipated judge questions with answers
+├── risks-and-mitigations.md      # Red team analysis & mitigation strategies
+├── known-limitations.md          # Honest limitations to disclose
+├── pre-hackathon-checklist.md    # Pre-event preparation tasks
+research/
+├── FSD2_vs_SIC2_Head_to_Head.md  # Original comparison analysis
+└── IGNITE_8_PS_Selection_Report.md # Original selection report
 ```
 
----
+## Core Thesis
 
-## 🚀 Quickstart
+> Price **display** is solved. Transport-adjusted, uncertainty-aware, **evaluated** decision-making is not — and no shipped product publishes an accuracy number anyone can audit.
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+## Key Differentiators
 
-2. **Configure Environment**:
-   ```bash
-   cp .env.example .env
-   # Update DATA_GOV_IN_API_KEY if testing live fetch
-   ```
-
-3. **Run Development Mode**:
-   ```bash
-   npm run dev
-   ```
-   - Backend runs on `http://localhost:3001`
-   - Frontend runs on `http://localhost:3000`
-
----
-
-## 🔒 Attribution Requirements
-
-Per CEDA API Terms of Use, any chart, table, or visualization derived from CEDA data displays:
-> *"CEDA Agri Market Data (CEDA-AMD), 2000-2023. Centre for Economic Data & Analysis, Ashoka University"*
+1. **Net realisation, not price** — rank mandis by ₹-in-hand after transport
+2. **Data-quality-aware modelling** — missing values and outliers as model features
+3. **Calibrated abstention** — refuses to advise when data is too sparse
+4. **Direction with confidence** — not point prediction
+5. **A backtested rupee number** — verifiable, on real held-out data

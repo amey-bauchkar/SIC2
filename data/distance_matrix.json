@@ -1,0 +1,704 @@
+[
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_lasalgaon",
+    "destination_mandi": "Lasalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1477,
+      74.2254
+    ],
+    "distance_km": 57.4,
+    "travel_time_minutes": 55.1,
+    "transport_cost_per_quintal": 86.75,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_pimpalgaon",
+    "destination_mandi": "Pimpalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1706,
+      73.9877
+    ],
+    "distance_km": 30.4,
+    "travel_time_minutes": 24.9,
+    "transport_cost_per_quintal": 53.0,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_city",
+    "destination_mandi": "Nashik",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.016,
+      73.7997
+    ],
+    "distance_km": 2.8,
+    "travel_time_minutes": 4.6,
+    "transport_cost_per_quintal": 18.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_manmad",
+    "destination_mandi": "Manmad",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.2526,
+      74.4428
+    ],
+    "distance_km": 87.9,
+    "travel_time_minutes": 65.4,
+    "transport_cost_per_quintal": 124.88,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_sinnar",
+    "destination_mandi": "Sinnar",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      19.8475,
+      74.0006
+    ],
+    "distance_km": 30.4,
+    "travel_time_minutes": 25.6,
+    "transport_cost_per_quintal": 53.0,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "nashik_yeola",
+    "destination_mandi": "Yeola",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.0425,
+      74.4897
+    ],
+    "distance_km": 108.9,
+    "travel_time_minutes": 77.5,
+    "transport_cost_per_quintal": 151.12,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "pune_gultekdi",
+    "destination_mandi": "Pune(Gultekdi)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.4908,
+      73.8647
+    ],
+    "distance_km": 217.1,
+    "travel_time_minutes": 178.6,
+    "transport_cost_per_quintal": 286.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "pune_junnar",
+    "destination_mandi": "Junnar(Narayangaon)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      19.1177,
+      73.9785
+    ],
+    "distance_km": 136.4,
+    "travel_time_minutes": 106.3,
+    "transport_cost_per_quintal": 185.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "pune_baramati",
+    "destination_mandi": "Baramati",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.1517,
+      74.5772
+    ],
+    "distance_km": 277.1,
+    "travel_time_minutes": 200.4,
+    "transport_cost_per_quintal": 361.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "pune_khed_chakan",
+    "destination_mandi": "Khed(Chakan)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.761,
+      73.8596
+    ],
+    "distance_km": 182.3,
+    "travel_time_minutes": 146.0,
+    "transport_cost_per_quintal": 242.88,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "latur_city",
+    "destination_mandi": "Latur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3976,
+      76.5786
+    ],
+    "distance_km": 401.2,
+    "travel_time_minutes": 292.2,
+    "transport_cost_per_quintal": 516.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "latur_udgir",
+    "destination_mandi": "Udgir",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3942,
+      77.1147
+    ],
+    "distance_km": 451.4,
+    "travel_time_minutes": 328.7,
+    "transport_cost_per_quintal": 579.25,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Nashik",
+    "origin_coords": [
+      19.9975,
+      73.7898
+    ],
+    "destination_mandi_id": "latur_ahmedpur",
+    "destination_mandi": "Ahmedpur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.7051,
+      76.9318
+    ],
+    "distance_km": 419.7,
+    "travel_time_minutes": 306.6,
+    "transport_cost_per_quintal": 539.62,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_lasalgaon",
+    "destination_mandi": "Lasalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1477,
+      74.2254
+    ],
+    "distance_km": 218.1,
+    "travel_time_minutes": 189.3,
+    "transport_cost_per_quintal": 287.62,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_pimpalgaon",
+    "destination_mandi": "Pimpalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1706,
+      73.9877
+    ],
+    "distance_km": 236.4,
+    "travel_time_minutes": 184.6,
+    "transport_cost_per_quintal": 310.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_city",
+    "destination_mandi": "Nashik",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.016,
+      73.7997
+    ],
+    "distance_km": 215.3,
+    "travel_time_minutes": 169.7,
+    "transport_cost_per_quintal": 284.12,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_manmad",
+    "destination_mandi": "Manmad",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.2526,
+      74.4428
+    ],
+    "distance_km": 256.4,
+    "travel_time_minutes": 189.1,
+    "transport_cost_per_quintal": 335.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_sinnar",
+    "destination_mandi": "Sinnar",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      19.8475,
+      74.0006
+    ],
+    "distance_km": 182.9,
+    "travel_time_minutes": 146.1,
+    "transport_cost_per_quintal": 243.62,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "nashik_yeola",
+    "destination_mandi": "Yeola",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.0425,
+      74.4897
+    ],
+    "distance_km": 231.7,
+    "travel_time_minutes": 172.3,
+    "transport_cost_per_quintal": 304.62,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "pune_gultekdi",
+    "destination_mandi": "Pune(Gultekdi)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.4908,
+      73.8647
+    ],
+    "distance_km": 4.3,
+    "travel_time_minutes": 6.2,
+    "transport_cost_per_quintal": 20.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "pune_junnar",
+    "destination_mandi": "Junnar(Narayangaon)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      19.1177,
+      73.9785
+    ],
+    "distance_km": 78.0,
+    "travel_time_minutes": 69.0,
+    "transport_cost_per_quintal": 112.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "pune_baramati",
+    "destination_mandi": "Baramati",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.1517,
+      74.5772
+    ],
+    "distance_km": 103.6,
+    "travel_time_minutes": 76.2,
+    "transport_cost_per_quintal": 144.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "pune_khed_chakan",
+    "destination_mandi": "Khed(Chakan)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.761,
+      73.8596
+    ],
+    "distance_km": 32.3,
+    "travel_time_minutes": 28.4,
+    "transport_cost_per_quintal": 55.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "latur_city",
+    "destination_mandi": "Latur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3976,
+      76.5786
+    ],
+    "distance_km": 324.6,
+    "travel_time_minutes": 237.0,
+    "transport_cost_per_quintal": 420.75,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "latur_udgir",
+    "destination_mandi": "Udgir",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3942,
+      77.1147
+    ],
+    "distance_km": 391.0,
+    "travel_time_minutes": 282.9,
+    "transport_cost_per_quintal": 503.75,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Pune",
+    "origin_coords": [
+      18.5204,
+      73.8567
+    ],
+    "destination_mandi_id": "latur_ahmedpur",
+    "destination_mandi": "Ahmedpur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.7051,
+      76.9318
+    ],
+    "distance_km": 365.1,
+    "travel_time_minutes": 265.7,
+    "transport_cost_per_quintal": 471.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_lasalgaon",
+    "destination_mandi": "Lasalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1477,
+      74.2254
+    ],
+    "distance_km": 385.5,
+    "travel_time_minutes": 289.3,
+    "transport_cost_per_quintal": 496.88,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_pimpalgaon",
+    "destination_mandi": "Pimpalgaon",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.1706,
+      73.9877
+    ],
+    "distance_km": 422.3,
+    "travel_time_minutes": 307.1,
+    "transport_cost_per_quintal": 542.88,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_city",
+    "destination_mandi": "Nashik",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.016,
+      73.7997
+    ],
+    "distance_km": 401.2,
+    "travel_time_minutes": 292.3,
+    "transport_cost_per_quintal": 516.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_manmad",
+    "destination_mandi": "Manmad",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.2526,
+      74.4428
+    ],
+    "distance_km": 382.6,
+    "travel_time_minutes": 275.9,
+    "transport_cost_per_quintal": 493.25,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_sinnar",
+    "destination_mandi": "Sinnar",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      19.8475,
+      74.0006
+    ],
+    "distance_km": 368.8,
+    "travel_time_minutes": 268.6,
+    "transport_cost_per_quintal": 476.0,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "nashik_yeola",
+    "destination_mandi": "Yeola",
+    "destination_district": "Nashik",
+    "destination_coords": [
+      20.0425,
+      74.4897
+    ],
+    "distance_km": 357.9,
+    "travel_time_minutes": 259.1,
+    "transport_cost_per_quintal": 462.38,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "pune_gultekdi",
+    "destination_mandi": "Pune(Gultekdi)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.4908,
+      73.8647
+    ],
+    "distance_km": 320.1,
+    "travel_time_minutes": 233.3,
+    "transport_cost_per_quintal": 415.12,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "pune_junnar",
+    "destination_mandi": "Junnar(Narayangaon)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      19.1177,
+      73.9785
+    ],
+    "distance_km": 336.4,
+    "travel_time_minutes": 242.7,
+    "transport_cost_per_quintal": 435.5,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "pune_baramati",
+    "destination_mandi": "Baramati",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.1517,
+      74.5772
+    ],
+    "distance_km": 232.2,
+    "travel_time_minutes": 171.8,
+    "transport_cost_per_quintal": 305.25,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "pune_khed_chakan",
+    "destination_mandi": "Khed(Chakan)",
+    "destination_district": "Pune",
+    "destination_coords": [
+      18.761,
+      73.8596
+    ],
+    "distance_km": 337.7,
+    "travel_time_minutes": 241.5,
+    "transport_cost_per_quintal": 437.12,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "latur_city",
+    "destination_mandi": "Latur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3976,
+      76.5786
+    ],
+    "distance_km": 3.1,
+    "travel_time_minutes": 5.6,
+    "transport_cost_per_quintal": 18.88,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "latur_udgir",
+    "destination_mandi": "Udgir",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.3942,
+      77.1147
+    ],
+    "distance_km": 67.7,
+    "travel_time_minutes": 50.4,
+    "transport_cost_per_quintal": 99.62,
+    "routing_source": "OSRM"
+  },
+  {
+    "origin_district": "Latur",
+    "origin_coords": [
+      18.4088,
+      76.5604
+    ],
+    "destination_mandi_id": "latur_ahmedpur",
+    "destination_mandi": "Ahmedpur",
+    "destination_district": "Latur",
+    "destination_coords": [
+      18.7051,
+      76.9318
+    ],
+    "distance_km": 65.7,
+    "travel_time_minutes": 56.7,
+    "transport_cost_per_quintal": 97.12,
+    "routing_source": "OSRM"
+  }
+]

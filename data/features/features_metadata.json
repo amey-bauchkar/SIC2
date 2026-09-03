@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-09-03T17:29:57.990969",
+  "phase": "PHASE_3_FEATURE_ENGINEERING",
+  "features_list": [
+    "price_lag_1d",
+    "price_lag_3d",
+    "price_lag_7d",
+    "price_lag_14d",
+    "pct_change_3d",
+    "pct_change_7d",
+    "volatility_7d",
+    "days_since_last_report",
+    "coverage_ratio_14d",
+    "is_outlier",
+    "temperature_mean_c",
+    "precipitation_mm",
+    "relative_humidity_pct",
+    "day_of_week",
+    "month"
+  ],
+  "target": "target_direction_3d (UP / FLAT / DOWN)",
+  "datasets": {
+    "onion_lasalgaon": 199,
+    "tomato_narayangaon": 205,
+    "soyabean_latur": 199
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-09-03T17:49:22.988043",
+  "evaluation_methodology": "Strict Expanding-Window Walk-Forward Temporal Backtest (Zero Lookahead Leakage)",
+  "baselines_evaluated": [
+    "Baseline 1: Naive Persistence (Momentum continuation)",
+    "Baseline 2: Harvest-Day Sale (Immediate liquidation at spot rate)"
+  ],
+  "executive_numbers": {
+    "total_held_out_days_evaluated": 324,
+    "onion_lasalgaon": {
+      "commodity": "Onion",
+      "mandi": "Lasalgaon",
+      "held_out_test_days": 106,
+      "model_accuracy_pct": 44.3,
+      "persistence_baseline_accuracy_pct": 39.6,
+      "accuracy_edge_over_persistence_pts": 4.7,
+      "avg_net_rupee_gain_per_quintal": 18.2,
+      "total_wait_recommendations": 35,
+      "profitable_wait_rate_pct": 74.3,
+      "top_predictive_features": [
+        {
+          "feature": "pct_change_3d",
+          "importance_pct": 14.3
+        },
+        {
+          "feature": "price_lag_3d",
+          "importance_pct": 12.0
+        },
+        {
+          "feature": "price_lag_14d",
+          "importance_pct": 9.9
+        },
+        {
+          "feature": "price_lag_7d",
+          "importance_pct": 9.9
+        },
+        {
+          "feature": "temperature_mean_c",
+          "importance_pct": 9.3
+        }
+      ]
+    },
+    "tomato_narayangaon": {
+      "commodity": "Tomato",
+      "mandi": "Junnar",
+      "held_out_test_days": 112,
+      "model_accuracy_pct": 42.0,
+      "persistence_baseline_accuracy_pct": 35.7,
+      "accuracy_edge_over_persistence_pts": 6.2,
+      "avg_net_rupee_gain_per_quintal": 7.2,
+      "total_wait_recommendations": 31,
+      "profitable_wait_rate_pct": 58.1,
+      "top_predictive_features": [
+        {
+          "feature": "price_lag_3d",
+          "importance_pct": 13.5
+        },
+        {
+          "feature": "volatility_7d",
+          "importance_pct": 10.6
+        },
+        {
+          "feature": "price_lag_7d",
+          "importance_pct": 10.3
+        },
+        {
+          "feature": "temperature_mean_c",
+          "importance_pct": 9.0
+        },
+        {
+          "feature": "price_lag_14d",
+          "importance_pct": 8.6
+        }
+      ]
+    },
+    "soyabean_latur": {
+      "commodity": "Soyabean",
+      "mandi": "Latur",
+      "held_out_test_days": 106,
+      "model_accuracy_pct": 76.4,
+      "persistence_baseline_accuracy_pct": 52.8,
+      "accuracy_edge_over_persistence_pts": 23.6,
+      "avg_net_rupee_gain_per_quintal": 5.6,
+      "total_wait_recommendations": 9,
+      "profitable_wait_rate_pct": 66.7,
+      "top_predictive_features": [
+        {
+          "feature": "volatility_7d",
+          "importance_pct": 12.3
+        },
+        {
+          "feature": "price_lag_3d",
+          "importance_pct": 11.4
+        },
+        {
+          "feature": "temperature_mean_c",
+          "importance_pct": 10.8
+        },
+        {
+          "feature": "price_lag_7d",
+          "importance_pct": 9.2
+        },
+        {
+          "feature": "price_lag_1d",
+          "importance_pct": 8.8
+        }
+      ]
+    }
+  },
+  "ui_display_metrics": {
+    "onion_headline": "+\u20b918.2/q net gain \u00b7 44.3% direction hit-rate",
+    "tomato_headline": "+\u20b97.2/q net gain \u00b7 42.0% direction hit-rate",
+    "soyabean_headline": "+\u20b95.6/q net gain \u00b7 76.4% direction hit-rate"
+  }
+}

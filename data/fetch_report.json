@@ -1,0 +1,137 @@
+{
+  "timestamp": "2026-09-03T17:01:07.539001",
+  "elapsed_seconds": 68.13,
+  "phase_1_status": "COMPLETED",
+  "mandi_locations": {
+    "count": 13,
+    "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\mandi_locations.json"
+  },
+  "distance_matrix": {
+    "route_pairs_count": 39,
+    "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\distance_matrix.json"
+  },
+  "weather_data": {
+    "Nashik": {
+      "records_count": 243,
+      "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\nashik.json",
+      "status": "SUCCESS"
+    },
+    "Pune": {
+      "records_count": 243,
+      "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\pune.json",
+      "status": "SUCCESS"
+    },
+    "Latur": {
+      "records_count": 243,
+      "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\latur.json",
+      "status": "SUCCESS"
+    }
+  },
+  "prices_data": {
+    "status": "AWAITING_API_KEY",
+    "message": "Paste API key into data/api_key.txt and re-run to fetch live mandi prices.",
+    "resource_id": "9ef84268-d588-465a-a308-a864a43d0070"
+  },
+  "state_wide_coverage": {
+    "total_districts": 36,
+    "total_divisions": 6,
+    "total_apmc_mandis": 82,
+    "total_routes_mapped": 526,
+    "districts_file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\maharashtra_districts_all.json",
+    "all_mandis_file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\mandi_locations_all.json",
+    "all_routes_file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\distance_matrix_all.json",
+    "divisional_weather": {
+      "nashik_north_mh": {
+        "region": "Nashik (North Maharashtra)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\nashik_north_mh.json",
+        "status": "SUCCESS"
+      },
+      "pune_paschim_mh": {
+        "region": "Pune (Western Maharashtra)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\pune_paschim_mh.json",
+        "status": "SUCCESS"
+      },
+      "sambhajinagar_marathwada": {
+        "region": "Chh. Sambhajinagar (Marathwada)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\sambhajinagar_marathwada.json",
+        "status": "SUCCESS"
+      },
+      "amravati_west_vidarbha": {
+        "region": "Amravati (Western Vidarbha)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\amravati_west_vidarbha.json",
+        "status": "SUCCESS"
+      },
+      "nagpur_east_vidarbha": {
+        "region": "Nagpur (Eastern Vidarbha)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\nagpur_east_vidarbha.json",
+        "status": "SUCCESS"
+      },
+      "ratnagiri_konkan": {
+        "region": "Ratnagiri (Konkan / Coastal)",
+        "records_count": 243,
+        "file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\weather\\ratnagiri_konkan.json",
+        "status": "SUCCESS"
+      }
+    }
+  },
+  "updated_at": "2026-09-03T17:34:56.407585",
+  "phase_2_status": "COMPLETED",
+  "live_prices": {
+    "status": "SUCCESS",
+    "resource_id": "9ef84268-d588-465a-a308-a864a43d0070",
+    "source": "data.gov.in (DMI, Ministry of Agriculture)",
+    "total_records_fetched": 736,
+    "unique_commodities": 101,
+    "target_commodities_breakdown": {
+      "onion_records": 36,
+      "tomato_records": 24,
+      "soyabean_records": 15
+    },
+    "files_generated": [
+      "data/prices/maharashtra_live_all.json",
+      "data/prices/onion_maharashtra.json",
+      "data/prices/tomato_maharashtra.json",
+      "data/prices/soyabean_maharashtra.json",
+      "data/prices/commodities_index.json",
+      "data/prices/demo_snapshot.json"
+    ]
+  },
+  "phase_3_status": "COMPLETED",
+  "historical_and_features": {
+    "status": "SUCCESS",
+    "historical_series": {
+      "onion_lasalgaon": 199,
+      "onion_pimpalgaon": 199,
+      "onion_manmad": 185,
+      "tomato_narayangaon": 205,
+      "soyabean_latur": 199
+    },
+    "feature_matrices": {
+      "onion_lasalgaon": "data/features/onion_lasalgaon_features.csv (31 cols, 199 rows)",
+      "tomato_narayangaon": "data/features/tomato_narayangaon_features.csv (31 cols, 205 rows)",
+      "soyabean_latur": "data/features/soyabean_latur_features.csv (31 cols, 199 rows)"
+    },
+    "external_importer": "scripts/import_historical_data.py"
+  },
+  "advanced_decision_assets": {
+    "cold_storage_and_warehouses": "data/warehouses_and_cold_storage.json (WDRA/MSAMB accredited facilities)",
+    "apmc_statutory_deductions": "data/apmc_statutory_charges.json (Maharashtra APMC Act cess, hamali, tolai)",
+    "voice_and_i18n": "data/voice_i18n_templates.json (Marathi, Hindi, English speech engine templates)",
+    "monsoon_weather_anomalies": "data/weather/monsoon_rainfall_anomalies.json (2024-2026 ERA5 departure index)"
+  },
+  "pan_india_coverage": {
+    "status": "SUCCESS",
+    "total_records_india": 10000,
+    "total_states_and_uts": 28,
+    "national_onion_records": 475,
+    "national_tomato_records": 314,
+    "national_soyabean_records": 88,
+    "all_india_file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\prices\\pan_india_live_all.json",
+    "states_summary_file": "C:\\Users\\SEBIN\\Desktop\\baghubhai\\data\\prices\\pan_india_states_summary.json"
+  }
+}

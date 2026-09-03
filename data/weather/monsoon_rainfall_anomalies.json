@@ -1,0 +1,55 @@
+{
+  "source": "Open-Meteo Historical ERA5 Reanalysis",
+  "metric": "June-August Monsoon Seasonality Anomaly",
+  "generated_at": "2026-09-03T17:40:38.743533",
+  "districts": {
+    "Nashik": {
+      "historical_normal_rain_mm": 773.4,
+      "monsoon_2026_rain_mm": 718.4,
+      "departure_from_normal_pct": -7.1,
+      "anomaly_classification": "NORMAL",
+      "market_impact_signal": "Standard seasonal supply flows expected",
+      "yearly_breakdown": {
+        "2024": {
+          "monsoon_total_rain_mm": 868.8,
+          "mean_monsoon_temp_c": 24.6,
+          "heavy_rain_days_gt_30mm": 2
+        },
+        "2025": {
+          "monsoon_total_rain_mm": 678.0,
+          "mean_monsoon_temp_c": 24.0,
+          "heavy_rain_days_gt_30mm": 2
+        },
+        "2026": {
+          "monsoon_total_rain_mm": 718.4,
+          "mean_monsoon_temp_c": 25.2,
+          "heavy_rain_days_gt_30mm": 5
+        }
+      }
+    },
+    "Pune": {
+      "historical_normal_rain_mm": 820.1,
+      "monsoon_2026_rain_mm": 612.7,
+      "departure_from_normal_pct": -25.3,
+      "anomaly_classification": "DEFICIENT_MONSOON",
+      "market_impact_signal": "Dry spell accelerates maturity; supply normal to low",
+      "yearly_breakdown": {
+        "2024": {
+          "monsoon_total_rain_mm": 995.6,
+          "mean_monsoon_temp_c": 24.7,
+          "heavy_rain_days_gt_30mm": 5
+        },
+        "2025": {
+          "monsoon_total_rain_mm": 644.6,
+          "mean_monsoon_temp_c": 24.1,
+          "heavy_rain_days_gt_30mm": 5
+        },
+        "2026": {
+          "monsoon_total_rain_mm": 612.7,
+          "mean_monsoon_temp_c": 25.3,
+          "heavy_rain_days_gt_30mm": 3
+        }
+      }
+    }
+  }
+}

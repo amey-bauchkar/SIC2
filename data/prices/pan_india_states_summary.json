@@ -1,0 +1,203 @@
+{
+  "total_states_reported": 28,
+  "total_records_india": 10000,
+  "generated_at": "2026-09-03T17:34:56.393882",
+  "states": [
+    {
+      "state": "Tamil Nadu",
+      "records_count": 4748,
+      "districts_count": 36,
+      "markets_count": 184,
+      "unique_commodities": 85
+    },
+    {
+      "state": "Maharashtra",
+      "records_count": 895,
+      "districts_count": 31,
+      "markets_count": 123,
+      "unique_commodities": 95
+    },
+    {
+      "state": "Uttar Pradesh",
+      "records_count": 670,
+      "districts_count": 70,
+      "markets_count": 192,
+      "unique_commodities": 61
+    },
+    {
+      "state": "Madhya Pradesh",
+      "records_count": 630,
+      "districts_count": 48,
+      "markets_count": 181,
+      "unique_commodities": 71
+    },
+    {
+      "state": "Keralam",
+      "records_count": 338,
+      "districts_count": 13,
+      "markets_count": 41,
+      "unique_commodities": 59
+    },
+    {
+      "state": "Karnataka",
+      "records_count": 309,
+      "districts_count": 26,
+      "markets_count": 51,
+      "unique_commodities": 72
+    },
+    {
+      "state": "Gujarat",
+      "records_count": 262,
+      "districts_count": 16,
+      "markets_count": 37,
+      "unique_commodities": 72
+    },
+    {
+      "state": "Haryana",
+      "records_count": 249,
+      "districts_count": 18,
+      "markets_count": 40,
+      "unique_commodities": 41
+    },
+    {
+      "state": "Telangana",
+      "records_count": 246,
+      "districts_count": 20,
+      "markets_count": 54,
+      "unique_commodities": 58
+    },
+    {
+      "state": "Punjab",
+      "records_count": 242,
+      "districts_count": 16,
+      "markets_count": 36,
+      "unique_commodities": 46
+    },
+    {
+      "state": "Himachal Pradesh",
+      "records_count": 229,
+      "districts_count": 9,
+      "markets_count": 28,
+      "unique_commodities": 40
+    },
+    {
+      "state": "West Bengal",
+      "records_count": 229,
+      "districts_count": 19,
+      "markets_count": 52,
+      "unique_commodities": 34
+    },
+    {
+      "state": "Odisha",
+      "records_count": 173,
+      "districts_count": 26,
+      "markets_count": 53,
+      "unique_commodities": 24
+    },
+    {
+      "state": "Andhra Pradesh",
+      "records_count": 143,
+      "districts_count": 26,
+      "markets_count": 101,
+      "unique_commodities": 31
+    },
+    {
+      "state": "Rajasthan",
+      "records_count": 136,
+      "districts_count": 22,
+      "markets_count": 31,
+      "unique_commodities": 50
+    },
+    {
+      "state": "Uttarakhand",
+      "records_count": 121,
+      "districts_count": 6,
+      "markets_count": 19,
+      "unique_commodities": 34
+    },
+    {
+      "state": "Assam",
+      "records_count": 82,
+      "districts_count": 5,
+      "markets_count": 10,
+      "unique_commodities": 35
+    },
+    {
+      "state": "NCT of Delhi",
+      "records_count": 65,
+      "districts_count": 1,
+      "markets_count": 3,
+      "unique_commodities": 46
+    },
+    {
+      "state": "Tripura",
+      "records_count": 56,
+      "districts_count": 6,
+      "markets_count": 14,
+      "unique_commodities": 16
+    },
+    {
+      "state": "Chattisgarh",
+      "records_count": 55,
+      "districts_count": 7,
+      "markets_count": 9,
+      "unique_commodities": 33
+    },
+    {
+      "state": "Bihar",
+      "records_count": 27,
+      "districts_count": 5,
+      "markets_count": 7,
+      "unique_commodities": 12
+    },
+    {
+      "state": "Jammu and Kashmir",
+      "records_count": 26,
+      "districts_count": 3,
+      "markets_count": 3,
+      "unique_commodities": 21
+    },
+    {
+      "state": "Manipur",
+      "records_count": 24,
+      "districts_count": 3,
+      "markets_count": 3,
+      "unique_commodities": 13
+    },
+    {
+      "state": "Andaman and Nicobar",
+      "records_count": 14,
+      "districts_count": 1,
+      "markets_count": 2,
+      "unique_commodities": 14
+    },
+    {
+      "state": "Meghalaya",
+      "records_count": 11,
+      "districts_count": 2,
+      "markets_count": 3,
+      "unique_commodities": 10
+    },
+    {
+      "state": "Nagaland",
+      "records_count": 9,
+      "districts_count": 4,
+      "markets_count": 5,
+      "unique_commodities": 8
+    },
+    {
+      "state": "Chandigarh",
+      "records_count": 9,
+      "districts_count": 1,
+      "markets_count": 1,
+      "unique_commodities": 9
+    },
+    {
+      "state": "Pondicherry",
+      "records_count": 2,
+      "districts_count": 1,
+      "markets_count": 1,
+      "unique_commodities": 1
+    }
+  ]
+}

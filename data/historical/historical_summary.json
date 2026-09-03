@@ -1,0 +1,38 @@
+{
+  "start_date": "2026-01-01",
+  "end_date": "2026-09-03",
+  "total_calendar_days": 246,
+  "datasets": {
+    "onion_lasalgaon": {
+      "market": "Lasalgaon",
+      "commodity": "Onion",
+      "records": 199,
+      "coverage_pct": 80.9
+    },
+    "onion_pimpalgaon": {
+      "market": "Pimpalgaon",
+      "commodity": "Onion",
+      "records": 199,
+      "coverage_pct": 80.9
+    },
+    "onion_manmad": {
+      "market": "Manmad",
+      "commodity": "Onion",
+      "records": 185,
+      "coverage_pct": 75.2,
+      "notes": "Carries 9-day reporting gap for abstention demo"
+    },
+    "tomato_narayangaon": {
+      "market": "Junnar(Narayangaon)",
+      "commodity": "Tomato",
+      "records": 205,
+      "coverage_pct": 83.3
+    },
+    "soyabean_latur": {
+      "market": "Latur",
+      "commodity": "Soyabean",
+      "records": 199,
+      "coverage_pct": 80.9
+    }
+  }
+}
