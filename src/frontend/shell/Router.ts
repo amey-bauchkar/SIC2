@@ -37,9 +37,10 @@ export class Router {
     this.routes.set('/markets', renderMarketsView);
     this.routes.set('/settings', renderSettingsView);
     this.routes.set('/backtest', renderBacktestView);
-    this.routes.set('/sajha', () => renderSajhaBazaarTab('en'));
+    this.routes.set('/sajha', () => renderSajhaBazaarTab(store.getState().language || 'mr'));
 
     window.addEventListener('hashchange', () => this.handleHashChange());
+
     store.subscribe((state) => {
       const hash = `#${state.currentRoute}`;
       if (window.location.hash !== hash) {

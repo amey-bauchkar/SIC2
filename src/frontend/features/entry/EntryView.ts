@@ -20,6 +20,9 @@ import { apiClient } from '../../api-client';
 import { renderCropOptgroupsHtml, renderCropDatalistHtml, getCropConfig } from '../../../config/crops';
 import { renderDistrictOptgroupsHtml, renderDistrictDatalistHtml, getDistrictConfig, ALL_DISTRICTS } from '../../../config/districts';
 import { type VoiceExtraction, scoreHypotheses, extractAgrarianSlots } from '../../../core/voice-extraction';
+import { I18N_DICTIONARY, Language, formatNumber, parseDevanagariNumber, toDevanagariDigits } from '../../i18n';
+
+
 
 export const MAHARASHTRA_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = Object.fromEntries(
   ALL_DISTRICTS.map(d => [d.name.toLowerCase(), { lat: d.latitude, lon: d.longitude }])
@@ -83,22 +86,23 @@ export function renderEntryView(): HTMLElement {
   container.className = 'feature-entry-view';
 
   const state = store.getState();
+  const appLang: Language = state.language || 'mr';
   const initialDistrictName = state.userLocation?.district || 'Nashik';
   const initialDistrict = getDistrictConfig(initialDistrictName);
   const initialQty = state.harvestQuantityQuintals || 25;
+  const eDict = I18N_DICTIONARY.entry;
 
   container.innerHTML = `
     <div class="editorial-grid-2" style="align-items: start; margin: var(--space-6) 0;">
 
       <!-- Left Column: Voice-first entry form -->
       <div class="editorial-panel" style="padding: var(--space-8); border: 1.5px solid var(--color-border);">
-        <div class="kicker">🌾 MANDIMITRA DECISION ENGINE</div>
+        <div class="kicker">${eDict.heroKicker[appLang]}</div>
         <h1 class="heading-xl" style="color: var(--color-text-main); margin-bottom: var(--space-3);">
-          Where &amp; When Should You Sell?
+          ${appLang === 'mr' ? 'माल कुठे आणि कधी विकावा?' : (appLang === 'hi' ? 'फसल कहां और कब बेचें?' : 'Where & When Should You Sell?')}
         </h1>
         <p class="text-farmer-lead" style="font-size: var(--font-size-sm); margin-bottom: var(--space-5);">
-          Speak or select your harvested crop and location. We calculate the true net take-home cash
-          across all nearby mandis over the next 0 to 3 days.
+          ${eDict.heroSubtitle[appLang]}
         </p>
 
         <!-- ============ HERO VOICE INTERFACE ============ -->
@@ -107,13 +111,13 @@ export function renderEntryView(): HTMLElement {
           <!-- 1-Tap Language Selector Pills -->
           <div style="display: flex; justify-content: center; margin-bottom: var(--space-4);">
             <div id="voice-lang-pills" style="display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(30, 86, 49, 0.08); border: 1.5px solid rgba(30, 86, 49, 0.25);">
-              <button type="button" class="voice-lang-pill is-active" data-lang="mr-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: var(--color-brand-primary); color: #ffffff;">
+              <button type="button" class="voice-lang-pill ${appLang === 'mr' ? 'is-active' : ''}" data-lang="mr-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'mr' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
                 🇮🇳 मराठी
               </button>
-              <button type="button" class="voice-lang-pill" data-lang="hi-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--color-text-main);">
+              <button type="button" class="voice-lang-pill ${appLang === 'hi' ? 'is-active' : ''}" data-lang="hi-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'hi' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
                 🇮🇳 हिन्दी
               </button>
-              <button type="button" class="voice-lang-pill" data-lang="en-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--color-text-main);">
+              <button type="button" class="voice-lang-pill ${appLang === 'en' ? 'is-active' : ''}" data-lang="en-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'en' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
                 🇬🇧 English
               </button>
             </div>
@@ -125,14 +129,14 @@ export function renderEntryView(): HTMLElement {
             </button>
           </div>
           <div id="voice-title-label" style="font-family: var(--font-family-heading); font-weight: 800; font-size: 1.05rem; color: var(--color-text-main); margin-top: var(--space-3);">
-            बोलून सांगा / बोलकर बताएं / Speak to Fill
+            ${eDict.speakTitle[appLang]}
           </div>
           <div id="voice-sub-label" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px;">
-            बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर ⏹️ दाबा.
+            ${eDict.speakSub[appLang]}
           </div>
 
           <div id="voice-status" class="voice-status" style="margin-top: var(--space-3); min-height: 22px; font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text-muted);">
-            माइक दाबा आणि बोला (मराठी निवडले आहे)
+            ${appLang === 'mr' ? 'माइक दाबा आणि बोला (मराठी निवडले आहे)' : (appLang === 'hi' ? 'माइक दबाएं और बोलें (हिंदी चुनी गई है)' : 'Tap mic and speak (English selected)')}
           </div>
 
           <div id="voice-transcript" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-main); font-weight: 600; min-height: 20px;"></div>
@@ -140,8 +144,9 @@ export function renderEntryView(): HTMLElement {
           <!-- Demo chips for noisy rooms -->
           <div style="margin-top: var(--space-4); border-top: 1px dashed var(--color-border); padding-top: var(--space-3);">
             <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 800; color: var(--color-text-muted); margin-bottom: 8px;">
-              Noisy room? Tap a sample to test
+              ${eDict.noisyRoom[appLang]}
             </div>
+
             <div id="demo-chips-wrapper" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
             </div>
           </div>
@@ -152,45 +157,50 @@ export function renderEntryView(): HTMLElement {
         <!-- ============ STRUCTURED FORM ============ -->
         <form id="entry-form">
           <div class="form-group" style="margin-bottom: var(--space-4);">
-            <label class="input-label" for="select-crop">Select Commodity (शेतमाल / फसल निवडा)</label>
+            <label class="input-label" for="select-crop">${eDict.selectCrop[appLang]}</label>
             <div style="margin-bottom: var(--space-2);">
               <input type="text" id="input-crop-search" class="input-field" list="crop-datalist"
-                placeholder="🔍 Quick search crop (e.g. Wheat, Chana, Aalu, Pomegranate)..."
+                placeholder="${eDict.cropSearchPlaceholder[appLang]}"
                 style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);" />
               ${renderCropDatalistHtml('crop-datalist')}
             </div>
             <select id="select-crop" class="select-field" style="width: 100%;">
-              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion')}
+              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion', appLang)}
             </select>
           </div>
 
           <div class="form-group" style="margin-bottom: var(--space-4);">
-            <label class="input-label" for="input-qty">Harvest Volume in Quintals (एकूण वजन — क्विंटल)</label>
-            <input type="number" id="input-qty" class="input-field" value="${initialQty}" min="0.5" step="0.5" style="width: 100%;" />
+            <label class="input-label" for="input-qty">${eDict.qtyLabel[appLang]}</label>
+            <input type="text" inputmode="decimal" id="input-qty" class="input-field" value="${formatNumber(initialQty, appLang)}" style="width: 100%; font-family: var(--font-family-numbers); font-weight: 800;" />
             <div id="qty-unit-note" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
-              1 गोणी/बोरी = 0.5 क्विंटल · 1 क्रेट/पेटी = 0.25 क्विंटल · 1 टेम्पो = 12 क्विंटल · 1 ट्रॉली = 40 क्विंटल
+
+              ${appLang === 'mr'
+                ? '१ गोणी = ०.५ क्विंटल · १ क्रेट = ०.२५ क्विंटल · १ टेम्पो = १२ क्विंटल · १ ट्रॉली = ४० क्विंटल'
+                : (appLang === 'hi'
+                ? '१ बोरी = ०.५ क्विंटल · १ क्रेट = ०.२५ क्विंटल · १ टेम्पो = १२ क्विंटल · १ ट्रॉली = ४० क्विंटल'
+                : '1 bag = 0.5 qtl · 1 crate = 0.25 qtl · 1 pickup = 12 qtl · 1 trolley = 40 qtl')}
             </div>
           </div>
 
           <div class="form-group" style="margin-bottom: var(--space-6);">
-            <label class="input-label" for="select-district">Farmer Origin District (शेतकरी जिल्हा / मूळ स्थान निवडा)</label>
+            <label class="input-label" for="select-district">${eDict.districtLabel[appLang]}</label>
             <div style="margin-bottom: var(--space-2);">
               <input type="text" id="input-district-search" class="input-field" list="district-datalist"
-                placeholder="🔍 Quick search district (e.g. Nashik, Pune, Latur, Solapur, Kolhapur)..."
+                placeholder="${eDict.districtSearchPlaceholder[appLang]}"
                 style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);" />
               ${renderDistrictDatalistHtml('district-datalist')}
             </div>
             <select id="select-district" class="select-field" style="width: 100%;">
-              ${renderDistrictOptgroupsHtml(initialDistrictName)}
+              ${renderDistrictOptgroupsHtml(initialDistrictName, appLang)}
             </select>
             <input type="hidden" id="input-location" value="${initialDistrict.name}" />
             <div id="district-coords-preview" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
-              📍 Geodesic origin: ${initialDistrict.displayName} (${initialDistrict.latitude.toFixed(4)}° N, ${initialDistrict.longitude.toFixed(4)}° E) • ${initialDistrict.divisionLabel}
+              📍 ${initialDistrict.displayName} • ${initialDistrict.divisionLabel}
             </div>
           </div>
 
           <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-entry" style="width: 100%;">
-            ⚡ Calculate Best Market &amp; Timing
+            ${eDict.btnCalculate[appLang]}
           </button>
         </form>
       </div>
@@ -200,9 +210,15 @@ export function renderEntryView(): HTMLElement {
         <div class="editorial-image-frame" style="height: 320px;">
           <img src="/assets/images/hero_wheat.jpg" alt="Agricultural Fields" onerror="this.src='https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1000&q=80'" />
           <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; background: rgba(24, 32, 20, 0.85); backdrop-filter: blur(8px); padding: var(--space-4); border-radius: var(--radius-lg); color: #fff;">
-            <div class="badge badge-accent" style="margin-bottom: 6px;">AsliDaam™ Guarantee</div>
+            <div class="badge badge-accent" style="margin-bottom: 6px;">
+              ${appLang === 'mr' ? 'असली दाम™ हमी' : (appLang === 'hi' ? 'असली दाम™ गारंटी' : 'AsliDaam™ Guarantee')}
+            </div>
             <div style="font-family: var(--font-family-heading); font-weight: 700; font-size: var(--font-size-sm); color: #ffffff;">
-              "Highest gross mandi price doesn't mean highest cash in hand. Always factor in road freight, holding decay and the buyer's freshness discount."
+              ${appLang === 'mr'
+                ? '"केवळ मोठा भाव पाहून फसू नका. प्रत्यक्ष भाडे, साठवणूक आणि तोलाई वजा करून खिशात उरणारा निव्वळ नफाच खरा असतो."'
+                : (appLang === 'hi'
+                ? '"केवल थोक भाव देखकर न जाएं। ढुलाई, साठवणूक व वजन कटौती काटकर हाथ में आने वाला शुद्ध पैसा ही सच्चा लाभ है."'
+                : '"Highest gross mandi price doesn\'t mean highest cash in hand. Always factor in road freight, holding decay and the buyer\'s freshness discount."')}
             </div>
           </div>
         </div>
@@ -210,31 +226,49 @@ export function renderEntryView(): HTMLElement {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
             <div style="font-size: 1.25rem; margin-bottom: 4px;">🎙️</div>
-            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">Speak, Don't Type</div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Whisper STT + Gemini entity extraction, with an offline catalogue extractor as fallback</div>
+            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
+              ${appLang === 'mr' ? 'टाइप नको, फक्त बोला' : (appLang === 'hi' ? 'टाइप नहीं, बोलकर बताएं' : 'Speak, Don\'t Type')}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+              ${appLang === 'mr' ? 'मराठी व हिंदीसाठी अचूक कृषी उच्चार ओळख' : (appLang === 'hi' ? 'हिंदी व मराठी हेतु सटीक कृषि वाणी पहचान' : 'Whisper STT + Gemini entity extraction')}
+            </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
             <div style="font-size: 1.25rem; margin-bottom: 4px;">⚖️</div>
-            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">Bags → Quintals</div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Unit conversion is always recomputed locally — never left to the language model</div>
+            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
+              ${appLang === 'mr' ? 'गोणी / बोरी ➔ क्विंटल' : (appLang === 'hi' ? 'बोरी ➔ क्विंटल' : 'Bags → Quintals')}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+              ${appLang === 'mr' ? 'स्थानिक परिमाणे (गोणी, क्रेट, टेम्पो) आपोआप क्विंटलमध्ये' : (appLang === 'hi' ? 'स्थानीय माप (बोरी, क्रेट, टेम्पो) स्वतः क्विंटल में' : 'Unit conversion is always recomputed locally')}
+            </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
             <div style="font-size: 1.25rem; margin-bottom: 4px;">🚚</div>
-            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">Real Road Haulage</div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">OSRM driving km calibrated at 1.35× road factor</div>
+            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
+              ${appLang === 'mr' ? 'प्रत्यक्ष रस्ता अंतर' : (appLang === 'hi' ? 'वास्तविक सड़क दूरी' : 'Real Road Haulage')}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+              ${appLang === 'mr' ? '१.३५× घाटाचे व वळणाचे अंतर जोडून अचूक वाहतूक खर्च' : (appLang === 'hi' ? '१.३५× वास्तविक सड़क मोड़ जोड़कर सटीक ढुलाई भाड़ा' : 'OSRM driving km calibrated at 1.35× road factor')}
+            </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
             <div style="font-size: 1.25rem; margin-bottom: 4px;">🛡️</div>
-            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">Zero Guesswork</div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Honest abstention when data is stale or unreliable</div>
+            <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
+              ${appLang === 'mr' ? 'अंदाजेबाजी नाही' : (appLang === 'hi' ? 'सट्टेबाजी नहीं' : 'Zero Guesswork')}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+              ${appLang === 'mr' ? 'भाव जुने किंवा संशयास्पद असल्यास स्पष्ट नकार' : (appLang === 'hi' ? 'भाव पुराने या संदिग्ध होने पर स्पष्ट अस्वीकार' : 'Honest abstention when data is stale or unreliable')}
+            </div>
           </div>
         </div>
       </div>
+
 
     </div>
   `;
 
   // ==========================================================================
+
   // Element handles
   // ==========================================================================
   const cropSelect = container.querySelector('#select-crop') as HTMLSelectElement;
@@ -248,6 +282,15 @@ export function renderEntryView(): HTMLElement {
   const statusEl = container.querySelector('#voice-status') as HTMLElement;
   const transcriptEl = container.querySelector('#voice-transcript') as HTMLElement;
   const confirmEl = container.querySelector('#voice-confirmation') as HTMLElement;
+
+  if (appLang !== 'en' && qtyInput) {
+    qtyInput.addEventListener('input', () => {
+      const s = qtyInput.selectionStart;
+      qtyInput.value = toDevanagariDigits(qtyInput.value);
+      if (s !== null) qtyInput.setSelectionRange(s, s);
+    });
+  }
+
 
   // ==========================================================================
   // Manual controls (kept 100% interactive)
@@ -324,11 +367,12 @@ export function renderEntryView(): HTMLElement {
     }
 
     if (extraction.quantityQuintals !== null && extraction.quantityQuintals !== undefined) {
-      qtyInput.value = String(extraction.quantityQuintals);
+      qtyInput.value = formatNumber(extraction.quantityQuintals, appLang);
       store.setHarvestQuantity(extraction.quantityQuintals);
       flashField(qtyInput);
       filled += 1;
     }
+
 
     if (extraction.district) {
       const cfg = applyDistrict(extraction.district);
@@ -390,7 +434,8 @@ export function renderEntryView(): HTMLElement {
   // ==========================================================================
   // Trilingual Native Routing & Demo Chips
   // ==========================================================================
-  let currentLang: 'mr-IN' | 'hi-IN' | 'en-IN' = 'mr-IN';
+  let currentLang: 'mr-IN' | 'hi-IN' | 'en-IN' = appLang === 'hi' ? 'hi-IN' : (appLang === 'en' ? 'en-IN' : 'mr-IN');
+
 
   function renderLanguageChips() {
     const chipsWrapper = container.querySelector('#demo-chips-wrapper') as HTMLElement | null;
@@ -454,10 +499,13 @@ export function renderEntryView(): HTMLElement {
           stopListeningAndProcess();
         }
         currentLang = newLang;
-        updateLanguagePillsUI();
+        const shortLang = (newLang.split('-')[0] || 'mr') as Language;
+        store.setLanguage(shortLang);
+        container.replaceWith(renderEntryView());
       }
     });
   });
+
 
   // Initial chip render
   renderLanguageChips();
@@ -696,7 +744,8 @@ export function renderEntryView(): HTMLElement {
     const crop = cropSelect ? cropSelect.value : 'Onion';
     store.setSelectedCrop(crop);
 
-    const qty = Math.max(0.5, parseFloat(qtyInput?.value || '25'));
+    const qty = Math.max(0.5, parseDevanagariNumber(qtyInput?.value || '25'));
+
     store.setHarvestQuantity(qty);
 
     const dVal = districtSelect ? districtSelect.value : (locInput ? locInput.value : 'Nashik');

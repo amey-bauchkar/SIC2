@@ -19,6 +19,7 @@
 
 import { Market, RecommendationAction } from '../contracts/domain';
 import { getCropConfig } from '../config/crops';
+import { translateMandiName } from '../config/mandis';
 
 export interface AsliDaamBreakdown {
   market: Market;
@@ -446,16 +447,27 @@ export function runAsliDaamOptimization(
   // Multilingual headlines — day 0 is stated unequivocally as "Sell Today / आजच विका"
   const isWait = recommended.dayOffset > 0;
   const mandiName = recommended.market.name;
+  const mandiNameMr = translateMandiName(mandiName, 'mr');
+  const mandiNameHi = translateMandiName(mandiName, 'hi');
   const days = recommended.dayOffset;
 
+  const toDevDigits = (val: number | string) => {
+    const digits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+    return String(val).replace(/[0-9]/g, d => digits[parseInt(d, 10)]);
+  };
+
   let headlineEn = `Sell Today at ${mandiName} APMC`;
-  let headlineMr = `आजच विका — ${mandiName} कृषी उत्पन्न बाजार समितीत`;
-  let headlineHi = `आज ही बेचें — ${mandiName} मंडी में`;
+  let headlineMr = `आजच विका — ${mandiNameMr} कृषी उत्पन्न बाजार समितीत`;
+  let headlineHi = `आज ही बेचें — ${mandiNameHi} मंडी में`;
 
   if (isWait && totalPocketCashGain > 0) {
+    const daysMr = toDevDigits(days);
+    const daysHi = toDevDigits(days);
+    const gainMr = toDevDigits(totalPocketCashGain.toLocaleString('en-IN'));
+    const gainHi = toDevDigits(totalPocketCashGain.toLocaleString('en-IN'));
     headlineEn = `Wait ${days} Day${days > 1 ? 's' : ''}, Sell at ${mandiName} APMC: +₹${totalPocketCashGain.toLocaleString('en-IN')} Extra in Pocket`;
-    headlineMr = `${days} दिवस थांबा, ${mandiName} येथे विका: खिशात +₹${totalPocketCashGain.toLocaleString('en-IN')} जास्तीचा निव्वळ नफा`;
-    headlineHi = `${days} दिन रुकें, ${mandiName} में बेचें: जेब में +₹${totalPocketCashGain.toLocaleString('en-IN')} अतिरिक्त फायदा`;
+    headlineMr = `${daysMr} दिवस थांबा, ${mandiNameMr} येथे विका: खिशात +₹${gainMr} जास्तीचा निव्वळ नफा`;
+    headlineHi = `${daysHi} दिन रुकें, ${mandiNameHi} में बेचें: जेब में +₹${gainHi} अतिरिक्त फायदा`;
   }
 
   if (isAbstained) {

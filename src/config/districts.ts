@@ -4,6 +4,8 @@
  * Grouped into 6 administrative divisions with bilingual Marathi labels & precise geodesic coordinates.
  */
 
+import { translateDistrict } from './mandis';
+
 export interface DistrictItem {
   id: string;              // Standard English district name
   name: string;            // Standard English name
@@ -502,18 +504,25 @@ export function getDistrictConfig(inputName: string): DistrictItem {
 }
 
 /**
- * Generates HTML <optgroup> options for a district <select> element
+ * Generates HTML <optgroup> options for a district <select> element with language support
  */
-export function renderDistrictOptgroupsHtml(selectedDistrictName: string = 'Nashik'): string {
+export function renderDistrictOptgroupsHtml(selectedDistrictName: string = 'Nashik', lang: 'en' | 'mr' | 'hi' = 'mr'): string {
   const normSelected = (selectedDistrictName || 'Nashik').toLowerCase();
   return DISTRICT_DIVISIONS.map(div => {
     const options = div.districts.map(d => {
       const isSelected = d.name.toLowerCase() === normSelected || normSelected.includes(d.name.toLowerCase());
-      return `<option value="${d.name}" ${isSelected ? 'selected' : ''}>${d.displayName}</option>`;
+      const label = lang === 'hi' ? `${translateDistrict(d.name, 'hi')} (${d.name})`
+        : lang === 'mr' ? `${d.nameMr} (${d.name})`
+        : d.displayName;
+      return `<option value="${d.name}" ${isSelected ? 'selected' : ''}>${label}</option>`;
     }).join('\n      ');
-    return `  <optgroup label="${div.label}">\n      ${options}\n    </optgroup>`;
+    const groupLabel = lang === 'hi'
+      ? (div.label.replace('विभाग', 'प्रभाग').replace('नाशिक', 'नासिक').replace('छत्रपती संभाजीनगर', 'छत्रपति संभाजीनगर').replace('अमरावती', 'अमरावती').replace('नागपूर', 'नागपुर').replace('पुणे', 'पुणे').replace('कोकण', 'कोंकण'))
+      : (lang === 'mr' ? div.label : `📍 ${div.id} Division`);
+    return `  <optgroup label="${groupLabel}">\n      ${options}\n    </optgroup>`;
   }).join('\n\n');
 }
+
 
 /**
  * Generates HTML <datalist> for instant district search

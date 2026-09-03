@@ -22,6 +22,9 @@ export interface CropItem {
 export interface CropCategoryGroup {
   id: string;
   label: string;
+  labelMr?: string;
+  labelHi?: string;
+  labelEn?: string;
   crops: CropItem[];
 }
 
@@ -29,6 +32,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "CEREALS_GRAINS",
     label: "🌾 धान्य (Cereals & Grains)",
+    labelMr: "🌾 धान्य (Cereals & Grains)",
+    labelHi: "🌾 अनाज (Cereals & Grains)",
+    labelEn: "🌾 Cereals & Grains",
     crops: [
       {
         id: "Wheat",
@@ -115,6 +121,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "PULSES_DALS",
     label: "🥣 कडधान्ये व डाळी (Pulses & Dals)",
+    labelMr: "🥣 कडधान्ये व डाळी (Pulses & Dals)",
+    labelHi: "🥣 दलहन व दालें (Pulses & Dals)",
+    labelEn: "🥣 Pulses & Dals",
     crops: [
       {
         id: "Bengal Gram(Gram)(Whole)",
@@ -231,6 +240,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "VEGETABLES",
     label: "🥦 भाजीपाला (Vegetables)",
+    labelMr: "🥦 भाजीपाला (Vegetables)",
+    labelHi: "🥦 सब्जियां (Vegetables)",
+    labelEn: "🥦 Vegetables",
     crops: [
       {
         id: "Tomato",
@@ -487,6 +499,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "BULBS_TUBERS",
     label: "🥔 कंदमुळे (Bulbs & Tubers)",
+    labelMr: "🥔 कंदमुळे (Bulbs & Tubers)",
+    labelHi: "🥔 कंदमूल (Bulbs & Tubers)",
+    labelEn: "🥔 Bulbs & Tubers",
     crops: [
       {
         id: "Onion",
@@ -593,6 +608,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "FRUITS",
     label: "🍎 फळे (Fruits)",
+    labelMr: "🍎 फळे (Fruits)",
+    labelHi: "🍎 फल (Fruits)",
+    labelEn: "🍎 Fruits",
     crops: [
       {
         id: "Pomegranate",
@@ -829,6 +847,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "OILSEEDS_CASH",
     label: "🌻 गळीत धान्य व नगदी (Oilseeds & Cash Crops)",
+    labelMr: "🌻 गळीत धान्य व नगदी (Oilseeds & Cash Crops)",
+    labelHi: "🌻 तिलहन व नकदी फसलें (Oilseeds & Cash Crops)",
+    labelEn: "🌻 Oilseeds & Cash Crops",
     crops: [
       {
         id: "Soyabean",
@@ -985,6 +1006,9 @@ export const CROP_CATEGORIES: CropCategoryGroup[] = [
   {
     id: "SPICES",
     label: "🌿 मसाले (Spices)",
+    labelMr: "🌿 मसाले (Spices)",
+    labelHi: "🌿 मसाले (Spices)",
+    labelEn: "🌿 Spices",
     crops: [
       {
         id: "Turmeric",
@@ -1086,18 +1110,25 @@ export function getCropConfig(name: string): CropItem {
 }
 
 /**
- * Generates HTML <optgroup> options for a <select> element
+ * Generates HTML <optgroup> options for a <select> element with language support
  */
-export function renderCropOptgroupsHtml(selectedCropId: string = 'Onion'): string {
+export function renderCropOptgroupsHtml(selectedCropId: string = 'Onion', lang: 'en' | 'mr' | 'hi' = 'mr'): string {
   const normSelected = (selectedCropId || 'Onion').toLowerCase();
   return CROP_CATEGORIES.map(cat => {
     const options = cat.crops.map(crop => {
       const isSelected = crop.id.toLowerCase() === normSelected || crop.nameEn.toLowerCase() === normSelected;
-      return `<option value="${crop.id}" ${isSelected ? 'selected' : ''}>${crop.displayName}</option>`;
+      const label = lang === 'mr' ? `${crop.nameMr} (${crop.nameEn})`
+        : lang === 'hi' ? `${crop.nameHi} (${crop.nameEn})`
+        : crop.displayName;
+      return `<option value="${crop.id}" ${isSelected ? 'selected' : ''}>${label}</option>`;
     }).join('\n      ');
-    return `  <optgroup label="${cat.label}">\n      ${options}\n    </optgroup>`;
+    const groupLabel = lang === 'hi' ? (cat.labelHi || cat.label)
+      : lang === 'mr' ? (cat.labelMr || cat.label)
+      : (cat.labelEn || cat.label);
+    return `  <optgroup label="${groupLabel}">\n      ${options}\n    </optgroup>`;
   }).join('\n\n');
 }
+
 
 /**
  * Generates HTML <datalist> for instant search

@@ -47,7 +47,9 @@ export interface AppState {
   evaluationData: EvaluateResponse | null;
   isLoading: boolean;
   errorMessage: string | null;
+  language: 'en' | 'mr' | 'hi';
 }
+
 
 // ==========================================
 // Shared UI Component Contracts (Janhvi Owned)

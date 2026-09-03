@@ -14,15 +14,24 @@ import { store } from '../../state/store';
 import { apiClient, SajhaRosterResponse } from '../../api-client';
 import { renderCropOptgroupsHtml } from '../../../config/crops';
 import type { SajhaBazaarResult, SajhaParticipant } from '../../../core/sajha-bazaar';
+import { 
+  Language, 
+  formatCurrency, 
+  formatNumber, 
+  formatUnit, 
+  toDevanagariDigits, 
+  parseDevanagariNumber, 
+  translateMandiName,
+  translateDistrict,
+  translateCommodity,
+  translateReason 
+} from '../../i18n';
 
-type Language = 'en' | 'mr' | 'hi';
-
-const rs = (n: number): string => `₹${Math.round(n).toLocaleString('en-IN')}`;
-const rs1 = (n: number): string => `₹${n.toFixed(1)}`;
 
 let rosterCache: SajhaRosterResponse | null = null;
 let originOverride: { lat: number; lon: number; label: string; district: string } | null = null;
 let quantityOverride: number | null = null;
+
 
 const i18n = {
   en: {
@@ -129,7 +138,8 @@ export function renderSajhaBazaarBanner(
       if (result.status !== 'POOL_AVAILABLE' || !result.pooled || result.requesterGainPerQtl <= 0) return;
 
       const others = result.pooled.participantCount - 1;
-      const dest = result.destinationMandi?.name || 'the better mandi';
+      const rawDest = result.destinationMandi?.name || 'the better mandi';
+      const dest = translateMandiName(rawDest, language);
 
       const banner = document.createElement('div');
       banner.className = 'editorial-panel';
@@ -148,13 +158,13 @@ export function renderSajhaBazaarBanner(
           <div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${language === 'mr'
-                ? `साझा बाज़ार संधी: जवळचे ${others} शेतकरी तयार आहेत. एकत्र टेम्पोने ${dest} येथे जा (+${rs(result.requesterGainTotal)} खिशात बचत)!`
+                ? `साझा बाज़ार संधी: जवळचे ${formatNumber(others, language)} शेतकरी तयार आहेत. एकत्र टेम्पोने ${dest} येथे जा (+${formatCurrency(result.requesterGainTotal, language)} खिशात बचत)!`
                 : language === 'hi'
-                ? `साझा बाज़ार अवसर: पास के ${others} किसान तैयार हैं। साझा वाहन से ${dest} में बेचें (+${rs(result.requesterGainTotal)} जेब में बचत)!`
-                : `SajhaBazaar Opportunity: ${others} nearby farmers ready. Pool to ${dest} (+${rs(result.requesterGainTotal)} extra pocket cash)!`}
+                ? `साझा बाज़ार अवसर: पास के ${formatNumber(others, language)} किसान तैयार हैं। साझा वाहन से ${dest} में बेचें (+${formatCurrency(result.requesterGainTotal, language)} जेब में बचत)!`
+                : `SajhaBazaar Opportunity: ${others} nearby farmers ready. Pool to ${dest} (+${formatCurrency(result.requesterGainTotal, language)} extra pocket cash)!`}
             </div>
             <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px;">
-              ${result.pooled.totalQuintals}q combined load · ${dest} · ${rs(result.requesterGainPerQtl)}/q net advantage
+              ${formatUnit(result.pooled.totalQuintals, 'qtl', language)} · ${dest} · +${formatCurrency(result.requesterGainPerQtl, language, true)}/${formatUnit(1, 'qtl', language)} ${language === 'mr' ? 'निव्वळ नफा' : (language === 'hi' ? 'निव्वल लाभ' : 'net advantage')}
             </div>
           </div>
         </div>
@@ -162,6 +172,7 @@ export function renderSajhaBazaarBanner(
           ${language === 'mr' ? 'टेम्पो पहा' : (language === 'hi' ? 'टेम्पो देखें' : 'View Pool')} →
         </button>
       `;
+
       mount.appendChild(banner);
       banner.querySelector('#btn-view-pool')?.addEventListener('click', onView);
     })
@@ -179,14 +190,15 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
   panel.className = 'sajha-bazaar-panel';
 
   const state = store.getState();
+  let currentLang = state.language || language || 'mr';
   const qty = quantityOverride ?? (state.harvestQuantityQuintals || 25);
-  const labels = i18n[language] || i18n.en;
+  const labels = i18n[currentLang] || i18n.en;
 
   panel.innerHTML = `
     <!-- Simple Editorial Header -->
     <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-4);">
       <div class="editorial-header" style="margin-bottom: var(--space-3);">
-        <div class="kicker" style="color: var(--color-brand-primary);">🤝 ${language === 'mr' ? 'गावाचा शेअर टेम्पो' : (language === 'hi' ? 'साझा किसान वाहन' : 'SHARED FREIGHT & ACCESS')}</div>
+        <div class="kicker" style="color: var(--color-brand-primary);">🤝 ${currentLang === 'mr' ? 'गावाचा शेअर टेम्पो' : (currentLang === 'hi' ? 'साझा किसान वाहन' : 'SHARED FREIGHT & ACCESS')}</div>
         <h2 class="heading-lg" style="margin-top: 4px; margin-bottom: 6px;">${labels.title}</h2>
         <p style="max-width: 680px; font-size: var(--font-size-sm); color: var(--color-text-muted);">
           ${labels.subtitle}
@@ -199,12 +211,12 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
           <div>
             <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.cropLabel}</label>
             <select id="sajha-crop" class="select-field" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600;">
-              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion')}
+              ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion', currentLang)}
             </select>
           </div>
           <div>
             <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.qtyLabel}</label>
-            <input type="number" id="sajha-qty" class="input-field" value="${qty}" min="0.5" step="0.5" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 800;" />
+            <input type="text" inputmode="decimal" id="sajha-qty" class="input-field" value="${formatNumber(qty, currentLang)}" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 800; font-family: var(--font-family-numbers);" />
           </div>
           <div>
             <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.locLabel}</label>
@@ -219,7 +231,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
           </div>
         </div>
         <div id="sajha-origin-note" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-brand-primary); font-weight: 600;">
-          📍 ${originOverride ? `${originOverride.label}` : `${state.userLocation?.district || 'Nashik'} परिसर`}
+          📍 ${originOverride ? `${originOverride.label}` : `${translateDistrict(state.userLocation?.district || 'Nashik', currentLang)} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`}
         </div>
       </div>
     </section>
@@ -234,51 +246,74 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
   const qtyInput = panel.querySelector('#sajha-qty') as HTMLInputElement;
   const originNote = panel.querySelector('#sajha-origin-note') as HTMLElement;
 
+  if (currentLang !== 'en' && qtyInput) {
+    qtyInput.addEventListener('input', () => {
+      const s = qtyInput.selectionStart;
+      qtyInput.value = toDevanagariDigits(qtyInput.value);
+      if (s !== null) qtyInput.setSelectionRange(s, s);
+    });
+  }
+
   const refresh = () => {
-    quantityOverride = Math.max(0.5, parseFloat(qtyInput.value || String(qty)));
+    quantityOverride = Math.max(0.5, parseDevanagariNumber(qtyInput.value || String(qty)));
     store.setSelectedCrop(cropSelect.value);
+    const userDist = translateDistrict(store.getState().userLocation?.district || 'Nashik', currentLang);
     originNote.textContent = originOverride
       ? `📍 ${originOverride.label}`
-      : `📍 ${store.getState().userLocation?.district || 'Nashik'} परिसर`;
-    loadAndRender(resultMount, language);
+      : `📍 ${userDist} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`;
+    loadAndRender(resultMount, currentLang);
   };
+
 
   cropSelect.addEventListener('change', refresh);
   panel.querySelector('#sajha-run')?.addEventListener('click', refresh);
+
+  // Subscribe to store language changes so view reloads in chosen language
+  store.subscribe((st) => {
+    if (st.language && st.language !== currentLang) {
+      currentLang = st.language;
+      if (cropSelect) {
+        cropSelect.innerHTML = renderCropOptgroupsHtml(store.getState().selectedCrop || 'Onion', currentLang);
+      }
+      if (qtyInput) {
+        qtyInput.value = formatNumber(quantityOverride ?? store.getState().harvestQuantityQuintals ?? 25, currentLang);
+      }
+      if (rosterCache) {
+        buildChips(rosterCache);
+      }
+      refresh();
+    }
+  });
+
 
   // Cluster chips with clear labels across all major crops
   const buildChips = (roster: SajhaRosterResponse) => {
     chipsMount.innerHTML = '';
 
     for (const c of (roster.clusters || [])) {
-      const isSelected = originOverride?.label === `${c.taluka}, ${c.district}`;
+      const talukaName = translateMandiName(c.taluka, currentLang);
+      const distName = translateDistrict(c.district, currentLang);
+      const cropLabel = translateCommodity(c.crop, currentLang);
+      const isSelected = originOverride?.district === c.district && originOverride?.lat === c.centroidLatitude;
 
       const chip = document.createElement('button');
       chip.className = 'qty-pill' + (isSelected ? ' active' : '');
-      
-      let cropLabel = c.crop;
-      if (c.crop === 'Onion') cropLabel = language === 'mr' ? 'कांदा' : (language === 'hi' ? 'प्याज' : 'Onion');
-      else if (c.crop === 'Tomato') cropLabel = language === 'mr' ? 'टोमॅटो' : (language === 'hi' ? 'टमाटर' : 'Tomato');
-      else if (c.crop === 'Soyabean') cropLabel = language === 'mr' ? 'सोयाबीन' : (language === 'hi' ? 'सोयाबीन' : 'Soyabean');
-      else if (c.crop === 'Wheat') cropLabel = language === 'mr' ? 'गहू' : (language === 'hi' ? 'गेहूं' : 'Wheat');
-      else if (c.crop.includes('Gram')) cropLabel = language === 'mr' ? 'हरभरा' : (language === 'hi' ? 'चना' : 'Gram');
-      else if (c.crop === 'Pomegranate') cropLabel = language === 'mr' ? 'डाळिंब' : (language === 'hi' ? 'अनार' : 'Pomegranate');
         
-      chip.textContent = `📍 ${c.taluka} (${cropLabel})`;
-      chip.title = `${c.taluka}, ${c.district} · ${c.crop} Pool (${c.farmerCount} farmers)`;
+      chip.textContent = `📍 ${talukaName} (${cropLabel})`;
+      chip.title = `${talukaName}, ${distName} · ${cropLabel} (${formatNumber(c.farmerCount, currentLang)} ${currentLang === 'mr' ? 'शेतकरी' : (currentLang === 'hi' ? 'किसान' : 'farmers')})`;
       
       chip.addEventListener('click', () => {
         originOverride = {
           lat: c.centroidLatitude,
           lon: c.centroidLongitude,
-          label: `${c.taluka}, ${c.district}`,
+          label: `${talukaName}, ${distName}`,
           district: c.district
         };
         cropSelect.value = c.crop;
         store.setSelectedCrop(c.crop);
         
         // Auto-set a smallholder demo quantity (5q) so the pool matches effortlessly
-        qtyInput.value = '5';
+        qtyInput.value = formatNumber(5, currentLang);
         quantityOverride = 5;
         store.setHarvestQuantity(5);
         
@@ -299,7 +334,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
       .catch(() => { chipsMount.innerHTML = '<span style="font-size: var(--font-size-xs); color: var(--color-status-abstain);">Roster offline</span>'; });
   }
 
-  loadAndRender(resultMount, language);
+  loadAndRender(resultMount, currentLang);
   return panel;
 }
 
@@ -341,7 +376,7 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
   const trip = pooled?.tripCost;
   const soloTrip = result.soloAtDestination?.tripCost;
   const dest = result.destinationMandi;
-  const originLabel = originOverride?.label || `${store.getState().userLocation?.district || 'Nashik'}`;
+  const originLabel = originOverride?.label || translateDistrict(store.getState().userLocation?.district || 'Nashik', language);
 
   const vehicleName = language === 'mr' ? (trip?.vehicle.nameMr || trip?.vehicle.name || 'Bolero Maxi Truck')
     : language === 'hi' ? (trip?.vehicle.nameHi || trip?.vehicle.name || 'Bolero Maxi Truck')
@@ -357,7 +392,7 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
   const userPooledShare = result.participants.find(p => p.isRequester)?.pooledTransportShareTotal ?? 450;
   const userFreightSaved = Math.max(0, userSoloTripCost - userPooledShare);
 
-  el.innerHTML = `
+      el.innerHTML = `
     <!-- CARD 1: 🚚 SHARED VEHICLE & CAPACITY BAR -->
     <div class="sajha-card">
       <div class="sajha-card-header">
@@ -366,12 +401,12 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
           <span>${labels.vehicleTitle}: ${vehicleName}</span>
         </div>
         <span class="badge badge-sage" style="font-weight: 800; font-size: 0.75rem;">
-          ${pooled?.participantCount} ${language === 'mr' ? 'शेतकरी एकत्र' : (language === 'hi' ? 'किसान साथ' : 'Farmers Pooled')}
+          ${formatNumber(pooled?.participantCount || 0, language)} ${language === 'mr' ? 'शेतकरी एकत्र' : (language === 'hi' ? 'किसान साथ' : 'Farmers Pooled')}
         </span>
       </div>
 
       <div style="font-size: var(--font-size-sm); color: var(--color-text-main); font-weight: 700; margin-bottom: var(--space-2);">
-        ${labels.route}: 📍 ${originLabel} ➔ ${dest?.name || 'Terminal Mandi'} (${dest?.directDistanceKm.toFixed(0) || 0} km)
+        ${labels.route}: 📍 ${originLabel} ➔ ${translateMandiName(dest?.name || 'Terminal Mandi', language)} (${formatUnit(dest?.directDistanceKm ? Math.round(dest.directDistanceKm) : 0, 'km', language)})
       </div>
 
       <!-- Capacity Progress Meter -->
@@ -381,14 +416,14 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
         </div>
         <div class="sajha-capacity-stats">
           <span style="color: var(--color-brand-primary); font-weight: 800;">
-            ${loaded} / ${capacity} qtl ${labels.filled} (${fillPct}%)
+            ${formatUnit(loaded, 'qtl', language)} / ${formatUnit(capacity, 'qtl', language)} ${labels.filled} (${formatUnit(fillPct, 'pct', language)})
           </span>
           ${spaceRemaining > 0 ? `
             <span class="sajha-space-alert">
-              ⚡ ${spaceRemaining} ${labels.spaceLeft}
+              ⚡ ${language === 'mr' ? `फक्त ${formatUnit(spaceRemaining, 'qtl', language)} जागा शिल्लक!` : (language === 'hi' ? `सिर्फ ${formatUnit(spaceRemaining, 'qtl', language)} जगह बाकी!` : `${formatUnit(spaceRemaining, 'qtl', language)} space left!`)}
             </span>
           ` : `
-            <span style="color: var(--color-status-success); font-weight: 800;">✓ Full</span>
+            <span style="color: var(--color-status-success); font-weight: 800;">✓ ${language === 'mr' ? 'गाडी पूर्ण भरली' : (language === 'hi' ? 'गाड़ी पूरी भरी' : 'Full')}</span>
           `}
         </div>
       </div>
@@ -409,14 +444,14 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
             ${labels.savingsSub}
           </div>
           <div class="sajha-savings-val">
-            +${rs(result.requesterGainTotal)}
+            +${formatCurrency(result.requesterGainTotal, language)}
           </div>
           <div style="font-size: var(--font-size-xs); color: #86efac; font-weight: 700; margin-top: 2px;">
-            (+${rs1(result.requesterGainPerQtl)}/qtl net advantage)
+            (+${formatCurrency(result.requesterGainPerQtl, language, true)} / ${language === 'mr' ? 'क्विंटल जास्तीचा नफा' : (language === 'hi' ? 'क्विंटल अतिरिक्त लाभ' : 'qtl net advantage')})
           </div>
         </div>
         <div style="background: rgba(255,255,255,0.15); padding: 8px 14px; border-radius: var(--radius-md); font-size: var(--font-size-xs); font-weight: 700;">
-          ✓ Verified by MandiMitra
+          ✓ ${language === 'mr' ? 'मंडीमित्र पडताळणी' : (language === 'hi' ? 'मंडीमित्र सत्यापित' : 'Verified by MandiMitra')}
         </div>
       </div>
 
@@ -425,19 +460,19 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
         <div class="sajha-comparison-box">
           <div style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 700;">${labels.soloFare}</div>
           <div style="font-size: var(--font-size-base); font-weight: 900; color: var(--color-status-abstain); margin-top: 2px;">
-            ${rs(userSoloTripCost)}
+            ${formatCurrency(userSoloTripCost, language)}
           </div>
         </div>
         <div class="sajha-comparison-box" style="border-color: #22c55e; background: var(--color-brand-primary-light);">
           <div style="font-size: 0.72rem; color: var(--color-brand-primary); font-weight: 700;">${labels.pooledFare}</div>
           <div style="font-size: var(--font-size-base); font-weight: 900; color: var(--color-brand-primary); margin-top: 2px;">
-            ${rs(userPooledShare)}
+            ${formatCurrency(userPooledShare, language)}
           </div>
         </div>
         <div class="sajha-comparison-box" style="border-color: #16a34a; background: #dcfce7;">
           <div style="font-size: 0.72rem; color: #166534; font-weight: 700;">${labels.fareSaved}</div>
           <div style="font-size: var(--font-size-base); font-weight: 900; color: #15803d; margin-top: 2px;">
-            +${rs(userFreightSaved)}
+            +${formatCurrency(userFreightSaved, language)}
           </div>
         </div>
       </div>
@@ -448,7 +483,7 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
       <div class="sajha-card-header">
         <div class="sajha-card-title">
           <span>👥</span>
-          <span>${labels.farmersTitle} (${result.participants.length})</span>
+          <span>${labels.farmersTitle} (${formatNumber(result.participants.length, language)})</span>
         </div>
       </div>
 
@@ -461,25 +496,26 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
               </div>
               <div>
                 <div style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main);">
-                  ${p.displayName} ${p.isRequester ? `<span class="badge badge-accent" style="font-size: 0.6rem; padding: 1px 6px;">${labels.youBadge}</span>` : ''}
+                  ${p.isRequester ? (language === 'mr' ? 'तुम्ही (स्वतः)' : (language === 'hi' ? 'आप (स्वयं)' : 'You')) : p.displayName} ${p.isRequester ? `<span class="badge badge-accent" style="font-size: 0.6rem; padding: 1px 6px;">${labels.youBadge}</span>` : ''}
                 </div>
                 <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-                  📍 ${p.village}${p.isRequester ? '' : ` (${p.distanceFromRequesterKm.toFixed(1)} km)`}
+                  📍 ${p.village}${p.isRequester ? '' : ` (${formatUnit(p.distanceFromRequesterKm.toFixed(1), 'km', language)})`}
                 </div>
               </div>
             </div>
             <div style="text-align: right;">
               <div style="font-family: var(--font-family-numbers); font-size: var(--font-size-base); font-weight: 900; color: var(--color-brand-primary);">
-                ${p.quantityQuintals} qtl
+                ${formatUnit(p.quantityQuintals, 'qtl', language)}
               </div>
               <div style="font-size: 0.68rem; color: var(--color-status-success); font-weight: 700;">
-                +${rs(p.netGainTotal)} gain
+                +${formatCurrency(p.netGainTotal, language)} ${language === 'mr' ? 'बचत' : (language === 'hi' ? 'बचत' : 'gain')}
               </div>
             </div>
           </div>
         `).join('')}
       </div>
     </div>
+
 
     <!-- Small footer note for demo transparency -->
     <div style="text-align: center; margin-top: var(--space-3); font-size: 0.7rem; color: var(--color-text-muted); font-style: italic;">
@@ -506,33 +542,35 @@ function renderSimpleNoPool(result: SajhaBazaarResult, language: Language): HTML
     <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 520px; margin: 0 auto var(--space-3);">
       ${isLargeLoad
         ? (language === 'mr'
-          ? `तुमचे वजन ${qty} क्विंटल (मोठा भार) आहे. तुमच्याकडे आधीच पूर्ण वाहनाइतका माल असल्याने एकट्याने जाणे परवडणारे आहे. साझा बाजार ३ ते १० क्विंटलच्या अल्पभूधारक शेतकऱ्यांसाठी बनवला आहे.`
+          ? `तुमचे वजन ${formatUnit(qty, 'qtl', language)} (मोठा भार) आहे. तुमच्याकडे आधीच पूर्ण वाहनाइतका माल असल्याने एकट्याने जाणे परवडणारे आहे. साझा बाजार ${formatNumber(3, language)} ते ${formatUnit(10, 'qtl', language)} च्या अल्पभूधारक शेतकऱ्यांसाठी बनवला आहे.`
           : language === 'hi'
-          ? `आपकी उपज ${qty} क्विंटल (बड़ा भार) है। आपके पास पहले से पूरी गाड़ी जितना माल है, इसलिए अकेले जाना ही सही है। साझा बाजार ३ से १० क्विंटल के छोटे किसानों के लिए है।`
-          : `Your load of ${qty} quintals is already large enough for a dedicated solo vehicle. SajhaBazaar is designed to pool smallholders with 2 to 10 quintals.`)
+          ? `आपकी उपज ${formatUnit(qty, 'qtl', language)} (बड़ा भार) है। आपके पास पहले से पूरी गाड़ी जितना माल है, इसलिए अकेले जाना ही सही है। साझा बाजार ${formatNumber(3, language)} से ${formatUnit(10, 'qtl', language)} के छोटे किसानों के लिए है।`
+          : `Your load of ${formatUnit(qty, 'qtl', language)} is already large enough for a dedicated solo vehicle. SajhaBazaar is designed to pool smallholders with 2 to 10 quintals.`)
         : labels.noPoolDesc}
     </p>
 
     ${result.reasons && result.reasons.length > 0 ? `
       <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); background: var(--color-bg-canvas); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); max-width: 560px; margin: 0 auto var(--space-4); border: 1px solid var(--color-border); text-align: left;">
-        <strong style="color: var(--color-brand-primary);">ℹ️ ${language === 'mr' ? 'तांत्रिक कारण' : 'Engine Reason'}:</strong>
+        <strong style="color: var(--color-brand-primary);">ℹ️ ${language === 'mr' ? 'तांत्रिक कारण' : (language === 'hi' ? 'मुख्य कारण' : 'Engine Reason')}:</strong>
         <ul style="margin: 4px 0 0 16px; padding: 0;">
-          ${result.reasons.map(r => `<li>${r}</li>`).join('')}
+          ${result.reasons.map(r => `<li>${translateReason(r, language)}</li>`).join('')}
         </ul>
       </div>
     ` : ''}
 
     <div style="display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap;">
       <button id="btn-try-smallholder" class="btn btn-outline btn-sm" style="font-weight: 700;">
-        ⚡ ${language === 'mr' ? 'लहान भार (५ क्विंटल) वापरून पहा' : (language === 'hi' ? 'छोटा भार (५ क्विंटल) आजमाएं' : 'Try Smallholder Load (5q)')}
+        ⚡ ${language === 'mr' ? `लहान भार (${formatUnit(5, 'qtl', language)}) वापरून पहा` : (language === 'hi' ? `छोटा भार (${formatUnit(5, 'qtl', language)}) आजमाएं` : 'Try Smallholder Load (5q)')}
       </button>
     </div>
+
   `;
 
   el.querySelector('#btn-try-smallholder')?.addEventListener('click', () => {
     const qtyInput = document.querySelector('#sajha-qty') as HTMLInputElement;
     if (qtyInput) {
-      qtyInput.value = '5';
+      const curLang = store.getState().language || language;
+      qtyInput.value = formatNumber(5, curLang);
       qtyInput.dispatchEvent(new Event('change'));
     }
     const runBtn = document.querySelector('#sajha-run') as HTMLButtonElement;

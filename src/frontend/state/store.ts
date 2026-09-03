@@ -7,6 +7,7 @@
 
 import { AppState, AppRoute, UserCostConfig } from '../../contracts/frontend';
 import { EvaluateResponse } from '../../contracts/api';
+import { Language } from '../i18n';
 
 type StateListener = (state: AppState) => void;
 
@@ -29,8 +30,10 @@ class Store {
     costConfig: { ...DEFAULT_COST_CONFIG },
     evaluationData: null,
     isLoading: false,
-    errorMessage: null
+    errorMessage: null,
+    language: (typeof localStorage !== 'undefined' && (localStorage.getItem('mm_lang') as Language)) || 'mr'
   };
+
 
   private listeners: StateListener[] = [];
 
@@ -92,6 +95,17 @@ class Store {
     this.state.isLoading = false;
     this.notify();
   }
+
+  public setLanguage(lang: Language): void {
+    this.state.language = lang;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('mm_lang', lang);
+      }
+    } catch {}
+    this.notify();
+  }
 }
+
 
 export const store = new Store();

@@ -403,8 +403,8 @@ body, p, span, label, input, select, button,
   color: var(--color-text-muted);
   font-family: var(--font-family-body);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0.02em;
   border-bottom: 1.5px solid var(--color-border);
   white-space: nowrap;
 }

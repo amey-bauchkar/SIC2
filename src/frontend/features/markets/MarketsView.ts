@@ -8,28 +8,41 @@
 
 import { store } from '../../state/store';
 import { renderQualityBadge } from '../../components/QualityBadge';
+import { formatNumber, translateMandiName, translateDistrict, translateState, Language } from '../../i18n';
+import { getCropConfig } from '../../../config/crops';
+import { getDistrictConfig } from '../../../config/districts';
 
 export function renderMarketsView(): HTMLElement {
   const container = document.createElement('div');
   container.className = 'feature-markets-view';
 
   const state = store.getState();
+  const lang: Language = state.language || 'mr';
   const evalData = state.evaluationData;
+
+  const cropCfg = getCropConfig(state.selectedCrop);
+  const cropName = lang === 'mr' ? (cropCfg?.nameMr || state.selectedCrop) : (lang === 'hi' ? (cropCfg?.nameHi || state.selectedCrop) : state.selectedCrop);
+  const distCfg = getDistrictConfig(state.userLocation?.district || 'Nashik');
+  const distName = lang === 'mr' ? (distCfg?.nameMr || distCfg?.name) : distCfg?.name;
 
   container.innerHTML = `
     <div class="editorial-panel" style="padding: var(--space-8); margin-bottom: var(--space-8);">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-6);">
         <div>
-          <div class="kicker">REGIONAL APMC DIRECTORY</div>
+          <div class="kicker">${lang === 'mr' ? 'प्रादेशिक कृषी उत्पन्न बाजार समिती सूची' : (lang === 'hi' ? 'क्षेत्रीय कृषि उपज मंडी सूची' : 'REGIONAL APMC DIRECTORY')}</div>
           <h2 class="heading-xl">
-            Candidate Mandis for ${state.selectedCrop}
+            ${lang === 'mr' ? `${cropName} पिकासाठी संभाव्य बाजार समित्या` : (lang === 'hi' ? `${cropName} फसल हेतु संभावित मंडियां` : `Candidate Mandis for ${state.selectedCrop}`)}
           </h2>
           <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 4px;">
-            Agricultural produce markets within ${state.costConfig.searchRadiusKm} km of ${state.userLocation?.district || 'Nashik'}
+            ${lang === 'mr'
+              ? `${distName} पासून ${formatNumber(state.costConfig.searchRadiusKm, lang)} किमी अंतरावरील कृषी उत्पन्न बाजार समित्या`
+              : (lang === 'hi'
+              ? `${distName} से ${formatNumber(state.costConfig.searchRadiusKm, lang)} किमी दायरे में कृषि उपज मंडियां`
+              : `Agricultural produce markets within ${state.costConfig.searchRadiusKm} km of ${state.userLocation?.district || 'Nashik'}`)}
           </p>
         </div>
         <button class="btn btn-outline" id="btn-adjust-radius">
-          ⚙️ Adjust Radius & Freight
+          ${lang === 'mr' ? '⚙️ अंतर व भाडे बदला' : (lang === 'hi' ? '⚙️ दायरा व भाड़ा बदलें' : '⚙️ Adjust Radius & Freight')}
         </button>
       </div>
 
@@ -37,8 +50,8 @@ export function renderMarketsView(): HTMLElement {
         ${!evalData || evalData.evaluations.length === 0 ? `
           <div style="text-align: center; padding: var(--space-10); color: var(--color-text-muted); font-size: var(--font-size-sm);">
             <div style="font-size: 2.5rem; margin-bottom: var(--space-2);">🗺️</div>
-            <p>No active candidate markets evaluated yet.</p>
-            <p style="font-size: var(--font-size-xs); margin-top: 4px;">Run an evaluation from the Decision Hub to populate regional mandi data.</p>
+            <p>${lang === 'mr' ? 'अद्याप कोणत्याही बाजाराचे मूल्यमापन झालेले नाही.' : (lang === 'hi' ? 'अभी तक किसी मंडी का मूल्यांकन नहीं हुआ है.' : 'No active candidate markets evaluated yet.')}</p>
+            <p style="font-size: var(--font-size-xs); margin-top: 4px;">${lang === 'mr' ? 'बाजारपेठांची माहिती पाहण्यासाठी निर्णय केंद्रातून मूल्यमापन सुरू करा.' : (lang === 'hi' ? 'मंडियों की जानकारी देखने के लिए निर्णय केंद्र से मूल्यांकन शुरू करें.' : 'Run an evaluation from the Decision Hub to populate regional mandi data.')}</p>
           </div>
         ` : ''}
       </div>
@@ -69,15 +82,16 @@ export function renderMarketsView(): HTMLElement {
       item.innerHTML = `
         <div>
           <div style="font-family: var(--font-family-heading); font-size: 1.15rem; font-weight: 800; color: var(--color-text-main); display: flex; align-items: center; gap: var(--space-2);">
-            ${ev.market.name}
-            ${isRecommended ? '<span class="badge badge-accent">🏆 RECOMMENDED</span>' : ''}
+            ${translateMandiName(ev.market.name, lang)}
+            ${isRecommended ? `<span class="badge badge-accent">${lang === 'mr' ? '🏆 शिफारस केलेली' : (lang === 'hi' ? '🏆 अनुशंसित' : '🏆 RECOMMENDED')}</span>` : ''}
           </div>
           <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
-            ${ev.market.district}, ${ev.market.state} • ~${ev.market.estimatedRoadDistanceKm?.toFixed(1) || '--'} km estimated road haulage
+            ${translateDistrict(ev.market.district, lang)}, ${translateState(ev.market.state, lang)} • ~${formatNumber(ev.market.estimatedRoadDistanceKm?.toFixed(1) || 0, lang)} ${lang === 'mr' ? 'किमी अंदाजे रस्ता वाहतूक' : (lang === 'hi' ? 'किमी अनुमानित सड़क ढुलाई' : 'km estimated road haulage')}
           </div>
         </div>
         <div id="badge-slot"></div>
       `;
+
 
       const badgeSlot = item.querySelector('#badge-slot');
       if (badgeSlot) {

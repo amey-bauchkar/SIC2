@@ -8,9 +8,15 @@
  * - Manrope Headings & Numbers / Inter Body & Nav
  */
 
+import { store } from '../state/store';
+import { I18N_DICTIONARY, Language } from '../i18n';
+
 export function renderAppShell(): HTMLElement {
   const root = document.createElement('div');
   root.id = 'app-root';
+
+  const initialLang = store.getState().language || 'mr';
+  const navLabels = I18N_DICTIONARY.nav;
 
   root.innerHTML = `
     <!-- Top Navigation Bar -->
@@ -26,23 +32,37 @@ export function renderAppShell(): HTMLElement {
 
         <div class="nav-center">
           <ul class="nav-links">
-            <li><a href="#/hub" class="nav-link active" data-route="/hub">Decision Hub</a></li>
-            <li><a href="#/entry" class="nav-link" data-route="/entry">Voice Entry</a></li>
-            <li><a href="#/sajha" class="nav-link" data-route="/sajha">🤝 SajhaBazaar</a></li>
-            <li><a href="#/markets" class="nav-link" data-route="/markets">Markets Radar</a></li>
-            <li><a href="#/evidence" class="nav-link" data-route="/evidence">Evidence & Why</a></li>
-            <li><a href="#/backtest" class="nav-link" data-route="/backtest">Backtest</a></li>
-            <li><a href="#/settings" class="nav-link" data-route="/settings">Cost Settings</a></li>
+            <li><a href="#/hub" class="nav-link active" data-route="/hub">${navLabels.hub[initialLang]}</a></li>
+            <li><a href="#/entry" class="nav-link" data-route="/entry">${navLabels.entry[initialLang]}</a></li>
+            <li><a href="#/sajha" class="nav-link" data-route="/sajha">${navLabels.sajha[initialLang]}</a></li>
+            <li><a href="#/markets" class="nav-link" data-route="/markets">${navLabels.markets[initialLang]}</a></li>
+            <li><a href="#/evidence" class="nav-link" data-route="/evidence">${navLabels.evidence[initialLang]}</a></li>
+            <li><a href="#/backtest" class="nav-link" data-route="/backtest">${navLabels.backtest[initialLang]}</a></li>
+            <li><a href="#/settings" class="nav-link" data-route="/settings">${navLabels.settings[initialLang]}</a></li>
           </ul>
         </div>
 
-        <div class="nav-actions">
-          <a href="#/hub" class="btn btn-sm btn-primary">
-            ⚡ Check Best Price
+        <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
+          <!-- Global Language Selector -->
+          <div class="global-lang-picker" style="display: inline-flex; gap: 3px; background: rgba(30, 86, 49, 0.08); padding: 3px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <button type="button" class="lang-switch-btn ${initialLang === 'mr' ? 'is-active' : ''}" data-lang="mr" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'mr' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
+              मराठी
+            </button>
+            <button type="button" class="lang-switch-btn ${initialLang === 'hi' ? 'is-active' : ''}" data-lang="hi" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'hi' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
+              हिंदी
+            </button>
+            <button type="button" class="lang-switch-btn ${initialLang === 'en' ? 'is-active' : ''}" data-lang="en" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'en' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
+              English
+            </button>
+          </div>
+
+          <a href="#/hub" id="nav-cta-btn" class="btn btn-sm btn-primary" style="font-weight: 800;">
+            ${navLabels.checkBestPrice[initialLang]}
           </a>
         </div>
       </nav>
     </header>
+
 
     <!-- Main View Mount -->
     <main class="app-container" id="router-view">
@@ -55,51 +75,50 @@ export function renderAppShell(): HTMLElement {
         <div class="footer-top">
           <div class="footer-brand">
             <h3>🌾 MandiMitra</h3>
-            <p>
-              Smart crop-selling decision support system designed specifically for Indian farmers. 
-              Calculating true net take-home cash (AsliDaam™) after haulage freight, APMC cess, and storage decay.
+            <p id="footer-brand-desc">
+              ${I18N_DICTIONARY.shell.footerBrandDesc[initialLang]}
             </p>
           </div>
 
           <div class="footer-col">
-            <h4>Decision Engine</h4>
+            <h4 id="footer-col-decision">${I18N_DICTIONARY.shell.colDecision[initialLang]}</h4>
             <ul class="footer-links">
-              <li><a href="#/hub" class="footer-link">AsliDaam™ Optimization</a></li>
-              <li><a href="#/markets" class="footer-link">Regional Mandi Radar</a></li>
-              <li><a href="#/evidence" class="footer-link">Nirnay Kawach (Stress Shield)</a></li>
-              <li><a href="#/evidence" class="footer-link">Bhed Vivek (Congestion Model)</a></li>
+              <li><a href="#/hub" class="footer-link" id="fl-aslidaam">${I18N_DICTIONARY.shell.linkAsliDaam[initialLang]}</a></li>
+              <li><a href="#/markets" class="footer-link" id="fl-radar">${I18N_DICTIONARY.shell.linkRadar[initialLang]}</a></li>
+              <li><a href="#/evidence" class="footer-link" id="fl-shield">${I18N_DICTIONARY.shell.linkShield[initialLang]}</a></li>
+              <li><a href="#/evidence" class="footer-link" id="fl-congestion">${I18N_DICTIONARY.shell.linkCongestion[initialLang]}</a></li>
             </ul>
           </div>
 
           <div class="footer-col">
-            <h4>Data Verification</h4>
+            <h4 id="footer-col-data">${I18N_DICTIONARY.shell.colData[initialLang]}</h4>
             <ul class="footer-links">
-              <li><a href="#/backtest" class="footer-link">Empirical Backtest Metrics</a></li>
-              <li><a href="#/evidence" class="footer-link">Data Quality Abstention</a></li>
-              <li><a href="#/settings" class="footer-link">Custom Freight & Holding Rates</a></li>
+              <li><a href="#/backtest" class="footer-link" id="fl-backtest">${I18N_DICTIONARY.shell.linkBacktest[initialLang]}</a></li>
+              <li><a href="#/evidence" class="footer-link" id="fl-quality">${I18N_DICTIONARY.shell.linkQuality[initialLang]}</a></li>
+              <li><a href="#/settings" class="footer-link" id="fl-rates">${I18N_DICTIONARY.shell.linkRates[initialLang]}</a></li>
             </ul>
           </div>
 
           <div class="footer-col">
-            <h4>Farmer Trust & Sources</h4>
+            <h4 id="footer-col-trust">${I18N_DICTIONARY.shell.colTrust[initialLang]}</h4>
             <ul class="footer-links">
-              <li><span style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">Data: CEDA-AMD (2000-2023), Ashoka University</span></li>
-              <li><span style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">Live Feeds: Agmarknet (data.gov.in)</span></li>
-              <li><span style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">Routing: OSRM India Road Haulage Factor 1.35x</span></li>
+              <li><span id="footer-trust-data" style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">${I18N_DICTIONARY.shell.trustData[initialLang]}</span></li>
+              <li><span id="footer-trust-feeds" style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">${I18N_DICTIONARY.shell.trustFeeds[initialLang]}</span></li>
+              <li><span id="footer-trust-routing" style="color: var(--color-text-inverted-muted); font-size: var(--font-size-xs);">${I18N_DICTIONARY.shell.trustRouting[initialLang]}</span></li>
             </ul>
           </div>
         </div>
 
         <div class="footer-bottom">
-          <div>
-            © 2026 MandiMitra • Built for Indian Agriculture • Net Realisable Value (NRV) & Data Quality First
+          <div id="footer-copyright">
+            ${I18N_DICTIONARY.shell.copyright[initialLang]}
           </div>
           <div style="display: flex; gap: var(--space-4);">
-            <span>No Speculation</span>
+            <span id="footer-tag-1">${I18N_DICTIONARY.shell.noSpeculation[initialLang]}</span>
             <span>•</span>
-            <span>Honest Abstention</span>
+            <span id="footer-tag-2">${I18N_DICTIONARY.shell.honestAbstention[initialLang]}</span>
             <span>•</span>
-            <span>Farmer First</span>
+            <span id="footer-tag-3">${I18N_DICTIONARY.shell.farmerFirst[initialLang]}</span>
           </div>
         </div>
       </div>
@@ -109,34 +128,144 @@ export function renderAppShell(): HTMLElement {
     <nav class="mobile-bottom-nav">
       <a href="#/hub" class="mobile-nav-item active">
         <span>⚡</span>
-        <span>Decision</span>
+        <span class="mob-label" data-route="/hub">${I18N_DICTIONARY.shell.mobile.hub[initialLang]}</span>
       </a>
       <a href="#/entry" class="mobile-nav-item">
         <span>🎙️</span>
-        <span>Voice</span>
+        <span class="mob-label" data-route="/entry">${I18N_DICTIONARY.shell.mobile.voice[initialLang]}</span>
       </a>
       <a href="#/sajha" class="mobile-nav-item">
         <span>🤝</span>
-        <span>Sajha</span>
+        <span class="mob-label" data-route="/sajha">${I18N_DICTIONARY.shell.mobile.sajha[initialLang]}</span>
       </a>
       <a href="#/markets" class="mobile-nav-item">
         <span>🗺️</span>
-        <span>Markets</span>
+        <span class="mob-label" data-route="/markets">${I18N_DICTIONARY.shell.mobile.markets[initialLang]}</span>
       </a>
       <a href="#/evidence" class="mobile-nav-item">
         <span>📊</span>
-        <span>Evidence</span>
+        <span class="mob-label" data-route="/evidence">${I18N_DICTIONARY.shell.mobile.evidence[initialLang]}</span>
       </a>
       <a href="#/backtest" class="mobile-nav-item">
         <span>📈</span>
-        <span>Backtest</span>
+        <span class="mob-label" data-route="/backtest">${I18N_DICTIONARY.shell.mobile.backtest[initialLang]}</span>
       </a>
       <a href="#/settings" class="mobile-nav-item">
         <span>⚙️</span>
-        <span>Settings</span>
+        <span class="mob-label" data-route="/settings">${I18N_DICTIONARY.shell.mobile.settings[initialLang]}</span>
       </a>
     </nav>
   `;
 
+  // Wire up Global Language Switcher Buttons
+  root.querySelectorAll('.lang-switch-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetLang = (btn as HTMLElement).dataset.lang as Language;
+      if (targetLang) {
+        store.setLanguage(targetLang);
+      }
+    });
+  });
+
+  // Reactive subscription: update navbar labels, footer and mobile nav whenever language changes
+  store.subscribe((state) => {
+    const lang = state.language || 'mr';
+    const dict = I18N_DICTIONARY.nav;
+    const sDict = I18N_DICTIONARY.shell;
+
+    const routes: Record<string, string> = {
+      '/hub': dict.hub[lang],
+      '/entry': dict.entry[lang],
+      '/sajha': dict.sajha[lang],
+      '/markets': dict.markets[lang],
+      '/evidence': dict.evidence[lang],
+      '/backtest': dict.backtest[lang],
+      '/settings': dict.settings[lang],
+    };
+
+    root.querySelectorAll('.nav-link').forEach(link => {
+      const route = link.getAttribute('data-route');
+      if (route && routes[route]) {
+        link.textContent = routes[route];
+      }
+    });
+
+    const ctaBtn = root.querySelector('#nav-cta-btn');
+    if (ctaBtn) {
+      ctaBtn.textContent = dict.checkBestPrice[lang];
+    }
+
+    // Mobile nav labels
+    const mobRoutes: Record<string, string> = {
+      '/hub': sDict.mobile.hub[lang],
+      '/entry': sDict.mobile.voice[lang],
+      '/sajha': sDict.mobile.sajha[lang],
+      '/markets': sDict.mobile.markets[lang],
+      '/evidence': sDict.mobile.evidence[lang],
+      '/backtest': sDict.mobile.backtest[lang],
+      '/settings': sDict.mobile.settings[lang],
+    };
+    root.querySelectorAll('.mob-label').forEach(lbl => {
+      const route = lbl.getAttribute('data-route');
+      if (route && mobRoutes[route]) {
+        lbl.textContent = mobRoutes[route];
+      }
+    });
+
+    // Footer updates
+    const fDesc = root.querySelector('#footer-brand-desc');
+    if (fDesc) fDesc.textContent = sDict.footerBrandDesc[lang];
+
+    const fColDec = root.querySelector('#footer-col-decision');
+    if (fColDec) fColDec.textContent = sDict.colDecision[lang];
+    const fColData = root.querySelector('#footer-col-data');
+    if (fColData) fColData.textContent = sDict.colData[lang];
+    const fColTrust = root.querySelector('#footer-col-trust');
+    if (fColTrust) fColTrust.textContent = sDict.colTrust[lang];
+
+    const fl1 = root.querySelector('#fl-aslidaam');
+    if (fl1) fl1.textContent = sDict.linkAsliDaam[lang];
+    const fl2 = root.querySelector('#fl-radar');
+    if (fl2) fl2.textContent = sDict.linkRadar[lang];
+    const fl3 = root.querySelector('#fl-shield');
+    if (fl3) fl3.textContent = sDict.linkShield[lang];
+    const fl4 = root.querySelector('#fl-congestion');
+    if (fl4) fl4.textContent = sDict.linkCongestion[lang];
+    const fl5 = root.querySelector('#fl-backtest');
+    if (fl5) fl5.textContent = sDict.linkBacktest[lang];
+    const fl6 = root.querySelector('#fl-quality');
+    if (fl6) fl6.textContent = sDict.linkQuality[lang];
+    const fl7 = root.querySelector('#fl-rates');
+    if (fl7) fl7.textContent = sDict.linkRates[lang];
+
+    const fCopy = root.querySelector('#footer-copyright');
+    if (fCopy) fCopy.textContent = sDict.copyright[lang];
+    const ft1 = root.querySelector('#footer-tag-1');
+    if (ft1) ft1.textContent = sDict.noSpeculation[lang];
+    const ft2 = root.querySelector('#footer-tag-2');
+    if (ft2) ft2.textContent = sDict.honestAbstention[lang];
+    const ft3 = root.querySelector('#footer-tag-3');
+    if (ft3) ft3.textContent = sDict.farmerFirst[lang];
+
+    const ftData = root.querySelector('#footer-trust-data');
+    if (ftData) ftData.textContent = sDict.trustData[lang];
+    const ftFeeds = root.querySelector('#footer-trust-feeds');
+    if (ftFeeds) ftFeeds.textContent = sDict.trustFeeds[lang];
+    const ftRouting = root.querySelector('#footer-trust-routing');
+    if (ftRouting) ftRouting.textContent = sDict.trustRouting[lang];
+
+    root.querySelectorAll('.lang-switch-btn').forEach(b => {
+      const bLang = (b as HTMLElement).dataset.lang;
+      const isActive = bLang === lang;
+      (b as HTMLElement).style.background = isActive ? 'var(--color-brand-primary)' : 'transparent';
+      (b as HTMLElement).style.color = isActive ? '#ffffff' : 'var(--color-text-main)';
+      if (isActive) b.classList.add('is-active');
+      else b.classList.remove('is-active');
+    });
+  });
+
   return root;
 }
+
+
