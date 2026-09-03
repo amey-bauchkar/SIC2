@@ -18,11 +18,13 @@ import { EvaluateResponse } from './api';
 export type AppRoute = 
   | '/'
   | '/hub'
+  | '/entry'
   | '/markets'
   | '/decision'
   | '/evidence'
   | '/backtest'
-  | '/settings';
+  | '/settings'
+  | '/sajha';
 
 export interface UserLocation {
   district: string;

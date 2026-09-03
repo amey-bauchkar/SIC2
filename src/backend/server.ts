@@ -16,6 +16,11 @@ import {
   stressTestController,
   bhedVivekAnalyzeController
 } from './controllers';
+import {
+  sajhaBazaarEvaluateController,
+  sajhaBazaarRosterController
+} from './sajha-bazaar-controller';
+import { voiceProcessController } from './voice-controller';
 import { config } from '../config';
 
 dotenv.config();
@@ -23,7 +28,9 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+// Raw audio bodies for the Whisper speech-to-text path (must precede the JSON parser).
+app.use(express.raw({ type: ['audio/*', 'application/octet-stream'], limit: '25mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 import { 
   getFarmerPools, 
@@ -39,6 +46,13 @@ app.post('/api/evaluate', evaluateController);
 app.post('/api/evaluate/stress-test', stressTestController);
 app.post('/api/bhed-vivek/analyze', bhedVivekAnalyzeController);
 app.get('/api/backtest', getBacktestController);
+
+// SajhaBazaar (साझा बाज़ार) — Shared Freight & Market Access Engine
+app.post('/api/sajha-bazaar/evaluate', sajhaBazaarEvaluateController);
+app.get('/api/sajha-bazaar/roster', sajhaBazaarRosterController);
+
+// Voice-Assisted Smart Autofill (Whisper STT + Gemini NLU, offline-safe)
+app.post('/api/voice/process', voiceProcessController);
 
 // Supabase Cloud Routes (SajhaBazaar Farmer Pooling & Price Alerts)
 app.get('/api/pools', async (_req, res) => {

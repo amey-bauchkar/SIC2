@@ -285,14 +285,24 @@ def test_stress_high_cost():
 test("Stress test at ₹15.0/km (extreme)", test_stress_high_cost)
 
 def test_stress_flip_detection():
-    d_low = post("/api/evaluate/stress-test", {"commodity": "Onion", "transportCostPerKmPerQtl": 2.0})
-    d_high = post("/api/evaluate/stress-test", {"commodity": "Onion", "transportCostPerKmPerQtl": 15.0})
-    low_w = d_low["winningMarket"].get("name", d_low["winningMarket"].get("id", "?"))
-    high_w = d_high["winningMarket"].get("name", d_high["winningMarket"].get("id", "?"))
-    if low_w != high_w:
-        return ("PASS", f"Decision flips correctly: {low_w} → {high_w} as transport cost rises")
-    else:
-        return ("WARN", f"Same winner at ₹2/km and ₹15/km: {low_w}. Expected flip at breakeven.")
+    """The winner must flip once the transport rate crosses the ALGEBRAIC breakeven the engine
+    itself reports — not at some arbitrary rate. Below breakeven it must not flip."""
+    base = post("/api/evaluate/stress-test", {"commodity": "Onion", "transportCostPerKmPerQtl": 2.0})
+    low_w = base["winningMarket"].get("name", base["winningMarket"].get("id", "?"))
+    be = base.get("breakevenTransportRate")
+    if be is None:
+        return ("PASS", f"No flip point exists in range; {low_w} dominates at every tested rate")
+
+    just_below = post("/api/evaluate/stress-test", {"commodity": "Onion", "transportCostPerKmPerQtl": max(0.5, be - 1.0)})
+    just_above = post("/api/evaluate/stress-test", {"commodity": "Onion", "transportCostPerKmPerQtl": be + 1.0})
+    below_w = just_below["winningMarket"].get("name", "?")
+    above_w = just_above["winningMarket"].get("name", "?")
+
+    if below_w != low_w:
+        return ("FAIL", f"winner changed below breakeven ₹{be}/km: {low_w} → {below_w}")
+    if above_w == low_w:
+        return ("FAIL", f"winner did NOT flip above the reported breakeven ₹{be}/km (still {above_w})")
+    return ("PASS", f"flips exactly at algebraic breakeven ₹{be}/km: {below_w} → {above_w}")
 
 test("Decision flip between low and high transport", test_stress_flip_detection)
 
@@ -632,6 +642,391 @@ def test_invalid_json():
         return ("PASS", f"Invalid JSON rejected: {type(e).__name__}")
 
 test("Invalid JSON body handling", test_invalid_json)
+
+# ============================================================
+# SECTION 12: REGIONAL COVERAGE — NO "ALWAYS WAIT" / NO FALSE ABSTENTION
+# ============================================================
+print("\n" + "=" * 70)
+print("SECTION 12: REGIONAL COVERAGE ACROSS MAHARASHTRA DIVISIONS")
+print("=" * 70)
+
+SPATIAL_PROBES = [
+    ("Nashik", 19.9975, 73.7898),
+    ("Pune", 18.5204, 73.8567),
+    ("Ahilyanagar", 19.0952, 74.7480),
+    ("Latur", 18.4088, 76.5604),
+    ("Solapur", 17.6599, 75.9064),
+    ("Nagpur", 21.1458, 79.0882),
+    ("Kolhapur", 16.7050, 74.2433),
+    ("Chhatrapati Sambhajinagar", 19.8762, 75.3433),
+    ("Gadchiroli", 20.1809, 80.0035),
+    ("Sindhudurg", 16.0667, 73.6833),
+]
+SPATIAL_COMMODITIES = ["Onion", "Tomato", "Soyabean", "Wheat"]
+
+VALID_PROVENANCE = {
+    "AGMARKNET_MARKET_OBSERVED",
+    "HISTORICAL_SERIES_OBSERVED",
+    "DISTRICT_PEER_CALIBRATED",
+    "DIVISION_PEER_CALIBRATED",
+    "STATE_BENCHMARK_CALIBRATED",
+}
+
+for _district, _lat, _lon in SPATIAL_PROBES:
+    def make_spatial(dn=_district, la=_lat, lo=_lon):
+        def t():
+            empty = []
+            abstained = []
+            for c in SPATIAL_COMMODITIES:
+                d = post("/api/evaluate", {"commodity": c, "latitude": la, "longitude": lo, "radiusKm": 150})
+                evs = d.get("evaluations", [])
+                if not evs:
+                    empty.append(c)
+                    continue
+                if d["recommendation"]["action"] == "NO_RECOMMENDATION":
+                    abstained.append(c)
+            if empty:
+                return ("FAIL", f"zero candidate mandis for {empty}")
+            if abstained:
+                return ("FAIL", f"false abstention for {abstained}")
+            return ("PASS", f"all {len(SPATIAL_COMMODITIES)} commodities resolved candidates & advice")
+        return t
+    test(f"Regional coverage: {_district}", make_spatial())
+
+
+def test_no_always_wait_bias():
+    waits = 0
+    total = 0
+    for _dn, la, lo in SPATIAL_PROBES:
+        for c in SPATIAL_COMMODITIES:
+            d = post("/api/evaluate", {"commodity": c, "latitude": la, "longitude": lo, "radiusKm": 150})
+            total += 1
+            if d["recommendation"]["action"].startswith("WAIT"):
+                waits += 1
+    pct = waits / total * 100 if total else 0
+    if pct > 80:
+        return ("FAIL", f"{pct:.1f}% of decisions are WAIT — regional 'always wait' bias is back")
+    return ("PASS", f"{waits}/{total} WAIT decisions ({pct:.1f}%) — no systematic hold bias")
+
+
+test("No systematic 'always wait' bias", test_no_always_wait_bias)
+
+
+def test_price_provenance_present():
+    d = post("/api/evaluate", {"commodity": "Soyabean", "latitude": 21.1458, "longitude": 79.0882, "radiusKm": 150})
+    evs = d.get("evaluations", [])
+    assert evs, "no evaluations to inspect"
+    bad = [e["market"]["name"] for e in evs if e["dataQuality"].get("priceProvenance") not in VALID_PROVENANCE]
+    if bad:
+        return ("FAIL", f"missing/invalid provenance on {bad}")
+    kinds = sorted({e["dataQuality"]["priceProvenance"] for e in evs})
+    return ("PASS", f"{len(evs)} evaluations, provenance kinds: {', '.join(kinds)}")
+
+
+test("Every evaluation carries a price provenance", test_price_provenance_present)
+
+
+def test_calibrated_never_good():
+    """Peer-calibrated prices are real arithmetic on real records, but must never be graded GOOD."""
+    offenders = []
+    for _dn, la, lo in SPATIAL_PROBES:
+        d = post("/api/evaluate", {"commodity": "Tomato", "latitude": la, "longitude": lo, "radiusKm": 150})
+        for e in d.get("evaluations", []):
+            prov = e["dataQuality"].get("priceProvenance", "")
+            if "CALIBRATED" in prov and e["dataQuality"]["tier"] == "GOOD":
+                offenders.append(f"{e['market']['name']}/{prov}")
+    if offenders:
+        return ("FAIL", f"calibrated prices graded GOOD: {offenders[:5]}")
+    return ("PASS", "no peer-calibrated price is ever graded GOOD data quality")
+
+
+test("Calibrated prices are capped below GOOD tier", test_calibrated_never_good)
+
+
+# ============================================================
+# SECTION 13: MARKET-PERCEIVED FRESHNESS DISCOUNT
+# ============================================================
+print("\n" + "=" * 70)
+print("SECTION 13: FRESHNESS DISCOUNT & DECAY PROFILES")
+print("=" * 70)
+
+
+def _read_ts(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def test_freshness_constants():
+    src = _read_ts("src/core/asli-daam.ts")
+    assert "dailyFreshnessDiscountPct" in src, "freshness discount field missing from CropDecayProfile"
+    import re
+    perishable = re.search(r"'PERISHABLE':\s*\{[^}]*dailyFreshnessDiscountPct:\s*([0-9.]+)", src, re.S)
+    semi = re.search(r"'SEMI_PERISHABLE':\s*\{[^}]*dailyFreshnessDiscountPct:\s*([0-9.]+)", src, re.S)
+    dry = re.search(r"'DRY_GRAIN':\s*\{[^}]*dailyFreshnessDiscountPct:\s*([0-9.]+)", src, re.S)
+    assert perishable and semi and dry, "category freshness rates not all defined"
+    p, s, g = float(perishable.group(1)), float(semi.group(1)), float(dry.group(1))
+    assert abs(p - 0.035) < 1e-9, f"PERISHABLE freshness discount should be 3.5%/day, got {p}"
+    assert abs(s - 0.003) < 1e-9, f"SEMI_PERISHABLE should be 0.3%/day, got {s}"
+    assert abs(g - 0.000) < 1e-9, f"DRY_GRAIN should be 0.0%/day, got {g}"
+    return ("PASS", f"PERISHABLE {p*100:.1f}%/day > SEMI {s*100:.1f}%/day > DRY {g*100:.1f}%/day")
+
+
+test("Freshness discount rates match the specification", test_freshness_constants)
+
+
+def test_no_synthetic_appreciation():
+    src = _read_ts("src/core/asli-daam.ts")
+    assert "0.022" not in src, "the synthetic +2.2%/day price appreciation is still present"
+    assert "dayPriceMultiplier" not in src, "synthetic day price multiplier still present"
+    assert "expectedPriceByDay" in src, "engine no longer consumes the backend forecast trajectory"
+    return ("PASS", "no synthetic price appreciation; trajectory comes from the backend forecast")
+
+
+test("AsliDaam contains no synthetic price appreciation", test_no_synthetic_appreciation)
+
+
+def test_freshness_in_waterfall_ui():
+    src = _read_ts("src/frontend/features/hub/DecisionHubView.ts")
+    assert "freshnessDiscountPerQtl" in src, "freshness discount not surfaced in the UI"
+    assert "ताजेपणा" in src, "Marathi freshness label missing from the waterfall"
+    return ("PASS", "freshness discount row present in the AsliDaam waterfall")
+
+
+test("Freshness discount is shown in the economic waterfall", test_freshness_in_waterfall_ui)
+
+
+def test_policy_sync():
+    src = _read_ts("src/core/asli-daam.ts")
+    assert "policyActionToMaxDayOffset" in src, "AsliDaam is not synchronised with the backend policy"
+    hub = _read_ts("src/frontend/features/hub/DecisionHubView.ts")
+    assert "recommendation?.action" in hub, "Decision Hub does not pass the backend policy action"
+    return ("PASS", "AsliDaam recommendation horizon is capped by the backend decision policy")
+
+
+test("AsliDaam is synchronised with the backend ML policy", test_policy_sync)
+
+
+def test_sell_today_is_day_zero():
+    """When the model policy says SELL_TODAY, no wait can be recommended."""
+    mismatches = []
+    for _dn, la, lo in SPATIAL_PROBES[:5]:
+        for c in ["Tomato", "Onion"]:
+            d = post("/api/evaluate", {"commodity": c, "latitude": la, "longitude": lo, "radiusKm": 150})
+            action = d["recommendation"]["action"]
+            if action == "SELL_TODAY":
+                # The winning day-0 option must be at least as good as every future day
+                # for the recommended market, after holding costs.
+                mkt = d["recommendation"]["market"]
+                ev = next((e for e in d["evaluations"] if e["market"]["id"] == mkt["id"]), None)
+                if not ev:
+                    mismatches.append(f"{_dn}/{c}: recommended market missing from evaluations")
+                    continue
+                day0 = next(n for n in ev["netRealisationByDay"] if n["day"] == 0)
+                best_future = max(
+                    (n["netRealisation"] for n in ev["netRealisationByDay"] if n["day"] > 0),
+                    default=day0["netRealisation"],
+                )
+                if best_future - day0["netRealisation"] > 20.0:
+                    mismatches.append(f"{_dn}/{c}: SELL_TODAY despite +{best_future - day0['netRealisation']:.1f}/q upside")
+    if mismatches:
+        return ("FAIL", "; ".join(mismatches[:3]))
+    return ("PASS", "SELL_TODAY is only issued when waiting has no material upside")
+
+
+test("SELL_TODAY policy is internally consistent", test_sell_today_is_day_zero)
+
+
+# ============================================================
+# SECTION 14: SAJHABAZAAR SHARED FREIGHT ENGINE
+# ============================================================
+print("\n" + "=" * 70)
+print("SECTION 14: SAJHABAZAAR — POST /api/sajha-bazaar/evaluate")
+print("=" * 70)
+
+SAJHA_BASE = {
+    "commodity": "Tomato",
+    "latitude": 19.9975,
+    "longitude": 73.7898,
+    "district": "Nashik",
+    "quantityQuintals": 3,
+    "targetDate": "2026-09-04",
+}
+
+
+def test_sajha_roster():
+    d = get("/api/sajha-bazaar/roster")
+    assert d["isSynthetic"] is True, "roster must self-declare as synthetic"
+    assert d["farmerCount"] > 0, "empty roster"
+    assert "SYNTHETIC" in d["syntheticNotice"].upper(), "missing provenance notice"
+    return ("PASS", f"{d['farmerCount']} synthetic farmers across {len(d['clusters'])} clusters")
+
+
+test("SajhaBazaar roster endpoint", test_sajha_roster)
+
+
+def test_sajha_pool_forms():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    assert d["status"] == "POOL_AVAILABLE", f"{d['status']}: {d['reasons'][:1]}"
+    return ("PASS", f"{d['pooled']['participantCount']} farmers, {d['pooled']['totalQuintals']}q, +₹{d['requesterGainTotal']}")
+
+
+test("SajhaBazaar forms a pool for compatible farmers", test_sajha_pool_forms)
+
+
+def test_sajha_cost_conservation():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    a = d["allocationAudit"]
+    manual = round(sum(p["pooledTransportShareTotal"] for p in d["participants"]), 2)
+    assert a["conserves"] is True, f"engine reports non-conservation: {a}"
+    assert abs(manual - a["totalPooledTripCostRs"]) < 0.005, f"{manual} != {a['totalPooledTripCostRs']}"
+    return ("PASS", f"Σ shares ₹{manual} == trip cost ₹{a['totalPooledTripCostRs']} exactly")
+
+
+test("SajhaBazaar cost allocation conserves exactly", test_sajha_cost_conservation)
+
+
+def test_sajha_quantity_conservation():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    a = d["allocationAudit"]
+    manual = round(sum(p["quantityQuintals"] for p in d["participants"]), 3)
+    assert abs(manual - a["totalPooledQuintals"]) < 0.0005, f"{manual} != {a['totalPooledQuintals']}"
+    return ("PASS", f"Σ q_i = {manual}q == Q_pool = {a['totalPooledQuintals']}q")
+
+
+test("SajhaBazaar quantity conservation", test_sajha_quantity_conservation)
+
+
+def test_sajha_materiality():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    thr = d["materialityThresholdPerQtl"]
+    gains = [p["netGainPerQtl"] for p in d["participants"]]
+    assert all(g > thr for g in gains), f"participant below threshold: {min(gains)} <= {thr}"
+    return ("PASS", f"min gain ₹{min(gains):.1f}/q > ₹{thr}/q threshold")
+
+
+test("SajhaBazaar materiality gate holds for every member", test_sajha_materiality)
+
+
+def test_sajha_quality_gate():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    assert d["destinationMandi"]["dataQualityTier"] != "POOR", "pooling to a POOR-quality mandi"
+    return ("PASS", f"destination tier = {d['destinationMandi']['dataQualityTier']}")
+
+
+test("SajhaBazaar never pools to a POOR-quality mandi", test_sajha_quality_gate)
+
+
+def test_sajha_negative_crop():
+    d = post("/api/sajha-bazaar/evaluate", {**SAJHA_BASE, "commodity": "Wheat"})
+    assert d["status"] != "POOL_AVAILABLE", "pooled a crop nobody on the roster holds"
+    return ("PASS", f"{d['status']} for an unheld crop")
+
+
+test("SajhaBazaar rejects incompatible crops", test_sajha_negative_crop)
+
+
+def test_sajha_negative_date():
+    d = post("/api/sajha-bazaar/evaluate", {**SAJHA_BASE, "targetDate": "2026-12-25"})
+    assert d["status"] != "POOL_AVAILABLE", "pooled outside every sell window"
+    return ("PASS", f"{d['status']} for an out-of-window date")
+
+
+test("SajhaBazaar rejects incompatible sell windows", test_sajha_negative_date)
+
+
+def test_sajha_nonlinear():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    solo = d["soloAtDestination"]["transportPerQtl"]
+    pooled = d["pooled"]["transportPerQtl"]
+    assert solo > pooled * 1.5, f"pooling saves too little: solo ₹{solo} vs pooled ₹{pooled}"
+    return ("PASS", f"solo ₹{solo}/q vs pooled ₹{pooled}/q = {solo/pooled:.2f}x cheaper")
+
+
+test("SajhaBazaar trip cost is genuinely non-linear", test_sajha_nonlinear)
+
+
+def test_sajha_price_parity():
+    d = post("/api/sajha-bazaar/evaluate", SAJHA_BASE)
+    ev = post("/api/evaluate", {"commodity": "Tomato", "latitude": 19.9975, "longitude": 73.7898, "radiusKm": 150})
+    dest = d["destinationMandi"]
+    match = next((e for e in ev["evaluations"] if e["market"]["id"] == dest["id"]), None)
+    assert match, "destination absent from the AsliDaam evaluation"
+    day0 = next(n for n in match["netRealisationByDay"] if n["day"] == 0)
+    assert abs(day0["expectedPrice"] - dest["grossModalPricePerQtl"]) < 0.05, "price mismatch between engines"
+    return ("PASS", f"both engines price {dest['name']} at ₹{dest['grossModalPricePerQtl']}/q — pooling never moves prices")
+
+
+test("SajhaBazaar uses the same mandi price as AsliDaam", test_sajha_price_parity)
+
+
+# ============================================================
+# SECTION 15: VOICE AUTOFILL PIPELINE
+# ============================================================
+print("\n" + "=" * 70)
+print("SECTION 15: VOICE AUTOFILL — POST /api/voice/process")
+print("=" * 70)
+
+VOICE_CASES = [
+    ("नाशिक निफाड मध्ये 40 गोणी कांदा आहे", "Onion", 20.0, "Nashik"),
+    ("पुणे जुन्नर मध्ये 80 क्रेट टोमॅटो", "Tomato", 20.0, "Pune"),
+    ("लातूर मध्ये 30 क्विंटल सोयाबीन", "Soyabean", 30.0, "Latur"),
+    ("I have 2 trolley wheat in Jalgaon", "Wheat", 80.0, "Jalgaon"),
+    ("solapur madhe 5 tempo pomegranate", "Pomegranate", 60.0, "Solapur"),
+]
+
+for _text, _crop, _qtls, _district in VOICE_CASES:
+    def make_voice(tx=_text, cr=_crop, q=_qtls, di=_district):
+        def t():
+            d = post("/api/voice/process", {"text": tx})
+            assert d.get("ok") is True, "voice endpoint did not return ok"
+            e = d["extraction"]
+            problems = []
+            if e["crop"] != cr:
+                problems.append(f"crop {e['crop']} != {cr}")
+            if e["quantityQuintals"] is None or abs(e["quantityQuintals"] - q) > 0.01:
+                problems.append(f"quintals {e['quantityQuintals']} != {q}")
+            if e["district"] != di:
+                problems.append(f"district {e['district']} != {di}")
+            if problems:
+                return ("FAIL", "; ".join(problems))
+            return ("PASS", f"{e['crop']} · {e['originalQuantity']} {e['originalUnit']} → {e['quantityQuintals']}q · {e['district']}")
+        return t
+    test(f"Voice extraction: '{_text[:34]}...'", make_voice())
+
+
+def test_voice_never_500_without_keys():
+    d = post("/api/voice/process", {"text": "gibberish with no crop or district"})
+    assert d.get("ok") is True, "voice endpoint failed on unparseable input"
+    assert d["pipeline"]["nluProvider"] in ("google-gemini", "deterministic-offline")
+    return ("PASS", f"graceful fallback: {d['pipeline']['nluProvider']} / {d['pipeline']['nluStatus']}")
+
+
+test("Voice endpoint never fails without API keys", test_voice_never_500_without_keys)
+
+
+def test_voice_unit_table():
+    d = post("/api/voice/process", {"text": "10 गोणी कांदा नाशिक"})
+    table = d["unitConversionTable"]
+    assert abs(table["Bags"] - 0.5) < 1e-9, f"Bags should be 0.5q, got {table['Bags']}"
+    assert abs(table["Crates"] - 0.25) < 1e-9, f"Crates should be 0.25q, got {table['Crates']}"
+    assert abs(table["Quintals"] - 1.0) < 1e-9
+    assert abs(table["Tempo"] - 12.0) < 1e-9, f"Tempo should be 12q, got {table['Tempo']}"
+    assert abs(table["Trolley"] - 40.0) < 1e-9, f"Trolley should be 40q, got {table['Trolley']}"
+    return ("PASS", "1 bag=0.5q · 1 crate=0.25q · 1 tempo=12q · 1 trolley=40q")
+
+
+test("Voice unit conversion table matches the spec", test_voice_unit_table)
+
+
+def test_voice_bad_request():
+    try:
+        post("/api/voice/process", {})
+        return ("WARN", "empty body accepted without a 400")
+    except urllib.error.HTTPError as e:
+        return ("PASS", f"empty body rejected with HTTP {e.code}")
+
+
+test("Voice endpoint rejects an empty request body", test_voice_bad_request)
 
 # ============================================================
 # FINAL REPORT

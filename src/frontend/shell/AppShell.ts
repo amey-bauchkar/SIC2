@@ -27,6 +27,8 @@ export function renderAppShell(): HTMLElement {
         <div class="nav-center">
           <ul class="nav-links">
             <li><a href="#/hub" class="nav-link active" data-route="/hub">Decision Hub</a></li>
+            <li><a href="#/entry" class="nav-link" data-route="/entry">Voice Entry</a></li>
+            <li><a href="#/sajha" class="nav-link" data-route="/sajha">🤝 SajhaBazaar</a></li>
             <li><a href="#/markets" class="nav-link" data-route="/markets">Markets Radar</a></li>
             <li><a href="#/evidence" class="nav-link" data-route="/evidence">Evidence & Why</a></li>
             <li><a href="#/backtest" class="nav-link" data-route="/backtest">Backtest</a></li>
@@ -108,6 +110,14 @@ export function renderAppShell(): HTMLElement {
       <a href="#/hub" class="mobile-nav-item active">
         <span>⚡</span>
         <span>Decision</span>
+      </a>
+      <a href="#/entry" class="mobile-nav-item">
+        <span>🎙️</span>
+        <span>Voice</span>
+      </a>
+      <a href="#/sajha" class="mobile-nav-item">
+        <span>🤝</span>
+        <span>Sajha</span>
       </a>
       <a href="#/markets" class="mobile-nav-item">
         <span>🗺️</span>

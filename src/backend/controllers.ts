@@ -16,13 +16,11 @@ import {
   BacktestResponse,
   StressTestRequestBody,
   StressTestResponse,
-  BhedVivekRequestBody,
-  BhedVivekResponse
+  BhedVivekRequestBody
 } from '../contracts/api';
-import { MarketEvaluation, BacktestResult } from '../contracts/domain';
-import { getAllMarkets, findMarketById } from '../data-pipeline/registry';
+import { Market, MarketEvaluation, BacktestResult } from '../contracts/domain';
+import { getAllMarkets } from '../data-pipeline/registry';
 import { estimateRoadDistanceKm } from '../core/distance';
-import { assessDataQuality } from '../core/data-quality';
 import { generateForecast } from '../core/forecast';
 import { calculateNetRealisationForMarket } from '../core/net-realisation';
 import { evaluateDecisionPolicy } from '../core/decision';
@@ -30,6 +28,13 @@ import { formatExplanationSummary } from '../core/explain';
 import { evaluateNirnayKawach } from '../core/nirnay-kawach';
 import { evaluateBhedVivek } from '../core/bhed-vivek';
 import { fetchLiveMandiPrice } from './agmarknet-client';
+import {
+  getCommodityPriceContext,
+  getPriceUniverse,
+  resolveMarketPrice,
+  assessDataQualityFromProvenance,
+  CommodityPriceContext
+} from './price-resolver';
 import { config } from '../config';
 
 export async function getNearbyMarketsController(req: Request, res: Response): Promise<void> {
@@ -155,184 +160,114 @@ function getMarketHistoryFromCsv(
 }
 
 /**
- * Loads verified live commodity prices and origin-calibrated road distances.
- * Sourced from real Agmarknet data:
- * - Commodity-specific live feeds (onion, tomato, soyabean)
- * - Maharashtra master live feed (736 records across 101 commodities)
- * - Commodities benchmark summary (commodities_index.json)
+ * Loads origin-calibrated road distances from the pre-computed OSRM / road-winding matrix.
+ * Falls back to geodesic Haversine × roadDistanceFactor for mandis outside the matrix.
  */
-function loadLivePricesAndDistances(
-  commodity: string,
-  userLat: number,
-  userLon: number
-): { livePriceMap: Map<string, number>; distanceMap: Map<string, number>; benchmarkPrice?: number } {
-  const livePriceMap = new Map<string, number>();
+function loadOriginDistanceMap(userLat: number, userLon: number): Map<string, number> {
   const distanceMap = new Map<string, number>();
-  let benchmarkPrice: number | undefined;
 
   try {
-    const commLower = commodity.toLowerCase().trim();
-
-    // 1. Check specific commodity price files first
-    let specificPriceFile: string | null = null;
-    if (commLower.includes('onion')) specificPriceFile = 'onion_maharashtra.json';
-    else if (commLower.includes('tomato')) specificPriceFile = 'tomato_maharashtra.json';
-    else if (commLower.includes('soya')) specificPriceFile = 'soyabean_maharashtra.json';
-
-    if (specificPriceFile) {
-      const priceFilePath = path.resolve(process.cwd(), 'data', 'prices', specificPriceFile);
-      if (fs.existsSync(priceFilePath)) {
-        const pData = JSON.parse(fs.readFileSync(priceFilePath, 'utf-8'));
-        for (const rec of (pData.records || [])) {
-          const mKey = (rec.market || '').toLowerCase();
-          if (rec.modal_price) livePriceMap.set(mKey, rec.modal_price);
-        }
-      }
-    }
-
-    // 2. Also search all-Maharashtra live feed (736 records across 101 commodities)
-    const allLivePath = path.resolve(process.cwd(), 'data', 'prices', 'maharashtra_live_all.json');
-    if (fs.existsSync(allLivePath)) {
-      const allData = JSON.parse(fs.readFileSync(allLivePath, 'utf-8'));
-      for (const rec of (allData.records || [])) {
-        const rComm = (rec.commodity || '').toLowerCase();
-        if (rComm === commLower || rComm.includes(commLower) || commLower.includes(rComm)) {
-          const mKey = (rec.market || '').toLowerCase();
-          if (rec.modal_price && !livePriceMap.has(mKey)) {
-            livePriceMap.set(mKey, rec.modal_price);
-          }
-        }
-      }
-    }
-
-    // 3. Lookup benchmark average modal price from commodities_index.json
-    const commIndexPath = path.resolve(process.cwd(), 'data', 'prices', 'commodities_index.json');
-    if (fs.existsSync(commIndexPath)) {
-      const cData = JSON.parse(fs.readFileSync(commIndexPath, 'utf-8'));
-      const match = (cData.commodities || []).find((c: any) => {
-        const cComm = (c.commodity || '').toLowerCase();
-        return cComm === commLower || cComm.includes(commLower) || commLower.includes(cComm);
-      });
-      if (match && match.avg_modal_price) {
-        benchmarkPrice = Math.round(match.avg_modal_price);
-      }
-    }
-
-    // 4. Load OSRM distance matrix
     const distPath = path.resolve(process.cwd(), 'data', 'distance_matrix_all.json');
-    if (fs.existsSync(distPath)) {
-      const dData = JSON.parse(fs.readFileSync(distPath, 'utf-8'));
-      let closestOrigin = 'Nashik';
-      let minOriginDistSq = Infinity;
-      for (const r of dData) {
-        if (r.origin_coords && Array.isArray(r.origin_coords)) {
-          const dSq = Math.pow(r.origin_coords[0] - userLat, 2) + Math.pow(r.origin_coords[1] - userLon, 2);
-          if (dSq < minOriginDistSq) {
-            minOriginDistSq = dSq;
-            closestOrigin = r.origin_district;
-          }
+    if (!fs.existsSync(distPath)) return distanceMap;
+
+    const dData = JSON.parse(fs.readFileSync(distPath, 'utf-8'));
+    let closestOrigin: string | null = null;
+    let minOriginDistSq = Infinity;
+    for (const r of dData) {
+      if (r.origin_coords && Array.isArray(r.origin_coords)) {
+        const dSq = Math.pow(r.origin_coords[0] - userLat, 2) + Math.pow(r.origin_coords[1] - userLon, 2);
+        if (dSq < minOriginDistSq) {
+          minOriginDistSq = dSq;
+          closestOrigin = r.origin_district;
         }
       }
-      for (const r of dData) {
-        if (r.origin_district === closestOrigin) {
-          const key = (r.destination_mandi || '').toLowerCase();
-          if (r.distance_km) distanceMap.set(key, r.distance_km);
-        }
+    }
+    if (!closestOrigin) return distanceMap;
+
+    for (const r of dData) {
+      if (r.origin_district === closestOrigin && typeof r.distance_km === 'number') {
+        if (r.destination_mandi_id) distanceMap.set(String(r.destination_mandi_id), r.distance_km);
+        if (r.destination_mandi) distanceMap.set(String(r.destination_mandi).toLowerCase(), r.distance_km);
       }
     }
   } catch (err) {
-    console.warn('Could not read real data files:', err);
+    console.warn('[MandiMitra] Could not read distance matrix:', err);
   }
 
-  return { livePriceMap, distanceMap, benchmarkPrice };
+  return distanceMap;
+}
+
+/**
+ * Reference date for recency maths: the latest arrival date actually present in the
+ * Agmarknet feed, so "days since last report" is measured against real data, not the wall clock.
+ */
+function getFeedReferenceDate(): Date {
+  const feedDate = getPriceUniverse().feedDate;
+  if (feedDate) {
+    const d = new Date(`${feedDate}T00:00:00Z`);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return new Date();
 }
 
 /**
  * Builds canonical market evaluations using honest data sources:
- * - Data quality is computed from actual reporting dates (not market name hardcodes)
- * - Trailing prices are drawn from historical series (no manufactured slopes)
- * - Prices are resolved from verified Agmarknet observations or commodity benchmark averages
+ * - Modal price is resolved through the provenance ladder in price-resolver.ts. A mandi is only
+ *   dropped when the commodity has NO observation anywhere in Maharashtra.
+ * - Data quality is computed from real reporting dates and the price provenance tier.
+ * - Trailing prices come from the real historical series when one exists; otherwise the series is
+ *   held flat so the forecast slope is honestly zero rather than manufactured.
  */
 function buildCandidateEvaluations(
-  candidateMarkets: any[],
+  candidateMarkets: Market[],
   commodity: string,
   transportCost: number,
   storageCost: number,
-  livePriceMap: Map<string, number>,
-  benchmarkPrice?: number
+  ctx: CommodityPriceContext
 ): MarketEvaluation[] {
   const evaluations: MarketEvaluation[] = [];
+  const referenceDate = getFeedReferenceDate();
 
   for (const market of candidateMarkets) {
-    const mLower = market.name.toLowerCase();
-    const history = getMarketHistoryFromCsv(commodity, market.name);
+    const history = getMarketHistoryFromCsv(commodity, market.name, referenceDate);
+    const resolved = resolveMarketPrice(ctx, market, referenceDate);
 
-    // Compute genuine data quality directly from historical observation dates or live feed recency
-    let daysSince = mLower.includes('manmad') ? 10 : (benchmarkPrice ? 2 : 14);
-    let reportingDaysCount = mLower.includes('manmad') ? 0 : (benchmarkPrice ? 22 : 0);
+    // Prefer a directly observed price; a real historical series is used when the feed is silent.
+    // `effectiveResolution` records where the price ACTUALLY came from, so the data-quality
+    // assessment never mislabels a historical-series price as peer-calibrated (or vice versa).
+    let basePrice: number | null = null;
+    let effectiveResolution = resolved;
 
-    if (history) {
-      daysSince = history.daysSinceLastReport;
-      reportingDaysCount = history.reportingDaysCountInLast30Days;
-    } else if (livePriceMap.has(mLower)) {
-      daysSince = 1;
-      reportingDaysCount = 22;
-    } else {
-      // Find partial live match with spelling normalization (e.g. Sinner -> Sinnar)
-      for (const [k] of livePriceMap.entries()) {
-        const cleanK = k.toLowerCase().replace(/^apmc\s+/, '').replace(/\s+apmc$/, '').replace(/sinner/, 'sinnar').trim();
-        const cleanM = mLower.replace(/^apmc\s+/, '').replace(/\s+apmc$/, '').replace(/sinner/, 'sinnar').trim();
-        if (cleanM.includes(cleanK) || cleanK.includes(cleanM) || mLower.includes(k) || k.includes(mLower)) {
-          daysSince = 1;
-          reportingDaysCount = 22;
-          break;
-        }
-      }
-    }
-
-    const quality = assessDataQuality(daysSince, reportingDaysCount);
-
-    // Resolve real modal price
-    let basePrice = livePriceMap.get(mLower);
-    if (!basePrice) {
-      for (const [k, p] of livePriceMap.entries()) {
-        const cleanK = k.toLowerCase().replace(/^apmc\s+/, '').replace(/\s+apmc$/, '').replace(/sinner/, 'sinnar').trim();
-        const cleanM = mLower.replace(/^apmc\s+/, '').replace(/\s+apmc$/, '').replace(/sinner/, 'sinnar').trim();
-        if (cleanM.includes(cleanK) || cleanK.includes(cleanM) || mLower.includes(k) || k.includes(mLower)) {
-          basePrice = p;
-          break;
-        }
-      }
-    }
-    if (!basePrice && history && history.latestPrice) {
+    if (resolved.provenance === 'AGMARKNET_MARKET_OBSERVED') {
+      basePrice = resolved.modalPrice;
+    } else if (history && history.latestPrice) {
       basePrice = history.latestPrice;
+      effectiveResolution = {
+        ...resolved,
+        modalPrice: history.latestPrice,
+        provenance: 'HISTORICAL_SERIES_OBSERVED',
+        observationCount: history.reportingDaysCountInLast30Days,
+        daysSinceLastReport: history.daysSinceLastReport,
+        note: `Latest modal price from the ${market.name} historical series (${history.reportingDaysCountInLast30Days} reporting days in the last 30).`
+      };
+    } else if (resolved.provenance !== 'UNAVAILABLE' && resolved.modalPrice > 0) {
+      basePrice = resolved.modalPrice;
     }
 
-    // Benchmark price calibration for any of Maharashtra's 98 other commodities
-    if (!basePrice && benchmarkPrice && !['onion', 'tomato', 'soyabean'].includes(commodity.toLowerCase())) {
-      let multiplier = 1.0;
-      if (mLower.includes('pimpalgaon')) multiplier = 1.03;
-      else if (mLower.includes('lasalgaon')) multiplier = 1.02;
-      else if (mLower.includes('sinnar')) multiplier = 1.00;
-      else if (mLower.includes('yeola')) multiplier = 0.98;
-      else if (mLower.includes('manmad')) multiplier = 0.96;
-      basePrice = Math.round(benchmarkPrice * multiplier);
-    }
+    const quality = assessDataQualityFromProvenance(effectiveResolution, history ? {
+      daysSinceLastReport: history.daysSinceLastReport,
+      reportingDaysCountInLast30Days: history.reportingDaysCountInLast30Days
+    } : null);
 
-    // If no verified price exists, mark market as POOR and disqualify
-    if (!basePrice) {
-      quality.tier = 'POOR';
-      quality.isEligibleForRecommendation = false;
+    // The ONLY honest reason to drop a mandi: no verifiable price exists for this commodity.
+    if (!basePrice || basePrice <= 0) {
       continue;
     }
 
-    // Use REAL trailing prices from history if available (at least 2 points for slope)
-    let trailingPrices: number[] = [];
-    if (history && history.trailing7Prices.length >= 2) {
-      trailingPrices = history.trailing7Prices;
-    } else {
-      trailingPrices = [basePrice, basePrice, basePrice, basePrice, basePrice, basePrice, basePrice];
-    }
+    // Real trailing series where available; otherwise a flat series (slope = 0, no invented drift).
+    const trailingPrices = (history && history.trailing7Prices.length >= 2)
+      ? history.trailing7Prices
+      : new Array(7).fill(basePrice);
 
     const forecast = generateForecast(trailingPrices, basePrice);
     const netRealisationByDay = calculateNetRealisationForMarket(market, forecast, transportCost, storageCost);
@@ -348,6 +283,45 @@ function buildCandidateEvaluations(
   return evaluations;
 }
 
+/**
+ * Shared candidate-resolution pipeline used by /api/evaluate, /api/evaluate/stress-test and
+ * /api/bhed-vivek/analyze so all three endpoints see an identical candidate universe.
+ */
+export interface EvaluationContext {
+  commodity: string;
+  candidateMarkets: Market[];
+  evaluations: MarketEvaluation[];
+  priceContext: CommodityPriceContext;
+  searchRadiusKm: number;
+}
+
+export function resolveEvaluationContext(params: {
+  commodity: string;
+  latitude: number;
+  longitude: number;
+  transportCost: number;
+  storageCost: number;
+  searchRadiusKm: number;
+}): EvaluationContext {
+  const { commodity, latitude, longitude, transportCost, storageCost, searchRadiusKm } = params;
+  const priceContext = getCommodityPriceContext(commodity);
+  const distanceMap = loadOriginDistanceMap(latitude, longitude);
+
+  const candidateMarkets: Market[] = getAllMarkets().map(m => {
+    const realDist = distanceMap.get(m.id) ?? distanceMap.get(m.name.toLowerCase());
+    const roadDist = realDist !== undefined
+      ? realDist
+      : Math.round(estimateRoadDistanceKm(latitude, longitude, m.lat, m.lon) * 10) / 10;
+    return { ...m, estimatedRoadDistanceKm: roadDist };
+  }).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadiusKm);
+
+  candidateMarkets.sort((a, b) => (a.estimatedRoadDistanceKm || 0) - (b.estimatedRoadDistanceKm || 0));
+
+  const evaluations = buildCandidateEvaluations(candidateMarkets, commodity, transportCost, storageCost, priceContext);
+
+  return { commodity, candidateMarkets, evaluations, priceContext, searchRadiusKm };
+}
+
 export async function evaluateController(req: Request, res: Response): Promise<void> {
   const body = req.body as EvaluateRequestBody;
   const commodity = body.commodity || 'Onion';
@@ -357,23 +331,15 @@ export async function evaluateController(req: Request, res: Response): Promise<v
   const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
   const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
 
-  const { livePriceMap, distanceMap, benchmarkPrice } = loadLivePricesAndDistances(commodity, userLat, userLon);
-
-  // 1. Resolve candidate mandis within radius using real OSRM road distance where available
-  const candidateMarkets = getAllMarkets().map(m => {
-    const mLower = m.name.toLowerCase();
-    const realDist = distanceMap.get(mLower);
-    const roadDist = realDist !== undefined 
-      ? realDist 
-      : Math.round(estimateRoadDistanceKm(userLat, userLon, m.lat, m.lon) * 10) / 10;
-    return {
-      ...m,
-      estimatedRoadDistanceKm: roadDist
-    };
-  }).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadius);
-
-  // 2. Build evaluations for each candidate market using honest data sources
-  const evaluations = buildCandidateEvaluations(candidateMarkets, commodity, transportCost, storageCost, livePriceMap, benchmarkPrice);
+  // 1-2. Resolve candidate mandis within radius and build honest evaluations for each
+  const { evaluations } = resolveEvaluationContext({
+    commodity,
+    latitude: userLat,
+    longitude: userLon,
+    transportCost,
+    storageCost,
+    searchRadiusKm: searchRadius
+  });
 
   // 3. Evaluate Decision Policy
   const rawRecommendation = evaluateDecisionPolicy(evaluations);
@@ -428,22 +394,15 @@ export async function stressTestController(req: Request, res: Response): Promise
   const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
   const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
 
-  const { livePriceMap, distanceMap, benchmarkPrice } = loadLivePricesAndDistances(commodity, userLat, userLon);
-
-  // Resolve candidate markets within radius
-  const candidateMarkets = getAllMarkets().map(m => {
-    const mLower = m.name.toLowerCase();
-    const realDist = distanceMap.get(mLower);
-    const roadDist = realDist !== undefined 
-      ? realDist 
-      : Math.round(estimateRoadDistanceKm(userLat, userLon, m.lat, m.lon) * 10) / 10;
-    return {
-      ...m,
-      estimatedRoadDistanceKm: roadDist
-    };
-  }).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadius);
-
-  const evaluations = buildCandidateEvaluations(candidateMarkets, commodity, sliderTransportCost, storageCost, livePriceMap, benchmarkPrice);
+  // Resolve candidate markets within radius at the active slider transport rate
+  const { evaluations } = resolveEvaluationContext({
+    commodity,
+    latitude: userLat,
+    longitude: userLon,
+    transportCost: sliderTransportCost,
+    storageCost,
+    searchRadiusKm: searchRadius
+  });
 
   // Run Nirnay Kawach stress test with active slider transport cost
   const kawach = evaluateNirnayKawach(
@@ -455,26 +414,26 @@ export async function stressTestController(req: Request, res: Response): Promise
   );
 
   // Baseline winner comparison (at default transport cost)
-  const defaultEvaluations = buildCandidateEvaluations(candidateMarkets, commodity, config.defaultTransportCostPerKmPerQtl, storageCost, livePriceMap, benchmarkPrice)
+  const defaultEvaluations = resolveEvaluationContext({
+    commodity,
+    latitude: userLat,
+    longitude: userLon,
+    transportCost: config.defaultTransportCostPerKmPerQtl,
+    storageCost,
+    searchRadiusKm: searchRadius
+  }).evaluations
+    .filter(ev => ev.dataQuality.isEligibleForRecommendation)
     .flatMap(ev => ev.netRealisationByDay);
   defaultEvaluations.sort((a, b) => b.netRealisation - a.netRealisation);
   const originalWinnerId = defaultEvaluations[0]?.market.id;
 
-  let winningOption = kawach.winningMarket;
-  let isFlipped = winningOption.id !== originalWinnerId;
-
-  // If active transport rate breaches the breakeven threshold, flip recommendation to top alternative
-  if (kawach.breakevenTransportRate && sliderTransportCost >= kawach.breakevenTransportRate && kawach.topAlternative) {
-    isFlipped = true;
-    winningOption = {
-      id: kawach.topAlternative.id,
-      name: kawach.topAlternative.name,
-      day: kawach.topAlternative.day,
-      expectedNetRealisation: kawach.topAlternative.expectedNetRealisation
-    };
-  }
-
-  const flatEvaluations = evaluations.flatMap(ev => 
+  // The candidate set was already re-evaluated AT the slider rate, so the highest net realisation
+  // among recommendation-eligible options IS the winner under that rate. Do not substitute the
+  // runner-up: that would report a market the maths has just ruled out.
+  const eligibleIds = new Set(
+    evaluations.filter(ev => ev.dataQuality.isEligibleForRecommendation).map(ev => ev.market.id)
+  );
+  const flatEvaluations = evaluations.flatMap(ev =>
     ev.netRealisationByDay.map(nr => ({
       marketId: ev.market.id,
       marketName: ev.market.name,
@@ -483,6 +442,18 @@ export async function stressTestController(req: Request, res: Response): Promise
     }))
   );
   flatEvaluations.sort((a, b) => b.netRealisation - a.netRealisation);
+
+  const bestEligible = flatEvaluations.find(e => eligibleIds.has(e.marketId));
+  const winningOption = bestEligible
+    ? {
+        id: bestEligible.marketId,
+        name: bestEligible.marketName,
+        day: bestEligible.day,
+        expectedNetRealisation: bestEligible.netRealisation
+      }
+    : kawach.winningMarket;
+
+  const isFlipped = Boolean(originalWinnerId) && winningOption.id !== originalWinnerId;
 
   const response: StressTestResponse = {
     activeTransportRate: sliderTransportCost,
@@ -509,94 +480,150 @@ export async function bhedVivekAnalyzeController(req: Request, res: Response): P
   const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
   const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
 
-  const { livePriceMap, distanceMap, benchmarkPrice } = loadLivePricesAndDistances(commodity, userLat, userLon);
-
-  // Build candidate evaluations
-  const candidateMarkets = getAllMarkets().map(m => {
-    const mLower = m.name.toLowerCase();
-    const realDist = distanceMap.get(mLower);
-    const roadDist = realDist !== undefined 
-      ? realDist 
-      : Math.round(estimateRoadDistanceKm(userLat, userLon, m.lat, m.lon) * 10) / 10;
-    return {
-      ...m,
-      estimatedRoadDistanceKm: roadDist
-    };
-  }).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadius);
-
-  const evaluations = buildCandidateEvaluations(candidateMarkets, commodity, transportCost, storageCost, livePriceMap, benchmarkPrice);
+  // Build candidate evaluations through the shared honest-data pipeline
+  const { evaluations } = resolveEvaluationContext({
+    commodity,
+    latitude: userLat,
+    longitude: userLon,
+    transportCost,
+    storageCost,
+    searchRadiusKm: searchRadius
+  });
 
   const result = evaluateBhedVivek(evaluations, commodity, quantity, supplyPressure);
   res.json(result);
 }
 
+/**
+ * Reads the real historical series for a commodity/mandi pair and returns the mean modal price
+ * over the last `windowDays` observations, plus how many of those calendar days actually reported.
+ * This is what makes `baselineNetRealisation` a measured figure rather than a constant.
+ */
+function summariseHeldOutWindow(
+  csvFileName: string,
+  windowDays: number
+): { meanModalPrice: number; observedDays: number; coveragePct: number; start: string; end: string } | null {
+  try {
+    const filePath = path.resolve(process.cwd(), 'data', 'historical', csvFileName);
+    if (!fs.existsSync(filePath)) return null;
+
+    const lines = fs.readFileSync(filePath, 'utf-8').trim().split('\n');
+    if (lines.length <= 1) return null;
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const dateIdx = headers.indexOf('date');
+    const modalIdx = headers.indexOf('modal_price');
+    if (dateIdx === -1 || modalIdx === -1) return null;
+
+    const records: { date: string; modalPrice: number }[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',');
+      if (parts.length <= Math.max(dateIdx, modalIdx)) continue;
+      const d = parts[dateIdx].trim();
+      const p = parseFloat(parts[modalIdx].trim());
+      if (d && Number.isFinite(p)) records.push({ date: d, modalPrice: p });
+    }
+    if (records.length === 0) return null;
+
+    const window = records.slice(-Math.max(1, windowDays));
+    const meanModalPrice = window.reduce((a, r) => a + r.modalPrice, 0) / window.length;
+
+    const start = window[0].date;
+    const end = window[window.length - 1].date;
+    const spanDays = Math.max(
+      1,
+      Math.round((new Date(`${end}T00:00:00Z`).getTime() - new Date(`${start}T00:00:00Z`).getTime()) / 86400000) + 1
+    );
+
+    return {
+      meanModalPrice: Math.round(meanModalPrice * 10) / 10,
+      observedDays: window.length,
+      coveragePct: Math.round(Math.min(100, (window.length / spanDays) * 100) * 10) / 10,
+      start,
+      end
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Maps a requested commodity onto the backtested series that exists on disk. */
+function resolveBacktestSeries(commodity: string): { key: string; csv: string } | null {
+  const c = commodity.toLowerCase();
+  if (c.includes('onion')) return { key: 'onion_lasalgaon', csv: 'onion_lasalgaon_2026.csv' };
+  if (c.includes('tomato')) return { key: 'tomato_narayangaon', csv: 'tomato_narayangaon_2026.csv' };
+  if (c.includes('soya')) return { key: 'soyabean_latur', csv: 'soyabean_latur_2026.csv' };
+  return null;
+}
+
 export async function getBacktestController(req: Request, res: Response): Promise<void> {
   const commodity = (req.query.commodity as string) || 'Onion';
-  const commLower = commodity.toLowerCase();
 
-  // Load real walk-forward evaluated backtest results if available
   let backtestData: any = null;
   try {
-    const fs = await import('fs');
-    const path = await import('path');
     const backtestPath = path.resolve(process.cwd(), 'models', 'backtest_results.json');
     if (fs.existsSync(backtestPath)) {
       backtestData = JSON.parse(fs.readFileSync(backtestPath, 'utf-8'));
     }
   } catch (err) {
-    console.warn('Could not read models/backtest_results.json:', err);
+    console.warn('[MandiMitra] Could not read models/backtest_results.json:', err);
   }
 
-  let result: BacktestResult;
+  const series = resolveBacktestSeries(commodity);
+  const item = (backtestData?.executive_numbers && series)
+    ? backtestData.executive_numbers[series.key]
+    : null;
 
-  if (backtestData && backtestData.executive_numbers) {
-    let key = 'onion_lasalgaon';
-    let basePrice = 3250.0;
-    if (commLower.includes('tomato')) {
-      key = 'tomato_narayangaon';
-      basePrice = 2150.0;
-    } else if (commLower.includes('soya')) {
-      key = 'soyabean_latur';
-      basePrice = 4720.0;
-    }
-
-    const item = backtestData.executive_numbers[key];
-    const gain = item.avg_net_rupee_gain_per_quintal || 18.2;
-    result = {
-      commodity,
-      modelVersion: config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic',
-      evaluatedDays: item.held_out_test_days || 106,
-      avgNetRealisation: Math.round((basePrice + gain) * 10) / 10,
-      baselineNetRealisation: basePrice,
-      netGainVsBaseline: gain,
-      directionalAccuracy: item.model_accuracy_pct,
-      coverage: item.profitable_wait_rate_pct || 74.3,
-      evaluatedPeriod: {
-        start: '2026-01-01',
-        end: '2026-08-31'
+  // ZERO-MOCK: without the walk-forward artifacts there is nothing honest to report.
+  if (!item || !series) {
+    res.status(503).json({
+      error: {
+        code: 'UPSTREAM_FAILURE',
+        message: series
+          ? 'Walk-forward backtest artifacts (models/backtest_results.json) are unavailable. MandiMitra reports no backtest rather than a placeholder figure.'
+          : `No walk-forward backtest series has been trained for "${commodity}". Backtested series: Onion (Lasalgaon), Tomato (Junnar/Narayangaon), Soyabean (Latur).`
       }
-    };
-  } else {
-    // Fallback verified benchmark
-    result = {
-      commodity,
-      modelVersion: config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic',
-      evaluatedDays: 184,
-      avgNetRealisation: 2314.80,
-      baselineNetRealisation: 2246.20,
-      netGainVsBaseline: 68.60,
-      directionalAccuracy: 74.5,
-      coverage: 88.0,
-      evaluatedPeriod: {
-        start: '2026-01-01',
-        end: '2026-08-31'
-      }
-    };
+    });
+    return;
   }
+
+  const evaluatedDays = Number(item.held_out_test_days) || 0;
+  const netGain = Number(item.avg_net_rupee_gain_per_quintal) || 0;
+  const window = summariseHeldOutWindow(series.csv, evaluatedDays);
+
+  // Baseline = the naive "sell on harvest day at spot" strategy, i.e. the mean observed modal
+  // price across the held-out window. Measured from the real series, never assumed.
+  const baselineNetRealisation = window ? window.meanModalPrice : 0;
+
+  const result: BacktestResult = {
+    commodity: String(item.commodity || commodity),
+    modelVersion: config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic',
+    evaluatedDays,
+    avgNetRealisation: Math.round((baselineNetRealisation + netGain) * 10) / 10,
+    baselineNetRealisation,
+    netGainVsBaseline: netGain,
+    directionalAccuracy: Number(item.model_accuracy_pct) || 0,
+    coverage: window ? window.coveragePct : 0,
+    evaluatedPeriod: {
+      start: window ? window.start : '',
+      end: window ? window.end : ''
+    },
+    mandi: item.mandi ? String(item.mandi) : undefined,
+    persistenceBaselineAccuracy: Number(item.persistence_baseline_accuracy_pct) || undefined,
+    accuracyEdgePts: Number(item.accuracy_edge_over_persistence_pts) || undefined,
+    waitRecommendations: Number(item.total_wait_recommendations) || undefined,
+    profitableWaitRatePct: Number(item.profitable_wait_rate_pct) || undefined,
+    topPredictiveFeatures: Array.isArray(item.top_predictive_features)
+      ? item.top_predictive_features.map((f: any) => ({
+          feature: String(f.feature),
+          importancePct: Number(f.importance_pct) || 0
+        }))
+      : undefined
+  };
 
   const response: BacktestResponse = {
     result,
-    citationNotice: 'MandiMitra 2026 Walk-Forward Temporal Backtest across 324 Held-Out Market Days (Zero Lookahead Leakage)'
+    citationNotice: `${backtestData.evaluation_methodology || 'Walk-Forward Temporal Backtest'} — ${backtestData.executive_numbers.total_held_out_days_evaluated} held-out market days across three commodity-mandi series. Baseline modal prices measured from data/historical/${series.csv}.`
   };
 
   res.json(response);
