@@ -68,6 +68,34 @@ TRILINGUAL_TEST_CASES = [
         "expected_district": "Nashik",
         "expected_qty_qtl": 20.0
     },
+    {
+        "name": "Marathi Rice: 'पन्नास गोणी तांदूळ'",
+        "body": {"text": "पन्नास गोणी तांदूळ", "language": "mr"},
+        "expected_crop": "Rice",
+        "expected_district": None,
+        "expected_qty_qtl": 25.0
+    },
+    {
+        "name": "Marathi Rice ASR Guni: '50 गुणी तांदूळ'",
+        "body": {"text": "50 गुणी तांदूळ", "language": "mr"},
+        "expected_crop": "Rice",
+        "expected_district": None,
+        "expected_qty_qtl": 25.0
+    },
+    {
+        "name": "Marathi Rice Latin: 'pannas goni tandul'",
+        "body": {"text": "pannas goni tandul", "language": "mr"},
+        "expected_crop": "Rice",
+        "expected_district": None,
+        "expected_qty_qtl": 25.0
+    },
+    {
+        "name": "Marathi Rice Bhat: '50 गोणी भात'",
+        "body": {"text": "50 गोणी भात", "language": "mr"},
+        "expected_crop": "Rice",
+        "expected_district": None,
+        "expected_qty_qtl": 25.0
+    },
 
     # =========================================================================
     # Group 2: Native Hindi (हिन्दी - hi)

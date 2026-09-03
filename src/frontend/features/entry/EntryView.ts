@@ -34,6 +34,7 @@ const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ emoji: string; tex
     { emoji: '🧅', text: 'नाशिक निफाड मध्ये 40 गोणी कांदा आहे', hint: 'मराठी · 40 bags · Nashik' },
     { emoji: '🍅', text: 'पुणे जुन्नर मध्ये 80 क्रेट टोमॅटो', hint: 'मराठी · 80 crates · Pune' },
     { emoji: '🌻', text: 'लातूर मध्ये 30 क्विंटल सोयाबीन', hint: 'मराठी · 30 quintals · Latur' },
+    { emoji: '🌾', text: '50 गोणी तांदूळ', hint: 'मराठी · 50 bags (25q) · Rice' },
     { emoji: '🥔', text: 'अहमदनगर संगमनेर मध्ये 50 गोणी बटाटा', hint: 'मराठी · 50 bags · Ahilyanagar' },
     { emoji: '🍇', text: 'सोलापूर पंढरपूर मध्ये 15 क्विंटल डाळिंब', hint: 'मराठी · 15 quintals · Solapur' }
   ],
@@ -41,6 +42,7 @@ const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ emoji: string; tex
     { emoji: '🧅', text: 'नासिक में 40 बोरी प्याज है', hint: 'हिन्दी · 40 bags · Nashik' },
     { emoji: '🍅', text: 'पुणे में 80 क्रेट टमाटर', hint: 'हिन्दी · 80 crates · Pune' },
     { emoji: '🌻', text: 'लातूर में 30 क्विंटल सोयाबीन', hint: 'हिन्दी · 30 quintals · Latur' },
+    { emoji: '🌾', text: '50 बोरी चावल', hint: 'हिन्दी · 50 bags (25q) · Rice' },
     { emoji: '🌾', text: 'जलगांव में 2 ट्रॉली गेहूं', hint: 'हिन्दी · 2 trolleys · Jalgaon' },
     { emoji: '🌽', text: 'धुले में 25 कट्टे मक्का', hint: 'हिन्दी · 25 bags · Dhule' }
   ],
@@ -48,6 +50,7 @@ const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ emoji: string; tex
     { emoji: '🧅', text: '40 bags onion in Nashik', hint: 'English · 40 bags · Nashik' },
     { emoji: '🍅', text: '80 crates tomato in Pune', hint: 'English · 80 crates · Pune' },
     { emoji: '🌻', text: '30 quintals soyabean in Latur', hint: 'English · 30 quintals · Latur' },
+    { emoji: '🌾', text: '50 bags rice', hint: 'English · 50 bags (25q) · Rice' },
     { emoji: '🌾', text: '2 trolley wheat in Jalgaon', hint: 'English · 80 quintals · Jalgaon' },
     { emoji: '🥔', text: '50 bags potato in Ahmednagar', hint: 'English · 50 bags · Ahilyanagar' }
   ]
@@ -533,6 +536,7 @@ export function renderEntryView(): HTMLElement {
   let listening = false;
   let activeRecognition: any = null;
   let finalTranscript = '';
+  let accumulatedTranscript = '';
   let autoStopTimer: any = null;
   let silenceTimer: any = null;
 
@@ -579,6 +583,7 @@ export function renderEntryView(): HTMLElement {
       listening = true;
       activeRecognition = recognition;
       finalTranscript = '';
+      accumulatedTranscript = '';
 
       // Route to native neural ASR model for selected language!
       recognition.lang = currentLang;
@@ -618,8 +623,9 @@ export function renderEntryView(): HTMLElement {
           }
         }
 
-        if (currentFinal.trim()) {
-          finalTranscript = currentFinal.trim();
+        const sessionText = currentFinal.trim();
+        if (sessionText) {
+          finalTranscript = (accumulatedTranscript ? accumulatedTranscript + ' ' + sessionText : sessionText).trim();
         }
 
         const fullDisplay = finalTranscript.trim();
@@ -661,6 +667,7 @@ export function renderEntryView(): HTMLElement {
       recognition.onend = () => {
         // If Chrome disconnected on a momentary pause while the user is still speaking:
         if (listening) {
+          accumulatedTranscript = finalTranscript;
           // Reconnect smoothly without dropping accumulated speech!
           try {
             recognition.start();

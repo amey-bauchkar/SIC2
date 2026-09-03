@@ -32,7 +32,7 @@ export const UNIT_TO_QUINTALS: Record<AgrarianUnit, number> = {
 
 /** Spoken unit tokens across Marathi, Hindi and English. */
 const UNIT_TOKENS: Array<{ unit: AgrarianUnit; tokens: string[] }> = [
-  { unit: 'Bags', tokens: ['गोणी', 'गोण्या', 'गोणि', 'गोनी', 'गोली', 'बोनी', 'बोनि', 'बोरी', 'बोरे', 'बोरा', 'बोर्या', 'बोरीया', 'बोरियां', 'कट्टा', 'कट्टे', 'कट्टी', 'पोते', 'पोती', 'पैकेट', 'पैकेट्स', 'bag', 'bags', 'goni', 'goniya', 'bori', 'bora', 'borey', 'boriyan', 'katta', 'katte', 'katti', 'packet', 'packets', 'sack', 'sacks', 'बैग', 'बैग्स', 'बॅग', 'बॅग्ज'] },
+  { unit: 'Bags', tokens: ['गोणी', 'गोण्या', 'गोणि', 'गोनी', 'गोली', 'गुणी', 'गुण्या', 'गुनी', 'गुनि', 'गोण', 'गोन', 'पोत्या', 'पोत्यात', 'पोत्यांचे', 'गोणीत', 'गोण्यात', 'गोणींचे', 'बॅगा', 'बॅगेत', 'बोऱ्या', 'बोरिया', 'पिशवी', 'पिशव्या', 'गट्टा', 'गट्टे', 'बोनी', 'बोनि', 'बोरी', 'बोरे', 'बोरा', 'बोर्या', 'बोरीया', 'बोरियां', 'कट्टा', 'कट्टे', 'कट्टी', 'पोते', 'पोती', 'पैकेट', 'पैकेट्स', 'bag', 'bags', 'goni', 'goniya', 'bori', 'bora', 'borey', 'boriyan', 'katta', 'katte', 'katti', 'packet', 'packets', 'sack', 'sacks', 'बैग', 'बैग्स', 'बॅग', 'बॅग्ज'] },
   { unit: 'Crates', tokens: ['क्रेट', 'क्रेटस', 'क्रेट्स', 'पेटी', 'पेट्या', 'पेटियां', 'पेटियाँ', 'डब्बा', 'डब्बे', 'कार्टन', 'crate', 'crates', 'peti', 'pethi', 'petya', 'petiyan', 'box', 'boxes', 'carton', 'cartons', 'क्रेटा', 'क्रेटे'] },
   { unit: 'Trolley', tokens: ['ट्रॉली', 'ट्राली', 'ट्रोली', 'ट्रॅक्टर', 'ट्रैक्टर', 'ट्रॅक्टरभर', 'ट्रैक्टरभर', 'ट्रालीभर', 'ट्रॉलीभर', 'trolley', 'trolly', 'tractor', 'trali'] },
   { unit: 'Tempo', tokens: ['टेम्पो', 'टेंपो', 'छोटा हत्ती', 'छोटा हाथी', 'छोटाहाथी', 'पिकअप', 'लोडर', 'tempo', 'chhota hathi', 'chota hathi', 'pickup', 'loader', 'हाथी', 'पिकप'] },
@@ -142,7 +142,9 @@ const CROP_SYNONYMS: Record<string, string[]> = {
   'Orange': ['संत्री', 'संतरा', 'संत्रे', 'orange', 'oranges', 'santra', 'santri', 'नागपुरी संत्री', 'संत्र'],
   'Banana': ['केळी', 'केला', 'केले', 'banana', 'bananas', 'kela', 'keli'],
   'Gur(Jaggery)': ['गूळ', 'गुळ', 'गुळाच्या', 'गुळाची', 'गुड़', 'गुड़', 'gur', 'jaggery', 'gud'],
-  'Ginger(Green)': ['आले', 'आलं', 'अदरक', 'adrak', 'aale', 'ginger', 'green ginger', 'आदराक']
+  'Ginger(Green)': ['आले', 'आलं', 'अदरक', 'adrak', 'aale', 'ginger', 'green ginger', 'आदराक'],
+  'Rice': ['tandul', 'taandul', 'tandool', 'tandoor', 'तांदूळ', 'तांदुळ', 'तांदळाच्या', 'तांदळाची', 'तांदळ', 'तांदळा', 'तांदूळात', 'चावल', 'chawal', 'chaaval', 'चावला', 'चावले', 'चावलाचे', 'rice', 'भात', 'bhat', 'धान', 'dhan'],
+  'Paddy(Common)': ['dhan', 'dhaan', 'paddy', 'धान', 'भाताचे', 'भात', 'bhat', 'पॅडी', 'पड्डी']
 };
 
 // ============================================================================
@@ -582,13 +584,28 @@ function findCrop(text: string): { item: CropItem | null; token: string | null }
   return { item, token: hit.token };
 }
 
-function findDistrict(text: string): { item: DistrictItem | null; token: string | null; via: 'district' | 'taluka' | null } {
-  const direct = findLexiconMatch(text, buildDistrictLexicon());
+const UNIT_WORDS_SET = new Set([
+  'goni', 'goniya', 'bori', 'bora', 'borey', 'boriyan', 'katta', 'katte', 'katti', 'packet', 'packets',
+  'bag', 'bags', 'sack', 'sacks', 'crate', 'crates', 'peti', 'trolley', 'tempo', 'quintal', 'quintals',
+  'गोणी', 'गोण्या', 'गोणि', 'गोनी', 'गोली', 'गुणी', 'गुण्या', 'गुनी', 'गुनि', 'गोण', 'गोन', 'पोत्या', 'पोत्यात',
+  'बोरी', 'बोरे', 'बोरा', 'कट्टा', 'कट्टे', 'कट्टी', 'पोते', 'पोती', 'क्रेट', 'पेटी', 'ट्रॉली', 'टेम्पो', 'क्विंटल'
+]);
+
+function findDistrict(text: string, unitToken?: string | null): { item: DistrictItem | null; token: string | null; via: 'district' | 'taluka' | null } {
+  let cleaned = text;
+  if (unitToken) {
+    cleaned = cleaned.replace(new RegExp(`\\b${unitToken}\\b`, 'gi'), ' ');
+  }
+  for (const w of UNIT_WORDS_SET) {
+    cleaned = cleaned.replace(new RegExp(`\\b${w}\\b`, 'gi'), ' ');
+  }
+
+  const direct = findLexiconMatch(cleaned, buildDistrictLexicon());
   if (direct) {
     const item = ALL_DISTRICTS.find(d => d.name === direct.canonicalId) || null;
     if (item) return { item, token: direct.token, via: 'district' };
   }
-  const viaTaluka = findLexiconMatch(text, buildTalukaLexicon());
+  const viaTaluka = findLexiconMatch(cleaned, buildTalukaLexicon());
   if (viaTaluka) {
     const item = ALL_DISTRICTS.find(d => d.name === viaTaluka.canonicalId) || null;
     if (item) return { item, token: viaTaluka.token, via: 'taluka' };
@@ -597,6 +614,7 @@ function findDistrict(text: string): { item: DistrictItem | null; token: string 
 }
 
 function findUnit(text: string): { unit: AgrarianUnit | null; token: string | null } {
+  // Phase 1: Exact substring & vowel-normalized match
   for (const group of UNIT_TOKENS) {
     for (const token of group.tokens) {
       const lower = token.toLowerCase();
@@ -609,6 +627,24 @@ function findUnit(text: string): { unit: AgrarianUnit | null; token: string | nu
       }
     }
   }
+
+  // Phase 2: Word-level acoustic fuzzy matching for units (handles 'गुणी', 'गोण', 'goni', etc.)
+  const words = text.split(/\s+/);
+  for (const word of words) {
+    if (word.length < 3) continue;
+    for (const group of UNIT_TOKENS) {
+      for (const token of group.tokens) {
+        const lower = token.toLowerCase();
+        if (Math.abs(word.length - lower.length) <= 1) {
+          const dist = levenshteinDistance(word, lower);
+          if (dist <= 1) {
+            return { unit: group.unit, token: word };
+          }
+        }
+      }
+    }
+  }
+
   return { unit: null, token: null };
 }
 
@@ -652,8 +688,8 @@ export function extractAgrarianSlots(rawText: string): VoiceExtraction {
   const warnings: string[] = [];
 
   const { item: cropItem, token: cropToken } = findCrop(text);
-  const { item: districtItem, token: districtToken, via } = findDistrict(text);
   const { unit, token: unitToken } = findUnit(text);
+  const { item: districtItem, token: districtToken, via } = findDistrict(text, unitToken);
   const quantity = findQuantity(text, unitToken);
 
   const effectiveUnit: AgrarianUnit | null = unit || (quantity !== null ? 'Quintals' : null);
