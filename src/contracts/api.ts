@@ -67,6 +67,40 @@ export interface EvaluateResponse {
     storageCostPerDayPerQtl: number;
     radiusKm: number;
   };
+  nirnayKawach?: import('./domain').NirnayKawachResult;
+}
+
+// ==========================================
+// 4. /api/evaluate/stress-test (Live Slider)
+// ==========================================
+export interface StressTestRequestBody {
+  commodity: string;
+  latitude: number;
+  longitude: number;
+  transportCostPerKmPerQtl: number; // Slider value
+  storageCostPerDayPerQtl?: number;
+  radiusKm?: number;
+}
+
+export interface StressTestResponse {
+  activeTransportRate: number;
+  winningMarket: {
+    id: string;
+    name: string;
+    day: number;
+    expectedNetRealisation: number;
+  };
+  isFlipped: boolean;
+  flippedFromOriginal: boolean;
+  breakevenTransportRate: number | null;
+  status: import('./domain').DecisionRobustnessStatus;
+  statusLabel: string;
+  allEvaluations: Array<{
+    marketId: string;
+    marketName: string;
+    day: number;
+    netRealisation: number;
+  }>;
 }
 
 // ==========================================

@@ -11,7 +11,9 @@ import {
   EvaluateResponse, 
   NearbyMarketsResponse, 
   LivePriceResponse, 
-  BacktestResponse 
+  BacktestResponse,
+  StressTestRequestBody,
+  StressTestResponse
 } from '../contracts/api';
 import { MarketEvaluation, BacktestResult } from '../contracts/domain';
 import { getAllMarkets, findMarketById } from '../data-pipeline/registry';
@@ -21,6 +23,7 @@ import { generateForecast } from '../core/forecast';
 import { calculateNetRealisationForMarket } from '../core/net-realisation';
 import { evaluateDecisionPolicy } from '../core/decision';
 import { formatExplanationSummary } from '../core/explain';
+import { evaluateNirnayKawach } from '../core/nirnay-kawach';
 import { fetchLiveMandiPrice } from './agmarknet-client';
 import { config } from '../config';
 
@@ -179,6 +182,15 @@ export async function evaluateController(req: Request, res: Response): Promise<v
     reasons: formattedReasons
   };
 
+  // 4. Nirnay Kawach (Decision Shield) Stress-Testing Engine
+  const nirnayKawach = evaluateNirnayKawach(
+    evaluations,
+    commodity,
+    transportCost,
+    storageCost,
+    500
+  );
+
   const response: EvaluateResponse = {
     recommendation: finalRecommendation,
     evaluations,
@@ -189,7 +201,101 @@ export async function evaluateController(req: Request, res: Response): Promise<v
       transportCostPerKmPerQtl: transportCost,
       storageCostPerDayPerQtl: storageCost,
       radiusKm: searchRadius
-    }
+    },
+    nirnayKawach
+  };
+
+  res.json(response);
+}
+
+export async function stressTestController(req: Request, res: Response): Promise<void> {
+  const body = req.body as StressTestRequestBody;
+  const commodity = body.commodity || 'Onion';
+  const userLat = body.latitude || 19.9975;
+  const userLon = body.longitude || 73.7898;
+  const sliderTransportCost = body.transportCostPerKmPerQtl ?? config.defaultTransportCostPerKmPerQtl;
+  const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
+  const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
+
+  // Resolve candidate markets within radius
+  const candidateMarkets = getAllMarkets().map(m => ({
+    ...m,
+    estimatedRoadDistanceKm: Math.round(estimateRoadDistanceKm(userLat, userLon, m.lat, m.lon) * 10) / 10
+  })).filter(m => (m.estimatedRoadDistanceKm || 0) <= searchRadius);
+
+  const evaluations: MarketEvaluation[] = [];
+
+  for (const market of candidateMarkets) {
+    const mLower = market.name.toLowerCase();
+    const isManmad = mLower.includes('manmad');
+    const isMajorMandi = mLower.includes('lasalgaon') || mLower.includes('pimpalgaon') || mLower.includes('narayangaon') || mLower.includes('latur');
+
+    const daysSince = isManmad ? 9 : (isMajorMandi ? 1 : 3);
+    const reportingDaysCount = isManmad ? 10 : (isMajorMandi ? 28 : 22);
+    const quality = assessDataQuality(daysSince, reportingDaysCount);
+
+    const basePrice = isMajorMandi ? 3250 : 3120;
+    const slopeDirection = commodity.toLowerCase() === 'onion' ? 35 : -15;
+    const trailing7Prices = [
+      basePrice - slopeDirection * 6,
+      basePrice - slopeDirection * 5,
+      basePrice - slopeDirection * 4,
+      basePrice - slopeDirection * 3,
+      basePrice - slopeDirection * 2,
+      basePrice - slopeDirection * 1,
+      basePrice
+    ];
+
+    const forecast = generateForecast(trailing7Prices, basePrice);
+    const netRealisationByDay = calculateNetRealisationForMarket(market, forecast, sliderTransportCost, storageCost);
+
+    evaluations.push({
+      market,
+      dataQuality: quality,
+      forecast,
+      netRealisationByDay
+    });
+  }
+
+  // Run Nirnay Kawach stress test with active slider transport cost
+  const kawach = evaluateNirnayKawach(
+    evaluations,
+    commodity,
+    sliderTransportCost,
+    storageCost,
+    300
+  );
+
+  // Baseline winner comparison (at default transport cost)
+  const defaultEvaluations = candidateMarkets.map(m => {
+    const basePrice = m.id.includes('lasalgaon') ? 3250 : 3120;
+    const forecast = generateForecast([basePrice], basePrice);
+    return calculateNetRealisationForMarket(m, forecast, config.defaultTransportCostPerKmPerQtl, storageCost);
+  }).flat();
+  defaultEvaluations.sort((a, b) => b.netRealisation - a.netRealisation);
+  const originalWinnerId = defaultEvaluations[0]?.market.id;
+
+  const isFlipped = kawach.winningMarket.id !== originalWinnerId;
+
+  const flatEvaluations = evaluations.flatMap(ev => 
+    ev.netRealisationByDay.map(nr => ({
+      marketId: ev.market.id,
+      marketName: ev.market.name,
+      day: nr.day,
+      netRealisation: nr.netRealisation
+    }))
+  );
+  flatEvaluations.sort((a, b) => b.netRealisation - a.netRealisation);
+
+  const response: StressTestResponse = {
+    activeTransportRate: sliderTransportCost,
+    winningMarket: kawach.winningMarket,
+    isFlipped,
+    flippedFromOriginal: isFlipped,
+    breakevenTransportRate: kawach.breakevenTransportRate,
+    status: kawach.status,
+    statusLabel: kawach.statusLabel,
+    allEvaluations: flatEvaluations
   };
 
   res.json(response);

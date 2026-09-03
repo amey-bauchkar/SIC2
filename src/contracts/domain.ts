@@ -112,3 +112,42 @@ export interface BacktestResult {
     end: string;
   };
 }
+
+/**
+ * Nirnay Kawach (Decision Shield) — Decision Stress-Testing Contracts
+ */
+export type DecisionRobustnessStatus = 'ROBUST' | 'CLOSE_CALL' | 'NO_STRONG_RECOMMENDATION';
+
+export interface NirnayKawachResult {
+  status: DecisionRobustnessStatus;
+  statusLabel: string;
+  robustnessScore: number;
+  robustnessPct: number;
+  currentTransportRate: number;
+  breakevenTransportRate: number | null;
+  breakevenMarginPct?: number;
+  breakevenExplanation: string;
+  simulationsCount: number;
+  winningMarket: {
+    id: string;
+    name: string;
+    day: number;
+    expectedNetRealisation: number;
+  };
+  topAlternative?: {
+    id: string;
+    name: string;
+    day: number;
+    expectedNetRealisation: number;
+    marginDiffPerQtl: number;
+  } | null;
+  decisionMessage: string;
+  sliderBounds: {
+    min: number;
+    max: number;
+    current: number;
+    breakeven: number;
+    step: number;
+  };
+}
+
