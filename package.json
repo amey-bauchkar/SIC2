@@ -1,0 +1,39 @@
+{
+  "name": "mandimitra",
+  "version": "1.0.0",
+  "description": "MandiMitra - Smart Crop Price Selling Decision Support System (IGNITE 8.0)",
+  "main": "src/backend/server.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/backend/server.js",
+    "dev:backend": "ts-node-dev --respawn --transpile-only src/backend/server.ts",
+    "dev:frontend": "vite --config vite.config.mjs",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "agriculture",
+    "decision-support",
+    "agmarknet",
+    "mandi-prices",
+    "net-realisation",
+    "ignite-8.0"
+  ],
+  "author": "MandiMitra Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "concurrently": "^8.2.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.2",
+    "vite": "^8.2.2"
+  }
+}

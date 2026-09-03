@@ -1,0 +1,32 @@
+# CODEOWNERS for MandiMitra
+# Primary ownership enforcement across the 4-person team
+
+# Documentation & Core Contracts (Team Lead - Amay)
+/docs/                      @amay
+/src/contracts/             @amay
+/src/config/                @amay
+/src/backend/               @amay
+/src/core/                  @amay
+/src/data-pipeline/         @amay
+package.json                @amay
+tsconfig.json              @amay
+
+# Frontend Shell, Design System & Reusable Components (Frontend Lead - Janhvi)
+/src/frontend/shell/        @janhvi
+/src/frontend/styles/       @janhvi
+/src/frontend/components/   @janhvi
+/src/frontend/state/        @janhvi
+/src/frontend/index.html    @janhvi
+
+# Feature Vertical 1: Decision & Evidence (Feature Engineer - Tanmay)
+/src/frontend/features/entry/     @tanmay
+/src/frontend/features/decision/  @tanmay
+/src/frontend/features/evidence/  @tanmay
+
+# Feature Vertical 2: Markets & Trust (Feature Engineer - Purva)
+/src/frontend/features/markets/   @purva
+/src/frontend/features/settings/  @purva
+/src/frontend/features/backtest/  @purva
+
+# Test Fixtures (Shared Reference, Amay maintained)
+/src/frontend/fixtures/     @amay
