@@ -736,6 +736,45 @@ function renderTabContent(
   }
 }
 
+// Prevent V8 from garbage-collecting speech utterance during playback
+let activeSpeechUtterance: SpeechSynthesisUtterance | null = null;
+
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+function resolveBestVoice(lang: Language): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  if (lang === 'mr') {
+    // 1. Marathi voice
+    const mr = voices.find(v => v.lang.toLowerCase().startsWith('mr') || v.name.toLowerCase().includes('marathi'));
+    if (mr) return mr;
+    // 2. Hindi voice (vital on Windows/Chrome: Hindi TTS models read Devanagari script accurately for Marathi)
+    const hi = voices.find(v => v.lang.toLowerCase().startsWith('hi') || v.name.toLowerCase().includes('hindi'));
+    if (hi) return hi;
+    // 3. Indian English / Indian voice
+    const inVoice = voices.find(v => v.lang.toLowerCase().includes('in') || v.name.toLowerCase().includes('india'));
+    if (inVoice) return inVoice;
+  } else if (lang === 'hi') {
+    const hi = voices.find(v => v.lang.toLowerCase().startsWith('hi') || v.name.toLowerCase().includes('hindi'));
+    if (hi) return hi;
+    const inVoice = voices.find(v => v.lang.toLowerCase().includes('in') || v.name.toLowerCase().includes('india'));
+    if (inVoice) return inVoice;
+  } else {
+    const enIn = voices.find(v => v.lang.toLowerCase() === 'en-in' || v.name.toLowerCase().includes('india'));
+    if (enIn) return enIn;
+    const en = voices.find(v => v.lang.toLowerCase().startsWith('en'));
+    if (en) return en;
+  }
+  return voices.find(v => v.default) || voices[0] || null;
+}
+
 /**
  * Tab 1: AsliDaam Engine UI (ONE GLANCE → ONE DECISION)
  */
@@ -1262,17 +1301,94 @@ function renderAsliDaamTab(
   `;
 
   // ---- Audio readout ----
-  panel.querySelector('#btn-speak-aslidaam')?.addEventListener('click', () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(headline);
-      utterance.lang = currentLanguage === 'mr' ? 'mr-IN' : (currentLanguage === 'hi' ? 'hi-IN' : 'en-IN');
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    } else {
-      alert(headline);
-    }
-  });
+  const speakBtn = panel.querySelector('#btn-speak-aslidaam') as HTMLButtonElement | null;
+  if (speakBtn) {
+    const defaultBtnText = currentLanguage === 'mr'
+      ? 'आवाज ऐका (मराठी)'
+      : (currentLanguage === 'hi' ? 'आवाज सुनें (हिंदी)' : 'Play Audio');
+    const stopBtnText = currentLanguage === 'mr'
+      ? '⏹ थांबा (Stop)'
+      : (currentLanguage === 'hi' ? '⏹ रोकें (Stop)' : '⏹ Stop Audio');
+
+    const resetButton = () => {
+      speakBtn.textContent = defaultBtnText;
+      speakBtn.style.background = '#1B3B2B';
+      speakBtn.removeAttribute('data-speaking');
+    };
+
+    speakBtn.addEventListener('click', () => {
+      if (!('speechSynthesis' in window)) {
+        alert(headline);
+        return;
+      }
+
+      // If already speaking, toggle stop
+      if (window.speechSynthesis.speaking || speakBtn.hasAttribute('data-speaking')) {
+        window.speechSynthesis.cancel();
+        activeSpeechUtterance = null;
+        resetButton();
+        return;
+      }
+
+      try {
+        // Clear previous state and ensure audio engine is active
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.resume();
+
+        const utterance = new SpeechSynthesisUtterance(headline);
+        activeSpeechUtterance = utterance;
+        (window as any).__mandiMitraUtterance = utterance; // Prevent Chromium V8 GC drop
+
+        const voice = resolveBestVoice(currentLanguage);
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang;
+        } else {
+          utterance.lang = currentLanguage === 'mr' ? 'mr-IN' : (currentLanguage === 'hi' ? 'hi-IN' : 'en-IN');
+        }
+
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+
+        utterance.onstart = () => {
+          speakBtn.textContent = stopBtnText;
+          speakBtn.style.background = '#b91c1c';
+          speakBtn.setAttribute('data-speaking', 'true');
+        };
+
+        utterance.onend = () => {
+          activeSpeechUtterance = null;
+          resetButton();
+        };
+
+        utterance.onerror = (e) => {
+          console.warn('[AudioReadout] Speech error:', e);
+          activeSpeechUtterance = null;
+          resetButton();
+          if (e.error !== 'canceled' && e.error !== 'interrupted') {
+            alert(headline);
+          }
+        };
+
+        // 60ms delay allows Chromium cancellation queue to flush before scheduling new speech
+        setTimeout(() => {
+          window.speechSynthesis.resume();
+          window.speechSynthesis.speak(utterance);
+          // Safety resume watchdog for Chromium paused bug
+          setTimeout(() => {
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
+          }, 250);
+        }, 60);
+
+      } catch (err) {
+        console.error('[AudioReadout] Failed to speak:', err);
+        resetButton();
+        alert(headline);
+      }
+    });
+  }
 
   // ---- Nirnay Kawach live slider (hits the real stress-test endpoint) ----
   const nirnaySlider = panel.querySelector('#nirnay-slider') as HTMLInputElement | null;
