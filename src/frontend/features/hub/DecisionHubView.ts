@@ -57,7 +57,7 @@ import {
   I18N_DICTIONARY
 } from '../../i18n';
 
-type HubTab = 'aslidaam' | 'sajhabazaar' | 'markets' | 'evidence' | 'backtest' | 'settings' | 'future';
+type HubTab = 'aslidaam' | 'sajhabazaar' | 'markets' | 'evidence' | 'backtest' | 'settings';
 
 let activeTab: HubTab = 'aslidaam';
 let currentLanguage: Language = 'mr';
@@ -699,9 +699,6 @@ export function renderDecisionHubView(): HTMLElement {
       <button class="hub-tab-btn ${activeTab === 'backtest' ? 'active' : ''}" data-tab="backtest">
         ${currentLanguage === 'mr' ? 'मागील पडताळणी' : (currentLanguage === 'hi' ? 'पिछली जांच' : 'Walk-Forward Backtest')}
       </button>
-      <button class="hub-tab-btn ${activeTab === 'future' ? 'active' : ''}" data-tab="future">
-        ${currentLanguage === 'mr' ? 'भविष्यातील वैशिष्ट्ये' : (currentLanguage === 'hi' ? 'आगामी सुविधाएं' : 'Future Features')}
-      </button>
     </div>
 
     <div id="hub-tab-content"></div>
@@ -894,8 +891,6 @@ function renderTabContent(
     mountPoint.appendChild(renderBacktestView());
   } else if (tab === 'settings') {
     mountPoint.appendChild(renderSettingsView());
-  } else if (tab === 'future') {
-    mountPoint.appendChild(renderFutureFeaturesTab(opt));
   }
 }
 
@@ -1827,115 +1822,4 @@ function renderAsliDaamTab(
   return panel;
 }
 
-/**
- * Tab: Future Capabilities Launchpad
- */
-function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
-  const panel = document.createElement('div');
-  panel.className = 'future-features-panel';
 
-  const state = store.getState();
-  const district = state.userLocation?.district || 'Nashik';
-
-  panel.innerHTML = `
-    <div class="editorial-panel" style="margin-bottom: var(--space-6);">
-      <div class="editorial-header">
-        <div class="kicker">${currentLanguage === 'mr' ? 'क्लाउड व आगामी सेवा' : (currentLanguage === 'hi' ? 'क्लाउड व आगामी सेवाएं' : 'CLOUD & EXTENSIONS')}</div>
-        <h3 class="heading-lg">${currentLanguage === 'mr' ? 'मंडीमित्र भविष्यातील क्षमता' : (currentLanguage === 'hi' ? 'मंडीमित्र भविष्य की क्षमताएं' : 'MandiMitra Future Capabilities Launchpad')}</h3>
-        <p>${currentLanguage === 'mr' ? 'शेतकऱ्यांना सक्षम बनवण्यासाठी थेट हवामान आणि क्लाउड डेटाबेस जोडणी.' : (currentLanguage === 'hi' ? 'किसानों को सशक्त बनाने के लिए मौसम और क्लाउड डेटाबेस एकीकरण.' : 'High-impact integrations connected to cloud databases and live weather feeds for farmer resilience.')}</p>
-      </div>
-
-      <div class="editorial-grid-3">
-
-        <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'साझा बाजार क्लाउड नोंदणी' : (currentLanguage === 'hi' ? 'साझा बाजार क्लाउड सूची' : 'SajhaBazaar Cloud Roster')}</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            ${currentLanguage === 'mr'
-              ? 'सुपाबेसवर (Supabase) साठवलेले थेट शेतकरी ग्रुप्स. एकत्र येऊन गाडी भाडे वाचवण्याची थेट जोडणी.'
-              : (currentLanguage === 'hi'
-              ? 'सुपाबेस (Supabase) पर सुरक्षित वास्तविक किसान समूह। एक साथ मिलकर भाड़ा बचाने की सीधी सुविधा.'
-              : 'Live farmer pooling clusters persisted in Supabase. The deterministic matching and cost-allocation engine already runs on the SajhaBazaar tab; this is the cloud roster that would replace the synthetic demo profiles in production.')}
-          </p>
-          <button id="btn-load-pools" class="btn btn-sm btn-primary">${currentLanguage === 'mr' ? 'सक्रिय ग्रुप्स पहा' : (currentLanguage === 'hi' ? 'सक्रिय समूह देखें' : 'View Active Pools')}</button>
-          <div id="pools-list-container" style="margin-top: var(--space-4); font-size: var(--font-size-xs);"></div>
-        </div>
-
-        <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'हवामान व अवकाळी पाऊस इशारा' : (currentLanguage === 'hi' ? 'मौसम व बेमौसम बारिश चेतावनी' : 'Weather & Rain Risk Alert')}</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            ${currentLanguage === 'mr'
-              ? `${translateDistrict(district, currentLanguage)} जिल्ह्यासाठी ओपन-मेटिओ (Open-Meteo) पाऊस अंदाज. अवकाळी पावसामुळे माल खराब होण्याचा धोका वाढतो.`
-              : (currentLanguage === 'hi'
-              ? `${translateDistrict(district, currentLanguage)} जिले हेतु ओपन-मेटिओ (Open-Meteo) वर्षा पूर्वानुमान। बेमौसम बारिश से माल खराब होने का जोखिम बढ़ता है.`
-              : `Open-Meteo rainfall anomaly integration for ${district} district. Unseasonal rain accelerates perishable rot and would raise the daily decay rate fed into AsliDaam.`)}
-          </p>
-          <span class="badge badge-neutral">${currentLanguage === 'mr' ? 'नियोजित जोडणी' : (currentLanguage === 'hi' ? 'प्रस्तावित सुविधा' : 'Planned Integration')}</span>
-        </div>
-
-        <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'व्हॉट्सॲप (WhatsApp) पावती' : (currentLanguage === 'hi' ? 'व्हाट्सएप (WhatsApp) रसीद' : 'WhatsApp Payout Slip')}</h4>
-          <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            ${currentLanguage === 'mr'
-              ? 'इतर शेतकरी मित्रांना आणि FPO प्रमुखांना पाठवण्यासाठी मराठीतील संपूर्ण असलीदाम हिशोब पावती तयार करा.'
-              : (currentLanguage === 'hi'
-              ? 'अन्य किसान साथियों व FPO प्रमुखों को भेजने हेतु संपूर्ण असलीदाम हिसाब रसीद तैयार करें.'
-              : 'Generate a clean Marathi/Hindi text slip with the full AsliDaam breakdown to share with fellow farmers and FPO leaders.')}
-          </p>
-          <button id="btn-copy-slip" class="btn btn-sm btn-outline">${currentLanguage === 'mr' ? 'व्हॉट्सॲप पावती कॉपी करा' : (currentLanguage === 'hi' ? 'व्हाट्सएप रसीद कॉपी करें' : 'Copy WhatsApp Slip')}</button>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  const loadPoolsBtn = panel.querySelector('#btn-load-pools');
-  const poolsContainer = panel.querySelector('#pools-list-container');
-  if (loadPoolsBtn && poolsContainer) {
-    loadPoolsBtn.addEventListener('click', async () => {
-      poolsContainer.innerHTML = `<p style="color: var(--color-text-muted);">${currentLanguage === 'mr' ? 'डेटाबेसवरून माहिती आणत आहे…' : (currentLanguage === 'hi' ? 'डेटाबेस से जानकारी ला रहे हैं…' : 'Fetching clusters from database…')}</p>`;
-      try {
-        const res = await fetch('/api/pools');
-        const json = await res.json();
-        const pools = json.data || [];
-        if (pools.length === 0) {
-          poolsContainer.innerHTML = `<p>${currentLanguage === 'mr' ? 'सध्या कोणतीही सक्रिय नोंदणी नाही.' : (currentLanguage === 'hi' ? 'फिलहाल कोई सक्रिय समूह पंजीकृत नहीं है.' : 'No active pools currently registered.')}</p>`;
-          return;
-        }
-        poolsContainer.innerHTML = `
-          <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3);">
-            <strong style="color: var(--color-brand-primary-dark);">${currentLanguage === 'mr' ? 'सक्रिय गट' : (currentLanguage === 'hi' ? 'सक्रिय समूह' : 'Active Clusters')} (${json.source === 'supabase' ? 'Cloud Supabase' : 'Local cache'}):</strong>
-            <ul style="list-style: none; padding-left: 0; margin-top: 6px;">
-              ${pools.slice(0, 4).map((p: any) => `
-                <li style="padding: 6px 0; border-bottom: 1px dashed var(--color-border); font-size: var(--font-size-xs);">
-                  <strong>${p.farmer_name}</strong> (${p.village || p.taluka}) • <strong>${formatNumber(p.quantity_quintals, currentLanguage)}${currentLanguage === 'mr' ? ' क्विंटल' : (currentLanguage === 'hi' ? ' क्विंटल' : 'q')}</strong> → ${translateMandiName(p.target_mandi, currentLanguage)}
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-        `;
-      } catch {
-        poolsContainer.innerHTML = `<p style="color: var(--color-status-abstain);">${currentLanguage === 'mr' ? 'सेवा उपलब्ध नाही.' : (currentLanguage === 'hi' ? 'सेवा उपलब्ध नहीं है.' : 'Cluster service unreachable.')}</p>`;
-      }
-    });
-  }
-
-  panel.querySelector('#btn-copy-slip')?.addEventListener('click', () => {
-    const rec = opt.recommended;
-    const slip = [
-      currentLanguage === 'mr' ? '*मंडीमित्र: असलीदाम हिशोब पावती*' : (currentLanguage === 'hi' ? '*मंडीमित्र: असलीदाम हिसाब रसीद*' : '*MandiMitra: AsliDaam Payout Slip*'),
-      `${currentLanguage === 'mr' ? 'शेतमाल' : (currentLanguage === 'hi' ? 'फसल' : 'Crop')}: ${opt.commodity} (${formatNumber(opt.quantityQuintals, currentLanguage)} ${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'Quintals')})`,
-      `${currentLanguage === 'mr' ? 'शिफारस' : (currentLanguage === 'hi' ? 'सिफारिश' : 'Recommendation')}: ${opt.headlineSummary[currentLanguage]}`,
-      `${currentLanguage === 'mr' ? 'निवडलेला बाजार' : (currentLanguage === 'hi' ? 'चयनित मंडी' : 'Optimal Mandi')}: ${translateMandiName(rec.market.name, currentLanguage)} (${currentLanguage === 'mr' ? (rec.dayOffset === 0 ? 'आज' : `दिवस +${formatNumber(rec.dayOffset, currentLanguage)}`) : (currentLanguage === 'hi' ? (rec.dayOffset === 0 ? 'आज' : `दिन +${formatNumber(rec.dayOffset, currentLanguage)}`) : `Day ${rec.dayOffset}`)})`,
-      `${currentLanguage === 'mr' ? 'एकूण भाव' : (currentLanguage === 'hi' ? 'कुल भाव' : 'Gross')}: ${rs1(rec.grossPricePerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
-      `${currentLanguage === 'mr' ? 'गाडी भाडे' : (currentLanguage === 'hi' ? 'वाहन भाड़ा' : 'Freight')}: −${rs1(rec.roadFreightPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')} | ${currentLanguage === 'mr' ? 'बाजार समिती फी' : (currentLanguage === 'hi' ? 'मंडी शुल्क' : 'APMC')}: −${rs1(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
-      `${currentLanguage === 'mr' ? 'साठवणूक घट' : (currentLanguage === 'hi' ? 'भंडारण घट' : 'Storage+Decay')}: −${rs1(rec.holdingAndSpoilagePerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')} | ${currentLanguage === 'mr' ? 'ताजेपणा वटती' : (currentLanguage === 'hi' ? 'ताजगी कटौती' : 'Freshness')}: −${rs1(rec.freshnessDiscountPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
-      `${currentLanguage === 'mr' ? 'असलीदाम' : (currentLanguage === 'hi' ? 'असलीदाम' : 'AsliDaam')}: ${rs1(rec.asliDaamPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
-      `${currentLanguage === 'mr' ? 'एकूण निव्वळ रक्कम' : (currentLanguage === 'hi' ? 'कुल शुद्ध राशि' : 'Net Payout')}: ${rs(rec.totalNetPayout)} (+${rs(opt.totalPocketCashGain)} ${currentLanguage === 'mr' ? 'जास्तीचा नफा' : (currentLanguage === 'hi' ? 'अतिरिक्त लाभ' : 'gain')})`,
-      currentLanguage === 'mr' ? 'मंडीमित्र निर्णय प्रणालीद्वारे प्रमाणित' : (currentLanguage === 'hi' ? 'मंडीमित्र निर्णय प्रणाली द्वारा प्रमाणित' : 'Verified by MandiMitra Decision Engine')
-    ].join('\n');
-    void navigator.clipboard.writeText(slip);
-    alert(currentLanguage === 'mr' ? 'असलीदाम शिफारस पावती क्लिपबोर्डवर कॉपी झाली आहे.' : (currentLanguage === 'hi' ? 'असलीदाम सिफारिश रसीद क्लिपबोर्ड पर कॉपी हो गई है.' : 'Copied the AsliDaam recommendation slip to your clipboard.'));
-  });
-
-  return panel;
-}
