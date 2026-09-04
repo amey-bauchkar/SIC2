@@ -305,7 +305,7 @@ function buildTalukaLexicon(): LexiconEntry[] {
     ['satana', 'Nashik'], ['सटाणा', 'Nashik'], ['सटाना', 'Nashik'],
     ['kalwan', 'Nashik'], ['कळवण', 'Nashik'],
     ['malegaon', 'Nashik'], ['मालेगाव', 'Nashik'], ['मालेगाँव', 'Nashik'],
-    ['junnar', 'Pune'], ['जुन्नर', 'Pune'],
+    ['junnar', 'Pune'], ['जुन्नर', 'Pune'], ['जुनर', 'Pune'], ['जुन्नार', 'Pune'], ['zunnar', 'Pune'], ['junar', 'Pune'],
     ['narayangaon', 'Pune'], ['नारायणगाव', 'Pune'], ['नारायणगाँव', 'Pune'],
     ['otur', 'Pune'], ['ओतूर', 'Pune'],
     ['baramati', 'Pune'], ['बारामती', 'Pune'],

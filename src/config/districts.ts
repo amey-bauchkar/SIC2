@@ -468,7 +468,53 @@ for (const dist of ALL_DISTRICTS) {
 }
 
 /**
- * Resolves a district by name with alias support (e.g. Ahmednagar -> Ahilyanagar, Aurangabad -> Chhatrapati Sambhajinagar)
+ * Mapping of key agricultural talukas, mandis, and phonetic variations to their parent district.
+ */
+const TALUKA_MAP: Record<string, string> = {
+  'junnar': 'Pune', 'जुन्नर': 'Pune', 'जुनर': 'Pune', 'जुन्नार': 'Pune', 'zunnar': 'Pune', 'junar': 'Pune',
+  'narayangaon': 'Pune', 'नारायणगाव': 'Pune', 'नारायणगाँव': 'Pune',
+  'otur': 'Pune', 'ओतूर': 'Pune',
+  'baramati': 'Pune', 'बारामती': 'Pune',
+  'khed': 'Pune', 'खेड': 'Pune',
+  'shirur': 'Pune', 'शिरूर': 'Pune',
+  'daund': 'Pune', 'दौंड': 'Pune',
+  'indapur': 'Pune', 'इंदापूर': 'Pune',
+  'maval': 'Pune', 'मावळ': 'Pune',
+  'niphad': 'Nashik', 'निफाड': 'Nashik', 'निफाड़': 'Nashik', 'निफाद': 'Nashik',
+  'dindori': 'Nashik', 'दिंडोरी': 'Nashik', 'दिण्डोरी': 'Nashik',
+  'lasalgaon': 'Nashik', 'लासलगाव': 'Nashik', 'लासलगाँव': 'Nashik',
+  'pimpalgaon': 'Nashik', 'पिंपळगाव': 'Nashik', 'पिम्पलगांव': 'Nashik', 'पिंपलगांव': 'Nashik',
+  'vinchur': 'Nashik', 'विंचूर': 'Nashik',
+  'satana': 'Nashik', 'सटाणा': 'Nashik', 'सटाना': 'Nashik',
+  'kalwan': 'Nashik', 'कळवण': 'Nashik',
+  'malegaon': 'Nashik', 'मालेगाव': 'Nashik', 'मालेगाँव': 'Nashik',
+  'yeola': 'Nashik', 'येवला': 'Nashik',
+  'sinnar': 'Nashik', 'सिन्नर': 'Nashik',
+  'sangamner': 'Ahilyanagar', 'संगमनेर': 'Ahilyanagar',
+  'kopargaon': 'Ahilyanagar', 'कोपरगाव': 'Ahilyanagar',
+  'rahata': 'Ahilyanagar', 'राहाता': 'Ahilyanagar',
+  'shrirampur': 'Ahilyanagar', 'श्रीरामपूर': 'Ahilyanagar',
+  'shirdi': 'Ahilyanagar', 'शिर्डी': 'Ahilyanagar',
+  'newasa': 'Ahilyanagar', 'नेवासा': 'Ahilyanagar',
+  'shevgaon': 'Ahilyanagar', 'शेवगाव': 'Ahilyanagar',
+  'pandharpur': 'Solapur', 'पंढरपूर': 'Solapur', 'पंढरपुर': 'Solapur',
+  'akluj': 'Solapur', 'अकलूज': 'Solapur',
+  'barshi': 'Solapur', 'बार्शी': 'Solapur',
+  'karmala': 'Solapur', 'करमाळा': 'Solapur',
+  'udgir': 'Latur', 'उदगीर': 'Latur',
+  'ausa': 'Latur', 'औसा': 'Latur',
+  'ahmedpur': 'Latur', 'अहमदपूर': 'Latur',
+  'karad': 'Satara', 'कराड': 'Satara',
+  'wai': 'Satara', 'वाई': 'Satara',
+  'phaltan': 'Satara', 'फलटण': 'Satara',
+  'raver': 'Jalgaon', 'रावेर': 'Jalgaon',
+  'bhusawal': 'Jalgaon', 'भुसावळ': 'Jalgaon', 'भुसावल': 'Jalgaon',
+  'chalisgaon': 'Jalgaon', 'चाळीसगाव': 'Jalgaon',
+  'chopda': 'Jalgaon', 'चोपडा': 'Jalgaon'
+};
+
+/**
+ * Resolves a district by name with alias & taluka support (e.g. Junnar -> Pune, Niphad -> Nashik, Ahmednagar -> Ahilyanagar)
  */
 export function getDistrictConfig(inputName: string): DistrictItem {
   const query = (inputName || '').toLowerCase().trim();
@@ -490,6 +536,14 @@ export function getDistrictConfig(inputName: string): DistrictItem {
   if (query.includes('osmanabad')) {
     const d = DISTRICT_LOOKUP.get('dharashiv');
     if (d) return d;
+  }
+
+  // Taluka / Mandi town lookup
+  for (const [tKey, targetDist] of Object.entries(TALUKA_MAP)) {
+    if (query === tKey || query.includes(tKey)) {
+      const d = DISTRICT_LOOKUP.get(targetDist.toLowerCase());
+      if (d) return d;
+    }
   }
 
   // Partial match

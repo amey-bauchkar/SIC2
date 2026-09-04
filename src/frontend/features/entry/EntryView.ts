@@ -171,6 +171,7 @@ export function renderEntryView(): HTMLElement {
               <div style="margin-bottom: var(--space-2);">
                 <input type="text" id="input-crop-search" class="input-field" list="crop-datalist"
                   placeholder="${eDict.cropSearchPlaceholder[appLang]}"
+                  value="${getCropConfig(state.selectedCrop || 'Onion')?.displayName || ''}"
                   style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);" />
                 ${renderCropDatalistHtml('crop-datalist')}
               </div>
@@ -196,6 +197,7 @@ export function renderEntryView(): HTMLElement {
               <div style="margin-bottom: var(--space-2);">
                 <input type="text" id="input-district-search" class="input-field" list="district-datalist"
                   placeholder="${eDict.districtSearchPlaceholder[appLang]}"
+                  value="${initialDistrict.displayName}"
                   style="width: 100%; padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); background: var(--color-bg-subtle);" />
                 ${renderDistrictDatalistHtml('district-datalist')}
               </div>
@@ -260,7 +262,9 @@ export function renderEntryView(): HTMLElement {
   function applyDistrict(dName: string) {
     const config = getDistrictConfig(dName);
     if (districtSelect) districtSelect.value = config.name;
+    if (districtSearchInput) districtSearchInput.value = config.displayName;
     if (locInput) locInput.value = config.name;
+    store.setUserLocation(config.latitude, config.longitude, config.name);
     if (coordsPreview) {
       coordsPreview.textContent = `Geodesic origin: ${config.displayName} (${config.latitude.toFixed(4)}° N, ${config.longitude.toFixed(4)}° E) • ${config.divisionLabel}`;
     }
@@ -271,12 +275,15 @@ export function renderEntryView(): HTMLElement {
     const val = districtSearchInput.value.trim();
     if (!val) return;
     const matched = getDistrictConfig(val);
-    if (matched) applyDistrict(matched.name);
+    if (matched) {
+      applyDistrict(matched.name);
+    }
   });
 
   districtSelect?.addEventListener('change', () => {
-    const config = applyDistrict(districtSelect.value);
-    districtSearchInput.value = config.displayName;
+    applyDistrict(districtSelect.value);
+    flashField(districtSelect);
+    flashField(districtSearchInput);
   });
 
   // ==========================================================================
@@ -325,10 +332,9 @@ export function renderEntryView(): HTMLElement {
 
 
     if (extraction.district) {
-      const cfg = applyDistrict(extraction.district);
-      districtSearchInput.value = cfg.displayName;
-      store.setUserLocation(cfg.latitude, cfg.longitude, cfg.name);
+      applyDistrict(extraction.district);
       flashField(districtSelect);
+      flashField(districtSearchInput);
       filled += 1;
     }
 
