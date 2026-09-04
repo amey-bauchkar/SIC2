@@ -32,30 +32,30 @@ MAHARASHTRA_DISTRICT_COORDS['aurangabad'] = MAHARASHTRA_DISTRICT_COORDS['chhatra
 MAHARASHTRA_DISTRICT_COORDS['osmanabad'] = MAHARASHTRA_DISTRICT_COORDS['dharashiv'] || { lat: 18.1861, lon: 76.0419 };
 
 /** Native language sample utterances for noisy presentation rooms. */
-const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ emoji: string; text: string; hint: string }>> = {
+const LANG_CHIPS: Record<'mr-IN' | 'hi-IN' | 'en-IN', Array<{ text: string; hint: string }>> = {
   'mr-IN': [
-    { emoji: '🧅', text: 'नाशिक निफाड मध्ये 40 गोणी कांदा आहे', hint: 'मराठी · 40 bags · Nashik' },
-    { emoji: '🍅', text: 'पुणे जुन्नर मध्ये 80 क्रेट टोमॅटो', hint: 'मराठी · 80 crates · Pune' },
-    { emoji: '🌻', text: 'लातूर मध्ये 30 क्विंटल सोयाबीन', hint: 'मराठी · 30 quintals · Latur' },
-    { emoji: '🌾', text: '50 गोणी तांदूळ', hint: 'मराठी · 50 bags (25q) · Rice' },
-    { emoji: '🥔', text: 'अहमदनगर संगमनेर मध्ये 50 गोणी बटाटा', hint: 'मराठी · 50 bags · Ahilyanagar' },
-    { emoji: '🍇', text: 'सोलापूर पंढरपूर मध्ये 15 क्विंटल डाळिंब', hint: 'मराठी · 15 quintals · Solapur' }
+    { text: 'नाशिक निफाड मध्ये 40 गोणी कांदा आहे', hint: 'मराठी · 40 bags · Nashik' },
+    { text: 'पुणे जुन्नर मध्ये 80 क्रेट टोमॅटो', hint: 'मराठी · 80 crates · Pune' },
+    { text: 'लातूर मध्ये 30 क्विंटल सोयाबीन', hint: 'मराठी · 30 quintals · Latur' },
+    { text: '50 गोणी तांदूळ', hint: 'मराठी · 50 bags (25q) · Rice' },
+    { text: 'अहमदनगर संगमनेर मध्ये 50 गोणी बटाटा', hint: 'मराठी · 50 bags · Ahilyanagar' },
+    { text: 'सोलापूर पंढरपूर मध्ये 15 क्विंटल डाळिंब', hint: 'मराठी · 15 quintals · Solapur' }
   ],
   'hi-IN': [
-    { emoji: '🧅', text: 'नासिक में 40 बोरी प्याज है', hint: 'हिन्दी · 40 bags · Nashik' },
-    { emoji: '🍅', text: 'पुणे में 80 क्रेट टमाटर', hint: 'हिन्दी · 80 crates · Pune' },
-    { emoji: '🌻', text: 'लातूर में 30 क्विंटल सोयाबीन', hint: 'हिन्दी · 30 quintals · Latur' },
-    { emoji: '🌾', text: '50 बोरी चावल', hint: 'हिन्दी · 50 bags (25q) · Rice' },
-    { emoji: '🌾', text: 'जलगांव में 2 ट्रॉली गेहूं', hint: 'हिन्दी · 2 trolleys · Jalgaon' },
-    { emoji: '🌽', text: 'धुले में 25 कट्टे मक्का', hint: 'हिन्दी · 25 bags · Dhule' }
+    { text: 'नासिक में 40 बोरी प्याज है', hint: 'हिन्दी · 40 bags · Nashik' },
+    { text: 'पुणे में 80 क्रेट टमाटर', hint: 'हिन्दी · 80 crates · Pune' },
+    { text: 'लातूर में 30 क्विंटल सोयाबीन', hint: 'हिन्दी · 30 quintals · Latur' },
+    { text: '50 बोरी चावल', hint: 'हिन्दी · 50 bags (25q) · Rice' },
+    { text: 'जलगांव में 2 ट्रॉली गेहूं', hint: 'हिन्दी · 2 trolleys · Jalgaon' },
+    { text: 'धुले में 25 कट्टे मक्का', hint: 'हिन्दी · 25 bags · Dhule' }
   ],
   'en-IN': [
-    { emoji: '🧅', text: '40 bags onion in Nashik', hint: 'English · 40 bags · Nashik' },
-    { emoji: '🍅', text: '80 crates tomato in Pune', hint: 'English · 80 crates · Pune' },
-    { emoji: '🌻', text: '30 quintals soyabean in Latur', hint: 'English · 30 quintals · Latur' },
-    { emoji: '🌾', text: '50 bags rice', hint: 'English · 50 bags (25q) · Rice' },
-    { emoji: '🌾', text: '2 trolley wheat in Jalgaon', hint: 'English · 80 quintals · Jalgaon' },
-    { emoji: '🥔', text: '50 bags potato in Ahmednagar', hint: 'English · 50 bags · Ahilyanagar' }
+    { text: '40 bags onion in Nashik', hint: 'English · 40 bags · Nashik' },
+    { text: '80 crates tomato in Pune', hint: 'English · 80 crates · Pune' },
+    { text: '30 quintals soyabean in Latur', hint: 'English · 30 quintals · Latur' },
+    { text: '50 bags rice', hint: 'English · 50 bags (25q) · Rice' },
+    { text: '2 trolley wheat in Jalgaon', hint: 'English · 80 quintals · Jalgaon' },
+    { text: '50 bags potato in Ahmednagar', hint: 'English · 50 bags · Ahilyanagar' }
   ]
 };
 
@@ -112,20 +112,20 @@ export function renderEntryView(): HTMLElement {
           <div style="display: flex; justify-content: center; margin-bottom: var(--space-4);">
             <div id="voice-lang-pills" style="display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(30, 86, 49, 0.08); border: 1.5px solid rgba(30, 86, 49, 0.25);">
               <button type="button" class="voice-lang-pill ${appLang === 'mr' ? 'is-active' : ''}" data-lang="mr-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'mr' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
-                🇮🇳 मराठी
+                मराठी
               </button>
               <button type="button" class="voice-lang-pill ${appLang === 'hi' ? 'is-active' : ''}" data-lang="hi-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'hi' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
-                🇮🇳 हिन्दी
+                हिन्दी
               </button>
               <button type="button" class="voice-lang-pill ${appLang === 'en' ? 'is-active' : ''}" data-lang="en-IN" style="padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; ${appLang === 'en' ? 'background: var(--color-brand-primary); color: #ffffff;' : 'background: transparent; color: var(--color-text-main);'}">
-                🇬🇧 English
+                English
               </button>
             </div>
           </div>
 
           <div>
             <button type="button" id="btn-voice-mic" class="voice-mic-button" aria-label="Speak your crop, quantity and district">
-              🎙️
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
             </button>
           </div>
           <div id="voice-title-label" style="font-family: var(--font-family-heading); font-weight: 800; font-size: 1.05rem; color: var(--color-text-main); margin-top: var(--space-3);">
@@ -195,7 +195,7 @@ export function renderEntryView(): HTMLElement {
             </select>
             <input type="hidden" id="input-location" value="${initialDistrict.name}" />
             <div id="district-coords-preview" style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
-              📍 ${initialDistrict.displayName} • ${initialDistrict.divisionLabel}
+              ${initialDistrict.displayName} • ${initialDistrict.divisionLabel}
             </div>
           </div>
 
@@ -225,38 +225,34 @@ export function renderEntryView(): HTMLElement {
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
-            <div style="font-size: 1.25rem; margin-bottom: 4px;">🎙️</div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${appLang === 'mr' ? 'टाइप नको, फक्त बोला' : (appLang === 'hi' ? 'टाइप नहीं, बोलकर बताएं' : 'Speak, Don\'t Type')}
             </div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
               ${appLang === 'mr' ? 'मराठी व हिंदीसाठी अचूक कृषी उच्चार ओळख' : (appLang === 'hi' ? 'हिंदी व मराठी हेतु सटीक कृषि वाणी पहचान' : 'Whisper STT + Gemini entity extraction')}
             </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
-            <div style="font-size: 1.25rem; margin-bottom: 4px;">⚖️</div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
-              ${appLang === 'mr' ? 'गोणी / बोरी ➔ क्विंटल' : (appLang === 'hi' ? 'बोरी ➔ क्विंटल' : 'Bags → Quintals')}
+              ${appLang === 'mr' ? 'गोणी / बोरी → क्विंटल' : (appLang === 'hi' ? 'बोरी → क्विंटल' : 'Bags → Quintals')}
             </div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
               ${appLang === 'mr' ? 'स्थानिक परिमाणे (गोणी, क्रेट, टेम्पो) आपोआप क्विंटलमध्ये' : (appLang === 'hi' ? 'स्थानीय माप (बोरी, क्रेट, टेम्पो) स्वतः क्विंटल में' : 'Unit conversion is always recomputed locally')}
             </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
-            <div style="font-size: 1.25rem; margin-bottom: 4px;">🚚</div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${appLang === 'mr' ? 'प्रत्यक्ष रस्ता अंतर' : (appLang === 'hi' ? 'वास्तविक सड़क दूरी' : 'Real Road Haulage')}
             </div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
               ${appLang === 'mr' ? '१.३५× घाटाचे व वळणाचे अंतर जोडून अचूक वाहतूक खर्च' : (appLang === 'hi' ? '१.३५× वास्तविक सड़क मोड़ जोड़कर सटीक ढुलाई भाड़ा' : 'OSRM driving km calibrated at 1.35× road factor')}
             </div>
           </div>
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
-            <div style="font-size: 1.25rem; margin-bottom: 4px;">🛡️</div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${appLang === 'mr' ? 'अंदाजेबाजी नाही' : (appLang === 'hi' ? 'सट्टेबाजी नहीं' : 'Zero Guesswork')}
             </div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
               ${appLang === 'mr' ? 'भाव जुने किंवा संशयास्पद असल्यास स्पष्ट नकार' : (appLang === 'hi' ? 'भाव पुराने या संदिग्ध होने पर स्पष्ट अस्वीकार' : 'Honest abstention when data is stale or unreliable')}
             </div>
           </div>
@@ -312,7 +308,7 @@ export function renderEntryView(): HTMLElement {
     if (districtSelect) districtSelect.value = config.name;
     if (locInput) locInput.value = config.name;
     if (coordsPreview) {
-      coordsPreview.textContent = `📍 Geodesic origin: ${config.displayName} (${config.latitude.toFixed(4)}° N, ${config.longitude.toFixed(4)}° E) • ${config.divisionLabel}`;
+      coordsPreview.textContent = `Geodesic origin: ${config.displayName} (${config.latitude.toFixed(4)}° N, ${config.longitude.toFixed(4)}° E) • ${config.divisionLabel}`;
     }
     return config;
   }
@@ -388,7 +384,7 @@ export function renderEntryView(): HTMLElement {
 
     confirmEl.style.display = 'block';
     const lang = extraction.detectedLanguage || 'mr';
-    const langBadge = extraction.detectedLanguageDisplay || '🇮🇳 मराठी';
+    const langBadge = (extraction.detectedLanguageDisplay || 'मराठी').replace(/^[^\s]+\s+/, '');
 
     let cropLabel = 'शेतमाल';
     let qtyLabel = 'वजन';
@@ -410,23 +406,23 @@ export function renderEntryView(): HTMLElement {
     confirmEl.innerHTML = `
       <div style="background: ${filled === 3 ? 'var(--color-status-success-bg)' : 'var(--color-status-warning-bg)'}; border: 1.5px solid ${filled === 3 ? 'var(--color-status-success)' : 'var(--color-status-warning)'}; border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4);">
         <div style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main); line-height: 1.6;">
-          ✨ AI Verified (${langBadge} • ${pipelineLabel}):
+          AI Verified (${langBadge} • ${pipelineLabel}):
           <span class="badge badge-sage">${cropLabel}: ${extraction.cropDisplay || '—'}</span>
           <span class="badge badge-sage">${qtyLabel}: ${unitLabel}</span>
           <span class="badge badge-sage">${distLabel}: ${extraction.districtDisplay || '—'}</span>
         </div>
         <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 6px;">
           ${summaryText} · confidence <strong>${extraction.confidence}</strong>
-          ${extraction.warnings.length > 0 ? `<br>⚠️ ${extraction.warnings.join(' ')}` : ''}
+          ${extraction.warnings.length > 0 ? `<br>${extraction.warnings.join(' ')}` : ''}
         </div>
       </div>
     `;
 
     const statusMsg = lang === 'hi'
-      ? (filled === 3 ? '✅ फॉर्म भर दिया गया। जांचें और Calculate दबाएं।' : `⚠️ 3 में से ${filled} फ़ील्ड भरे गए — कृपया बाकी मैन्युअल भरें।`)
+      ? (filled === 3 ? 'फॉर्म भर दिया गया। जांचें और Calculate दबाएं।' : `3 में से ${filled} फ़ील्ड भरे गए — कृपया बाकी मैन्युअल भरें।`)
       : (lang === 'en'
-          ? (filled === 3 ? '✅ Form filled. Check it and press Calculate.' : `⚠️ Filled ${filled} of 3 fields — please complete the rest manually.`)
-          : (filled === 3 ? '✅ फॉर्म भरला गेला. तपासा आणि Calculate दाबा.' : `⚠️ 3 पैकी ${filled} रकाने भरले — उरलेले हाताने भरा.`));
+          ? (filled === 3 ? 'Form filled. Check it and press Calculate.' : `Filled ${filled} of 3 fields — please complete the rest manually.`)
+          : (filled === 3 ? 'फॉर्म भरला गेला. तपासा आणि Calculate दाबा.' : `3 पैकी ${filled} रकाने भरले — उरलेले हाताने भरा.`));
 
     setStatus(statusMsg, filled === 3 ? 'ok' : 'error');
   }
@@ -443,7 +439,7 @@ export function renderEntryView(): HTMLElement {
     const chips = LANG_CHIPS[currentLang] || LANG_CHIPS['mr-IN'];
     chipsWrapper.innerHTML = chips.map((c, i) => `
       <button type="button" class="voice-demo-chip" data-chip="${i}" title="${c.hint}">
-        ${c.emoji} ${c.text}
+        ${c.text}
       </button>
     `).join('');
 
@@ -477,13 +473,13 @@ export function renderEntryView(): HTMLElement {
     const statusEl = container.querySelector('#voice-status');
 
     if (currentLang === 'mr-IN') {
-      if (subLabel) subLabel.textContent = 'बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर ⏹️ दाबा.';
+      if (subLabel) subLabel.textContent = 'बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर Stop दाबा.';
       if (statusEl && !listening) statusEl.textContent = 'माइक दाबा आणि बोला (मराठी मोड)';
     } else if (currentLang === 'hi-IN') {
-      if (subLabel) subLabel.textContent = 'बोलते समय रुकने पर भी आवाज रिकॉर्ड होती रहेगी। बोलना पूरा होने पर ⏹️ दबाएं।';
+      if (subLabel) subLabel.textContent = 'बोलते समय रुकने पर भी आवाज रिकॉर्ड होती रहेगी। बोलना पूरा होने पर Stop दबाएं।';
       if (statusEl && !listening) statusEl.textContent = 'माइक दबाएं और बोलें (हिन्दी मोड)';
     } else {
-      if (subLabel) subLabel.textContent = 'Natural pauses are preserved. Tap ⏹️ when you finish speaking.';
+      if (subLabel) subLabel.textContent = 'Natural pauses are preserved. Tap Stop when you finish speaking.';
       if (statusEl && !listening) statusEl.textContent = 'Tap mic to speak (English Mode)';
     }
 
@@ -512,7 +508,7 @@ export function renderEntryView(): HTMLElement {
 
   async function processVoiceText(text: string, source: 'web-speech' | 'demo-chip' | 'typed') {
     transcriptEl.innerHTML = `<span style="color: var(--color-text-main); font-weight: 700;">“${text}”</span>`;
-    setStatus('🤖 AI विश्लेषक / विश्लेषण हो रहा है (Analyzing speech…)', 'processing');
+    setStatus('AI विश्लेषक / विश्लेषण हो रहा है (Analyzing speech…)', 'processing');
     try {
       // Step 1: Instant zero-latency local extraction with fuzzy matching
       const localExtraction = extractAgrarianSlots(text);
@@ -554,7 +550,7 @@ export function renderEntryView(): HTMLElement {
 
       recorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        setStatus('🤖 Whisper AI transcribing…', 'processing');
+        setStatus('Whisper AI transcribing…', 'processing');
         try {
           const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
           const apiLang = currentLang.split('-')[0] || 'mr';
@@ -574,7 +570,7 @@ export function renderEntryView(): HTMLElement {
       };
 
       recorder.start();
-      setStatus('🔴 रेकॉर्डिंग सुरू आहे... / बोलिए... (Whisper AI)', 'recording');
+      setStatus('रेकॉर्डिंग सुरू आहे... / बोलिए... (Whisper AI)', 'recording');
       setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 6000);
     } catch {
       setStatus('Microphone permission denied. Tap a sample chip below or fill manually.', 'error');
@@ -596,7 +592,7 @@ export function renderEntryView(): HTMLElement {
 
     if (micBtn) {
       micBtn.classList.remove('is-recording');
-      micBtn.innerHTML = '🎙️';
+      micBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>';
       micBtn.setAttribute('title', 'Tap to speak');
     }
 
@@ -611,10 +607,10 @@ export function renderEntryView(): HTMLElement {
       void processVoiceText(textToProcess, 'web-speech');
     } else {
       const msg = currentLang === 'mr-IN'
-        ? '🔇 बोलणे ओळखले नाही. पुन्हा प्रयत्न करा किंवा खालील नमुना टॅप करा.'
+        ? 'बोलणे ओळखले नाही. पुन्हा प्रयत्न करा किंवा खालील नमुना टॅप करा.'
         : (currentLang === 'hi-IN'
-            ? '🔇 कोई आवाज नहीं पहचानी गई। दोबारा प्रयास करें या नीचे डेमो चिप चुनें।'
-            : '🔇 No speech detected. Tap mic to retry or tap a sample below.');
+            ? 'कोई आवाज नहीं पहचानी गई। दोबारा प्रयास करें या नीचे डेमो चिप चुनें।'
+            : 'No speech detected. Tap mic to retry or tap a sample below.');
       setStatus(msg, 'error');
     }
   }
@@ -640,14 +636,14 @@ export function renderEntryView(): HTMLElement {
       recognition.continuous = true;
 
       micBtn.classList.add('is-recording');
-      micBtn.innerHTML = '⏹️';
+      micBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>';
       micBtn.setAttribute('title', 'Tap when finished speaking');
 
       const recordingMsg = currentLang === 'mr-IN'
-        ? '🔴 ऐकत आहे... (बोलणे संपल्यावर ⏹️ दाबा)'
+        ? 'ऐकत आहे... (बोलणे संपल्यावर Stop दाबा)'
         : (currentLang === 'hi-IN'
-            ? '🔴 सुन रहे हैं... (बोलना पूरा होने पर ⏹️ दबाएं)'
-            : '🔴 Listening... (Tap ⏹️ when finished)');
+            ? 'सुन रहे हैं... (बोलना पूरा होने पर Stop दबाएं)'
+            : 'Listening... (Tap Stop when finished)');
       setStatus(recordingMsg, 'recording');
       transcriptEl.textContent = '';
 
@@ -699,11 +695,11 @@ export function renderEntryView(): HTMLElement {
           return;
         }
         const friendlyMessages: Record<string, string> = {
-          'not-allowed': '🔇 माइक्रोफोन परवानगी नाकारली / अनुमति अस्वीकृत। Allow mic in browser settings.',
-          'network': '🌐 स्पीच सेवा उपलब्ध नाही / उपलब्ध नहीं है। Check internet connection.',
-          'audio-capture': '🎤 माइक्रोफोन सापडला नाही / नहीं मिला।',
+          'not-allowed': 'माइक्रोफोन परवानगी नाकारली / अनुमति अस्वीकृत। Allow mic in browser settings.',
+          'network': 'स्पीच सेवा उपलब्ध नाही / उपलब्ध नहीं है। Check internet connection.',
+          'audio-capture': 'माइक्रोफोन सापडला नाही / नहीं मिला।',
           'aborted': '',
-          'service-not-allowed': '🔇 Speech service blocked by browser.'
+          'service-not-allowed': 'Speech service blocked by browser.'
         };
         const msg = friendlyMessages[code];
         if (msg) {

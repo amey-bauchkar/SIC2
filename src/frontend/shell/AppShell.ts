@@ -31,18 +31,10 @@ export function renderAppShell(): HTMLElement {
             <li><a href="#/hub" class="nav-link active" data-route="/hub">${navLabels.hub[initialLang]}</a></li>
             <li><a href="#/entry" class="nav-link" data-route="/entry">${navLabels.entry[initialLang]}</a></li>
             <li><a href="#/sajha" class="nav-link" data-route="/sajha">${navLabels.sajha[initialLang]}</a></li>
-            <li><a href="#/markets" class="nav-link" data-route="/markets">${navLabels.markets[initialLang]}</a></li>
-            <li><a href="#/evidence" class="nav-link" data-route="/evidence">${navLabels.evidence[initialLang]}</a></li>
-            <li><a href="#/backtest" class="nav-link" data-route="/backtest">${navLabels.backtest[initialLang]}</a></li>
-            <li><a href="#/settings" class="nav-link" data-route="/settings">${navLabels.settings[initialLang]}</a></li>
           </ul>
         </div>
 
-        <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
-          <a href="#/hub" id="nav-cta-btn" class="btn btn-sm btn-primary" style="font-weight: 800;">
-            ${navLabels.checkBestPrice[initialLang]}
-          </a>
-        </div>
+        <div class="nav-spacer" aria-hidden="true"></div>
       </nav>
     </header>
 
@@ -57,7 +49,7 @@ export function renderAppShell(): HTMLElement {
       <div class="footer-inner">
         <div class="footer-top">
           <div class="footer-brand">
-            <h3>🌾 MandiMitra</h3>
+            <h3>MandiMitra</h3>
             <p id="footer-brand-desc">
               ${I18N_DICTIONARY.shell.footerBrandDesc[initialLang]}
             </p>
@@ -110,31 +102,31 @@ export function renderAppShell(): HTMLElement {
     <!-- Mobile Bottom Quick Navigation (For Farmers on Handhelds) -->
     <nav class="mobile-bottom-nav">
       <a href="#/hub" class="mobile-nav-item active">
-        <span>⚡</span>
+        <span>●</span>
         <span class="mob-label" data-route="/hub">${I18N_DICTIONARY.shell.mobile.hub[initialLang]}</span>
       </a>
       <a href="#/entry" class="mobile-nav-item">
-        <span>🎙️</span>
+        <span>●</span>
         <span class="mob-label" data-route="/entry">${I18N_DICTIONARY.shell.mobile.voice[initialLang]}</span>
       </a>
       <a href="#/sajha" class="mobile-nav-item">
-        <span>🤝</span>
+        <span>●</span>
         <span class="mob-label" data-route="/sajha">${I18N_DICTIONARY.shell.mobile.sajha[initialLang]}</span>
       </a>
       <a href="#/markets" class="mobile-nav-item">
-        <span>🗺️</span>
+        <span>●</span>
         <span class="mob-label" data-route="/markets">${I18N_DICTIONARY.shell.mobile.markets[initialLang]}</span>
       </a>
       <a href="#/evidence" class="mobile-nav-item">
-        <span>📊</span>
+        <span>●</span>
         <span class="mob-label" data-route="/evidence">${I18N_DICTIONARY.shell.mobile.evidence[initialLang]}</span>
       </a>
       <a href="#/backtest" class="mobile-nav-item">
-        <span>📈</span>
+        <span>●</span>
         <span class="mob-label" data-route="/backtest">${I18N_DICTIONARY.shell.mobile.backtest[initialLang]}</span>
       </a>
       <a href="#/settings" class="mobile-nav-item">
-        <span>⚙️</span>
+        <span>●</span>
         <span class="mob-label" data-route="/settings">${I18N_DICTIONARY.shell.mobile.settings[initialLang]}</span>
       </a>
     </nav>

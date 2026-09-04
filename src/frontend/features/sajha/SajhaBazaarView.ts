@@ -3,9 +3,9 @@
  *
  * Re-architected for maximum farmer comprehension:
  * - 3-Card Mental Model:
- *   1. 🚚 Shared Vehicle Status & Visual Capacity Meter (गावचा शेअर टेम्पो)
- *   2. 💰 In-Pocket Cash Savings Card (खिशात जास्तीची रोख बचत)
- *   3. 👥 Co-Farmers List (सोबत असणारे शेतकरी)
+ *   1. Shared Vehicle Status & Visual Capacity Meter (गावचा शेअर टेम्पो)
+ *   2. In-Pocket Cash Savings Card (खिशात जास्तीची रोख बचत)
+ *   3. Co-Farmers List (सोबत असणारे शेतकरी)
  * - Zero raw GPS coordinates or academic jargon.
  * - Seamless automatic sync with AsliDaam and user store.
  */
@@ -40,7 +40,7 @@ const i18n = {
     cropLabel: 'Crop to Pool',
     qtyLabel: 'Your Load (Quintals)',
     locLabel: 'Your Village / Taluka',
-    findPool: '🤝 Find Matching Pool',
+    findPool: 'Find Matching Pool',
     vehicleTitle: 'Shared Vehicle Status',
     route: 'Route',
     filled: 'loaded',
@@ -63,7 +63,7 @@ const i18n = {
     cropLabel: 'शेतमाल',
     qtyLabel: 'तुमचा माल (क्विंटल)',
     locLabel: 'तुमचा परिसर / तालुका',
-    findPool: '🤝 शेअर टेम्पो शोधा',
+    findPool: 'शेअर टेम्पो शोधा',
     vehicleTitle: 'गावचा शेअर टेम्पो',
     route: 'मार्ग',
     filled: 'भरला',
@@ -86,7 +86,7 @@ const i18n = {
     cropLabel: 'फसल',
     qtyLabel: 'आपकी उपज (क्विंटल)',
     locLabel: 'आपका इलाका / तहसील',
-    findPool: '🤝 साझा टेम्पो खोजें',
+    findPool: 'साझा टेम्पो खोजें',
     vehicleTitle: 'साझा किसान वाहन',
     route: 'रूट',
     filled: 'भरा',
@@ -154,7 +154,6 @@ export function renderSajhaBazaarBanner(
       `;
       banner.innerHTML = `
         <div style="display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 260px;">
-          <span style="font-size: 2rem;">🤝</span>
           <div>
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${language === 'mr'
@@ -198,7 +197,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
     <!-- Simple Editorial Header -->
     <section class="editorial-section" style="padding-top: 0; margin-bottom: var(--space-4);">
       <div class="editorial-header" style="margin-bottom: var(--space-3);">
-        <div class="kicker" style="color: var(--color-brand-primary);">🤝 ${currentLang === 'mr' ? 'गावाचा शेअर टेम्पो' : (currentLang === 'hi' ? 'साझा किसान वाहन' : 'SHARED FREIGHT & ACCESS')}</div>
+        <div class="kicker" style="color: var(--color-brand-primary);">${currentLang === 'mr' ? 'गावाचा शेअर टेम्पो' : (currentLang === 'hi' ? 'साझा किसान वाहन' : 'SHARED FREIGHT & ACCESS')}</div>
         <h2 class="heading-lg" style="margin-top: 4px; margin-bottom: 6px;">${labels.title}</h2>
         <p style="max-width: 680px; font-size: var(--font-size-sm); color: var(--color-text-muted);">
           ${labels.subtitle}
@@ -231,7 +230,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
           </div>
         </div>
         <div id="sajha-origin-note" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-brand-primary); font-weight: 600;">
-          📍 ${originOverride ? `${originOverride.label}` : `${translateDistrict(state.userLocation?.district || 'Nashik', currentLang)} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`}
+          ${originOverride ? `${originOverride.label}` : `${translateDistrict(state.userLocation?.district || 'Nashik', currentLang)} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`}
         </div>
       </div>
     </section>
@@ -259,8 +258,8 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
     store.setSelectedCrop(cropSelect.value);
     const userDist = translateDistrict(store.getState().userLocation?.district || 'Nashik', currentLang);
     originNote.textContent = originOverride
-      ? `📍 ${originOverride.label}`
-      : `📍 ${userDist} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`;
+      ? `${originOverride.label}`
+      : `${userDist} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`;
     loadAndRender(resultMount, currentLang);
   };
 
@@ -299,7 +298,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
       const chip = document.createElement('button');
       chip.className = 'qty-pill' + (isSelected ? ' active' : '');
         
-      chip.textContent = `📍 ${talukaName} (${cropLabel})`;
+      chip.textContent = `${talukaName} (${cropLabel})`;
       chip.title = `${talukaName}, ${distName} · ${cropLabel} (${formatNumber(c.farmerCount, currentLang)} ${currentLang === 'mr' ? 'शेतकरी' : (currentLang === 'hi' ? 'किसान' : 'farmers')})`;
       
       chip.addEventListener('click', () => {
@@ -341,7 +340,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 function loadAndRender(mount: HTMLElement, language: Language): void {
   mount.innerHTML = `
     <div class="sajha-card" style="padding: var(--space-6); text-align: center;">
-      <div style="font-size: 2.2rem; margin-bottom: var(--space-2);">🚚</div>
+      <div style="font-size: 2.2rem; margin-bottom: var(--space-2); color: var(--color-brand-primary);">◎</div>
       <div class="heading-sm" style="font-weight: 800;">
         ${language === 'mr' ? 'जवळचे शेतकरी टेम्पो शोधत आहोत...' : (language === 'hi' ? 'पास के किसान टेम्पो खोज रहे हैं...' : 'Finding matching farmer pools...')}
       </div>
@@ -393,11 +392,10 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
   const userFreightSaved = Math.max(0, userSoloTripCost - userPooledShare);
 
       el.innerHTML = `
-    <!-- CARD 1: 🚚 SHARED VEHICLE & CAPACITY BAR -->
+    <!-- CARD 1: SHARED VEHICLE & CAPACITY BAR -->
     <div class="sajha-card">
       <div class="sajha-card-header">
         <div class="sajha-card-title">
-          <span>🚚</span>
           <span>${labels.vehicleTitle}: ${vehicleName}</span>
         </div>
         <span class="badge badge-sage" style="font-weight: 800; font-size: 0.75rem;">
@@ -406,7 +404,7 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
       </div>
 
       <div style="font-size: var(--font-size-sm); color: var(--color-text-main); font-weight: 700; margin-bottom: var(--space-2);">
-        ${labels.route}: 📍 ${originLabel} ➔ ${translateMandiName(dest?.name || 'Terminal Mandi', language)} (${formatUnit(dest?.directDistanceKm ? Math.round(dest.directDistanceKm) : 0, 'km', language)})
+        ${labels.route}: ${originLabel} → ${translateMandiName(dest?.name || 'Terminal Mandi', language)} (${formatUnit(dest?.directDistanceKm ? Math.round(dest.directDistanceKm) : 0, 'km', language)})
       </div>
 
       <!-- Capacity Progress Meter -->
@@ -420,7 +418,7 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
           </span>
           ${spaceRemaining > 0 ? `
             <span class="sajha-space-alert">
-              ⚡ ${language === 'mr' ? `फक्त ${formatUnit(spaceRemaining, 'qtl', language)} जागा शिल्लक!` : (language === 'hi' ? `सिर्फ ${formatUnit(spaceRemaining, 'qtl', language)} जगह बाकी!` : `${formatUnit(spaceRemaining, 'qtl', language)} space left!`)}
+              ${language === 'mr' ? `फक्त ${formatUnit(spaceRemaining, 'qtl', language)} जागा शिल्लक!` : (language === 'hi' ? `सिर्फ ${formatUnit(spaceRemaining, 'qtl', language)} जगह बाकी!` : `${formatUnit(spaceRemaining, 'qtl', language)} space left!`)}
             </span>
           ` : `
             <span style="color: var(--color-status-success); font-weight: 800;">✓ ${language === 'mr' ? 'गाडी पूर्ण भरली' : (language === 'hi' ? 'गाड़ी पूरी भरी' : 'Full')}</span>
@@ -429,11 +427,10 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
       </div>
     </div>
 
-    <!-- CARD 2: 💰 IN-POCKET CASH SAVINGS (PLAIN RUPEES) -->
+    <!-- CARD 2: IN-POCKET CASH SAVINGS (PLAIN RUPEES) -->
     <div class="sajha-card" style="border: 2px solid #15803d;">
       <div class="sajha-card-header">
         <div class="sajha-card-title" style="color: #15803d;">
-          <span>💰</span>
           <span>${labels.savingsTitle}</span>
         </div>
       </div>
@@ -478,11 +475,10 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
       </div>
     </div>
 
-    <!-- CARD 3: 👥 CO-FARMERS LIST -->
+    <!-- CARD 3: CO-FARMERS LIST -->
     <div class="sajha-card">
       <div class="sajha-card-header">
         <div class="sajha-card-title">
-          <span>👥</span>
           <span>${labels.farmersTitle} (${formatNumber(result.participants.length, language)})</span>
         </div>
       </div>
@@ -491,15 +487,15 @@ function render3CardPoolResult(result: SajhaBazaarResult, language: Language): H
         ${result.participants.map((p: SajhaParticipant) => `
           <div class="sajha-farmer-row ${p.isRequester ? 'is-user' : ''}">
             <div style="display: flex; align-items: center; gap: var(--space-3);">
-              <div class="sajha-farmer-avatar">
-                ${p.isRequester ? '⭐' : '🌾'}
+              <div class="sajha-farmer-avatar" style="font-weight: 800; color: var(--color-brand-primary);">
+                ${p.isRequester ? '●' : '○'}
               </div>
               <div>
                 <div style="font-size: var(--font-size-sm); font-weight: 800; color: var(--color-text-main);">
                   ${p.isRequester ? (language === 'mr' ? 'तुम्ही (स्वतः)' : (language === 'hi' ? 'आप (स्वयं)' : 'You')) : p.displayName} ${p.isRequester ? `<span class="badge badge-accent" style="font-size: 0.6rem; padding: 1px 6px;">${labels.youBadge}</span>` : ''}
                 </div>
                 <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-                  📍 ${p.village}${p.isRequester ? '' : ` (${formatUnit(p.distanceFromRequesterKm.toFixed(1), 'km', language)})`}
+                  ${p.village}${p.isRequester ? '' : ` (${formatUnit(p.distanceFromRequesterKm.toFixed(1), 'km', language)})`}
                 </div>
               </div>
             </div>
@@ -537,7 +533,7 @@ function renderSimpleNoPool(result: SajhaBazaarResult, language: Language): HTML
   const isLargeLoad = qty >= 20;
 
   el.innerHTML = `
-    <div style="font-size: 2.2rem; margin-bottom: var(--space-2);">🤝</div>
+    <div style="font-size: 2.2rem; margin-bottom: var(--space-2); color: var(--color-brand-primary);">◎</div>
     <h3 class="heading-md" style="margin-bottom: var(--space-2);">${labels.noPoolTitle}</h3>
     <p style="font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 520px; margin: 0 auto var(--space-3);">
       ${isLargeLoad
@@ -551,7 +547,7 @@ function renderSimpleNoPool(result: SajhaBazaarResult, language: Language): HTML
 
     ${result.reasons && result.reasons.length > 0 ? `
       <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); background: var(--color-bg-canvas); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); max-width: 560px; margin: 0 auto var(--space-4); border: 1px solid var(--color-border); text-align: left;">
-        <strong style="color: var(--color-brand-primary);">ℹ️ ${language === 'mr' ? 'तांत्रिक कारण' : (language === 'hi' ? 'मुख्य कारण' : 'Engine Reason')}:</strong>
+        <strong style="color: var(--color-brand-primary);">${language === 'mr' ? 'तांत्रिक कारण' : (language === 'hi' ? 'मुख्य कारण' : 'Engine Reason')}:</strong>
         <ul style="margin: 4px 0 0 16px; padding: 0;">
           ${result.reasons.map(r => `<li>${translateReason(r, language)}</li>`).join('')}
         </ul>
@@ -560,7 +556,7 @@ function renderSimpleNoPool(result: SajhaBazaarResult, language: Language): HTML
 
     <div style="display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap;">
       <button id="btn-try-smallholder" class="btn btn-outline btn-sm" style="font-weight: 700;">
-        ⚡ ${language === 'mr' ? `लहान भार (${formatUnit(5, 'qtl', language)}) वापरून पहा` : (language === 'hi' ? `छोटा भार (${formatUnit(5, 'qtl', language)}) आजमाएं` : 'Try Smallholder Load (5q)')}
+        ${language === 'mr' ? `लहान भार (${formatUnit(5, 'qtl', language)}) वापरून पहा` : (language === 'hi' ? `छोटा भार (${formatUnit(5, 'qtl', language)}) आजमाएं` : 'Try Smallholder Load (5q)')}
       </button>
     </div>
 

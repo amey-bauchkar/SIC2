@@ -93,7 +93,7 @@ function renderRushOutlook(bhed: any, lang: Language): string {
     // amount is still shown, but without implying a washout.
     const wet = d.rainClass === 'light' || d.rainClass === 'heavy';
     const rain = (d.expectedRainMm !== null && d.expectedRainMm !== undefined && d.expectedRainMm >= 0.1)
-      ? `<div style="font-size:0.6rem;color:${wet ? '#1d4ed8' : '#94a3b8'};margin-top:2px;">${wet ? '☔' : '·'} ${d.expectedRainMm.toFixed(1)}mm</div>`
+      ? `<div style="font-size:0.6rem;color:${wet ? '#1d4ed8' : '#94a3b8'};margin-top:2px;">${wet ? '•' : '·'} ${d.expectedRainMm.toFixed(1)}mm</div>`
       : '';
     const dayLabel = lang === 'mr' || lang === 'hi'
       ? formatNumber(d.day, lang)
@@ -469,9 +469,6 @@ export function renderDecisionHubView(): HTMLElement {
       <button class="hub-tab-btn ${activeTab === 'aslidaam' ? 'active' : ''}" data-tab="aslidaam">
         ${currentLanguage === 'mr' ? 'असलीदाम™ इंजिन' : (currentLanguage === 'hi' ? 'असलीदाम™ इंजन' : 'AsliDaam™ Engine')}
       </button>
-      <button class="hub-tab-btn ${activeTab === 'sajhabazaar' ? 'active' : ''}" data-tab="sajhabazaar">
-        ${currentLanguage === 'mr' ? 'साझा बाजार' : (currentLanguage === 'hi' ? 'साझा बाजार' : 'SajhaBazaar')}
-      </button>
       <button class="hub-tab-btn ${activeTab === 'markets' ? 'active' : ''}" data-tab="markets">
         ${currentLanguage === 'mr' ? 'बाजार भाव रडार' : (currentLanguage === 'hi' ? 'मंडी भाव रडार' : 'Mandi Radar')}
       </button>
@@ -577,8 +574,7 @@ export function renderDecisionHubView(): HTMLElement {
   const bannerMount = container.querySelector('#sajha-banner-mount') as HTMLElement;
   if (bannerMount && evalData) {
     renderSajhaBazaarBanner(bannerMount, currentLanguage, () => {
-      activeTab = 'sajhabazaar';
-      container.replaceWith(renderDecisionHubView());
+      window.location.hash = '#/sajha';
     });
   }
 
@@ -751,7 +747,7 @@ function renderAsliDaamTab(
           </div>
           <div style="font-family: var(--font-family-body); font-size: 0.68rem; color: #586B5E; margin-top: 2px;">
             ${I18N_DICTIONARY.hub.dataQualityLabel[currentLanguage]}: <strong>${recQuality?.tier || 'n/a'}</strong>${recQuality?.priceProvenance ? ` · ${recQuality.priceProvenance.replace(/_/g, ' ').toLowerCase()}` : ''}
-            ${recEval?.historySource ? ` · <span class="badge ${recEval.historySource === 'CEDA_OBSERVED' ? 'badge-sage' : 'badge-neutral'}" style="font-size: 0.62rem; padding: 2px 6px;">${recEval.historySource === 'CEDA_OBSERVED' ? (currentLanguage === 'mr' ? '🏛️ CEDA पडताळणी इतिहास' : (currentLanguage === 'hi' ? '🏛️ CEDA सत्यापित इतिहास' : '🏛️ CEDA Verified History')) : (recEval.historySource === 'CURRENT_ONLY' ? (currentLanguage === 'mr' ? 'केवळ थेट स्नॅपशॉट' : (currentLanguage === 'hi' ? 'केवल लाइव स्नैपशॉट' : 'Live Snapshot Only')) : recEval.historySource)}</span>` : ''}
+            ${recEval?.historySource ? ` · <span class="badge ${recEval.historySource === 'CEDA_OBSERVED' ? 'badge-sage' : 'badge-neutral'}" style="font-size: 0.62rem; padding: 2px 6px;">${recEval.historySource === 'CEDA_OBSERVED' ? (currentLanguage === 'mr' ? 'CEDA पडताळणी इतिहास' : (currentLanguage === 'hi' ? 'CEDA सत्यापित इतिहास' : 'CEDA Verified History')) : (recEval.historySource === 'CURRENT_ONLY' ? (currentLanguage === 'mr' ? 'केवळ थेट स्नॅपशॉट' : (currentLanguage === 'hi' ? 'केवल लाइव स्नैपशॉट' : 'Live Snapshot Only')) : recEval.historySource)}</span>` : ''}
           </div>
         </div>
 
@@ -759,7 +755,7 @@ function renderAsliDaamTab(
 
       <!-- Forecast basis strip -->
       <div style="display: flex; align-items: baseline; gap: 8px; background: #ffffff; border: 1px solid rgba(85, 65, 45, 0.12); padding: 8px 14px; border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap;">
-        <span style="font-size: 1rem;">${recEval?.forecast?.isForecastEligible ? '📈' : '⚖️'}</span>
+        <span style="font-size: 0.9rem; color: var(--color-brand-primary); font-weight: 800;">●</span>
         <div style="flex: 1; min-width: 240px; font-family: var(--font-family-body);">
           <span style="font-size: 0.8rem; font-weight: 700; color: #112A1B;">
             ${currentLanguage === 'mr'

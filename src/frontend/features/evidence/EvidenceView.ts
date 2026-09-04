@@ -21,7 +21,7 @@ export function renderEvidenceView(): HTMLElement {
   if (!evalData) {
     container.innerHTML = `
       <div class="editorial-panel" style="text-align: center; padding: var(--space-12); max-width: 640px; margin: var(--space-8) auto;">
-        <div style="font-size: 3rem; margin-bottom: var(--space-3);">📊</div>
+        <div style="font-size: 3rem; margin-bottom: var(--space-3); color: var(--color-brand-primary);">◎</div>
         <h2 class="heading-lg" style="margin-bottom: var(--space-2);">${lang === 'mr' ? 'कोणताही सक्रिय पुरावा नाही' : (lang === 'hi' ? 'कोई सक्रिय प्रमाण नहीं' : 'No Active Evidence')}</h2>
         <p style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--space-6);">
           ${lang === 'mr' ? 'तपशीलवार पडताळणी पाहण्यासाठी आधी निर्णय केंद्रातून पिकाचे मूल्यांकन करा.' : (lang === 'hi' ? 'विस्तृत प्रमाण देखने के लिए पहले निर्णय केंद्र से फसल का मूल्यांकन करें.' : 'Run a crop price evaluation from the Decision Hub first to view the empirical rationale.')}

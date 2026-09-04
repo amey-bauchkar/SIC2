@@ -51,7 +51,7 @@ export function renderDecisionCard(props: DecisionCardProps): HTMLElement {
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4);">
       <div>
         <div class="kicker">
-          🌾 ${lang === 'mr' ? `${cropLabel} साठी शिफारस` : (lang === 'hi' ? `${cropLabel} हेतु सिफारिश` : `RECOMMENDATION FOR ${commodity.toUpperCase()}`)}
+          ${lang === 'mr' ? `${cropLabel} साठी शिफारस` : (lang === 'hi' ? `${cropLabel} हेतु सिफारिश` : `RECOMMENDATION FOR ${commodity.toUpperCase()}`)}
         </div>
         <h2 class="heading-xl" style="color: var(--color-text-main); margin-top: var(--space-1);">
           ${actionTitle}

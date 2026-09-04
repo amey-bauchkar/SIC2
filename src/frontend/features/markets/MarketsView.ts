@@ -42,14 +42,14 @@ export function renderMarketsView(): HTMLElement {
           </p>
         </div>
         <button class="btn btn-outline" id="btn-adjust-radius">
-          ${lang === 'mr' ? '⚙️ अंतर व भाडे बदला' : (lang === 'hi' ? '⚙️ दायरा व भाड़ा बदलें' : '⚙️ Adjust Radius & Freight')}
+          ${lang === 'mr' ? 'अंतर व भाडे बदला' : (lang === 'hi' ? 'दायरा व भाड़ा बदलें' : 'Adjust Radius & Freight')}
         </button>
       </div>
 
       <div id="markets-list" style="display: flex; flex-direction: column; gap: var(--space-3);">
         ${!evalData || evalData.evaluations.length === 0 ? `
           <div style="text-align: center; padding: var(--space-10); color: var(--color-text-muted); font-size: var(--font-size-sm);">
-            <div style="font-size: 2.5rem; margin-bottom: var(--space-2);">🗺️</div>
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-2); color: var(--color-brand-primary);">◎</div>
             <p>${lang === 'mr' ? 'अद्याप कोणत्याही बाजाराचे मूल्यमापन झालेले नाही.' : (lang === 'hi' ? 'अभी तक किसी मंडी का मूल्यांकन नहीं हुआ है.' : 'No active candidate markets evaluated yet.')}</p>
             <p style="font-size: var(--font-size-xs); margin-top: 4px;">${lang === 'mr' ? 'बाजारपेठांची माहिती पाहण्यासाठी निर्णय केंद्रातून मूल्यमापन सुरू करा.' : (lang === 'hi' ? 'मंडियों की जानकारी देखने के लिए निर्णय केंद्र से मूल्यांकन शुरू करें.' : 'Run an evaluation from the Decision Hub to populate regional mandi data.')}</p>
           </div>
@@ -83,7 +83,7 @@ export function renderMarketsView(): HTMLElement {
         <div>
           <div style="font-family: var(--font-family-heading); font-size: 1.15rem; font-weight: 800; color: var(--color-text-main); display: flex; align-items: center; gap: var(--space-2);">
             ${translateMandiName(ev.market.name, lang)}
-            ${isRecommended ? `<span class="badge badge-accent">${lang === 'mr' ? '🏆 शिफारस केलेली' : (lang === 'hi' ? '🏆 अनुशंसित' : '🏆 RECOMMENDED')}</span>` : ''}
+            ${isRecommended ? `<span class="badge badge-accent">${lang === 'mr' ? 'शिफारस केलेली' : (lang === 'hi' ? 'अनुशंसित' : 'RECOMMENDED')}</span>` : ''}
           </div>
           <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 4px;">
             ${translateDistrict(ev.market.district, lang)}, ${translateState(ev.market.state, lang)} • ~${formatNumber(ev.market.estimatedRoadDistanceKm?.toFixed(1) || 0, lang)} ${lang === 'mr' ? 'किमी अंदाजे रस्ता वाहतूक' : (lang === 'hi' ? 'किमी अनुमानित सड़क ढुलाई' : 'km estimated road haulage')}

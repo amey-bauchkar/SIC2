@@ -94,12 +94,12 @@ export const I18N_DICTIONARY = {
   nav: {
     hub: { en: 'Decision Hub', mr: 'निर्णय केंद्र', hi: 'फैसला केंद्र' },
     entry: { en: 'Voice Entry', mr: 'आवाज नोंद', hi: 'आवाज प्रविष्टि' },
-    sajha: { en: '🤝 SajhaBazaar', mr: '🤝 साझा बाजार', hi: '🤝 साझा बाजार' },
+    sajha: { en: 'SajhaBazaar', mr: 'साझा बाजार', hi: 'साझा बाजार' },
     markets: { en: 'Markets Radar', mr: 'बाजार भाव रडार', hi: 'मंडी भाव रडार' },
     evidence: { en: 'Evidence & Why', mr: 'तथ्य आणि पुरावे', hi: 'तथ्य और कारण' },
     backtest: { en: 'Backtest', mr: 'मागील पडताळणी', hi: 'बैकटेस्ट' },
     settings: { en: 'Cost Settings', mr: 'खर्च सेटिंग्ज', hi: 'लागत सेटिंग्स' },
-    checkBestPrice: { en: '⚡ Check Best Price', mr: '⚡ सर्वोत्तम भाव पहा', hi: '⚡ सर्वश्रेष्ठ मूल्य देखें' }
+    checkBestPrice: { en: 'Check Best Price', mr: 'सर्वोत्तम भाव पहा', hi: 'सर्वश्रेष्ठ मूल्य देखें' }
   },
   shell: {
     footerBrandDesc: {
@@ -179,7 +179,7 @@ export const I18N_DICTIONARY = {
     cropLabel: { en: 'Crop', mr: 'शेतमाल निवडा', hi: 'फसल चुनें' },
     qtyLabel: { en: 'Harvest Volume (Quintals)', mr: 'एकूण वजन (क्विंटल)', hi: 'कुल वजन (क्विंटल)' },
     originLabel: { en: 'Farmer Origin', mr: 'शेतकरी तालुका / जिल्हा', hi: 'किसान स्थान / जिला' },
-    btnRun: { en: '⚡ Run AsliDaam', mr: '⚡ असली दाम शोधा', hi: '⚡ असली दाम निकालें' },
+    btnRun: { en: 'Run AsliDaam', mr: 'असली दाम शोधा', hi: 'असली दाम निकालें' },
     verdictKicker: { en: 'MANDIMITRA ASLIDAAM VERDICT', mr: 'मंडीमित्र अंतिम निकाल (ASLIDAAM™)', hi: 'मंडीमित्र अंतिम निर्णय (ASLIDAAM™)' },
     extraCash: { en: 'Extra Cash in Your Pocket', mr: 'खिशात जास्तीचा निव्वळ नफा', hi: 'जेब में अतिरिक्त नकद लाभ' },
     vsLocal: { en: 'vs nearest local mandi', mr: 'स्थानिक जवळच्या बाजारापेक्षा जास्त फायदा', hi: 'पास की स्थानीय मंडी से अधिक लाभ' },
@@ -188,7 +188,7 @@ export const I18N_DICTIONARY = {
     dataQualityLabel: { en: 'Data quality', mr: 'डेटा गुणवत्ता', hi: 'डेटा गुणवत्ता' },
     whyDecision: { en: 'Why this decision?', mr: 'हा निर्णय का?', hi: 'यह निर्णय क्यों?' },
     audioSummary: { en: 'Regional Audio Voice Readout', mr: 'शेतकऱ्यांसाठी स्थानिक आवाज सारांश', hi: 'किसानों के लिए क्षेत्रीय आवाज सारांश' },
-    shieldTitle: { en: '🛡️ FARMER PROFIT PROTECTION SHIELD (नफा सुरक्षा हमी)', mr: '🛡️ शेतकरी नफा सुरक्षा हमी (निर्णय कवच)', hi: '🛡️ किसान मुनाफा सुरक्षा कवच (निर्णय कवच)' },
+    shieldTitle: { en: 'FARMER PROFIT PROTECTION SHIELD (नफा सुरक्षा हमी)', mr: 'शेतकरी नफा सुरक्षा हमी (निर्णय कवच)', hi: 'किसान मुनाफा सुरक्षा कवच (निर्णय कवच)' },
     shieldSubtitle: {
       en: 'Stress-Tested Against Transport & Mandi Congestion',
       mr: 'वाहतूक भाडे वाढले किंवा बाजारात गर्दी झाली तरी नफा टिकून राहण्याची खात्री',
@@ -209,7 +209,7 @@ export const I18N_DICTIONARY = {
     rushYardClosed: { en: 'Yard closed', mr: 'बाजार बंद', hi: 'मंडी बंद' },
     rushMeasured: { en: 'measured', mr: 'मोजलेले', hi: 'मापा गया' },
     rushReference: { en: 'reference', mr: 'संदर्भ', hi: 'संदर्भ' },
-    auditTitle: { en: '💰 TRANSPARENT POCKET CASH AUDIT (खिशातील निव्वळ नफा)', mr: '💰 खिशातील निव्वळ नफा हिशोब (पारदर्शक ताळेबंद)', hi: '💰 जेब में शुद्ध नकद हिसाब (पारदर्शी विवरण)' },
+    auditTitle: { en: 'TRANSPARENT POCKET CASH AUDIT (खिशातील निव्वळ नफा)', mr: 'खिशातील निव्वळ नफा हिशोब (पारदर्शक ताळेबंद)', hi: 'जेब में शुद्ध नकद हिसाब (पारदर्शी विवरण)' },
     auditSubtitle: {
       en: 'Where Every Rupee Goes (No hidden deductions)',
       mr: 'पैसा कुठे जातो आणि हातात किती उरतो? (कोणतीही लपवलेली वजावट नाही)',
@@ -236,7 +236,7 @@ export const I18N_DICTIONARY = {
     cropLabel: { en: 'Crop to Pool', mr: 'शेतमाल निवडा', hi: 'फसल चुनें' },
     qtyLabel: { en: 'Your Load (Quintals)', mr: 'तुमचा भार (क्विंटल)', hi: 'आपकी उपज (क्विंटल)' },
     locLabel: { en: 'Your Village / Taluka', mr: 'तुमचा परिसर / तालुका', hi: 'आपका क्षेत्र / तालुका' },
-    findPool: { en: '🤝 Find Matching Pool', mr: '🤝 शेअर टेम्पो शोधा', hi: '🤝 साझा वाहन खोजें' },
+    findPool: { en: 'Find Matching Pool', mr: 'शेअर टेम्पो शोधा', hi: 'साझा वाहन खोजें' },
     vehicleTitle: { en: 'Shared Vehicle Status', mr: 'गावचा शेअर टेम्पो', hi: 'साझा किसान वाहन' },
     route: { en: 'Route', mr: 'मार्ग', hi: 'मार्ग' },
     filled: { en: 'loaded', mr: 'भरला', hi: 'भरा' },
@@ -266,7 +266,7 @@ export const I18N_DICTIONARY = {
     }
   },
   entry: {
-    heroKicker: { en: '🌾 MANDIMITRA DECISION ENGINE', mr: '🌾 मंडीमित्र शेती निर्णय प्रणाली', hi: '🌾 मंडीमित्र कृषि निर्णय प्रणाली' },
+    heroKicker: { en: 'MANDIMITRA DECISION ENGINE', mr: 'मंडीमित्र शेती निर्णय प्रणाली', hi: 'मंडीमित्र कृषि निर्णय प्रणाली' },
     heroSubtitle: {
       en: 'Speak or select your harvested crop and location. We calculate the true net take-home cash across all nearby mandis over the next 0 to 3 days.',
       mr: 'तुमचे पीक आणि गाव बोला किंवा निवडा. आम्ही पुढील ० ते ३ दिवसांतील थेट खिशात उरणारा खरा नफा शोधू.',
@@ -274,17 +274,17 @@ export const I18N_DICTIONARY = {
     },
     speakTitle: { en: 'Speak to Fill', mr: 'बोलून सांगा (मराठी निवडले आहे)', hi: 'बोलकर बताएं (हिंदी चुनी गई है)' },
     speakSub: {
-      en: 'Microphone continues recording even if you pause. Tap ⏹️ when done.',
-      mr: 'बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर ⏹️ दाबा.',
-      hi: 'बोलते समय रुकने पर भी रिकॉर्डिंग जारी रहेगी। बोलना पूरा होने पर ⏹️ दबाएं.'
+      en: 'Microphone continues recording even if you pause. Tap Stop when done.',
+      mr: 'बोलताना थांबले तरी आवाज रेकॉर्ड होत राहील. बोलणे पूर्ण झाल्यावर Stop दाबा.',
+      hi: 'बोलते समय रुकने पर भी रिकॉर्डिंग जारी रहेगी। बोलना पूरा होने पर Stop दबाएं.'
     },
     noisyRoom: { en: 'Noisy room? Tap a sample to test:', mr: 'आवाज ऐकू येत नसेल तर खालील नमुना निवडा:', hi: 'शोर हो तो नीचे दिए गए नमूने पर क्लिक करें:' },
     selectCrop: { en: 'Select Commodity', mr: 'शेतमाल निवडा', hi: 'फसल चुनें' },
-    cropSearchPlaceholder: { en: '🔍 Quick search crop (e.g. Wheat, Chana, Aalu)...', mr: '🔍 शेतमाल शोधा (उदा. गहू, कांदा, सोयाबीन, हरभरा)...', hi: '🔍 फसल खोजें (उदा. गेहूं, प्याज, सोयाबीन, चना)...' },
+    cropSearchPlaceholder: { en: 'Quick search crop (e.g. Wheat, Chana, Aalu)...', mr: 'शेतमाल शोधा (उदा. गहू, कांदा, सोयाबीन, हरभरा)...', hi: 'फसल खोजें (उदा. गेहूं, प्याज, सोयाबीन, चना)...' },
     qtyLabel: { en: 'Harvest Volume in Quintals', mr: 'एकूण वजन (क्विंटल)', hi: 'कुल वजन (क्विंटल)' },
     districtLabel: { en: 'Farmer Origin District', mr: 'शेतकरी जिल्हा / मूळ स्थान निवडा', hi: 'किसान जिला / मूल स्थान चुनें' },
-    districtSearchPlaceholder: { en: '🔍 Quick search district (e.g. Nashik, Pune, Latur)...', mr: '🔍 जिल्हा शोधा (उदा. नाशिक, पुणे, लातूर, सोलापूर)...', hi: '🔍 जिला खोजें (उदा. नासिक, पुणे, लातूर, सोलापूर)...' },
-    btnCalculate: { en: '⚡ Calculate Best Market & Timing', mr: '⚡ सर्वोत्तम बाजार आणि अचूक दिवस शोधा', hi: '⚡ सर्वश्रेष्ठ मंडी और सही दिन निकालें' }
+    districtSearchPlaceholder: { en: 'Quick search district (e.g. Nashik, Pune, Latur)...', mr: 'जिल्हा शोधा (उदा. नाशिक, पुणे, लातूर, सोलापूर)...', hi: 'जिला खोजें (उदा. नासिक, पुणे, लातूर, सोलापूर)...' },
+    btnCalculate: { en: 'Calculate Best Market & Timing', mr: 'सर्वोत्तम बाजार आणि अचूक दिवस शोधा', hi: 'सर्वश्रेष्ठ मंडी और सही दिन निकालें' }
   }
 };
 
