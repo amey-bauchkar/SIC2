@@ -206,29 +206,40 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 
       <!-- Farmer Controls Strip (No coordinates, clean and clear) -->
       <div class="sajha-card" style="padding: var(--space-4); margin-bottom: var(--space-4);">
-        <div class="farmer-input-strip sajha-farmer-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); align-items: end;">
+        <div class="sajha-farmer-strip">
           <div>
-            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.cropLabel}</label>
-            <select id="sajha-crop" class="select-field" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600;">
+            <label class="input-label" style="font-weight: 700; margin-bottom: 6px; display: block; font-size: var(--font-size-xs);">${labels.cropLabel}</label>
+            <select id="sajha-crop" class="select-field" style="width: 100%; height: 44px; padding: 8px 12px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600; box-sizing: border-box;">
               ${renderCropOptgroupsHtml(state.selectedCrop || 'Onion', currentLang)}
             </select>
           </div>
           <div>
-            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.qtyLabel}</label>
-            <input type="text" inputmode="decimal" id="sajha-qty" class="input-field" value="${formatNumber(qty, currentLang)}" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 800; font-family: var(--font-family-numbers);" />
+            <label class="input-label" style="font-weight: 700; margin-bottom: 6px; display: block; font-size: var(--font-size-xs);">${labels.qtyLabel}</label>
+            <input type="text" inputmode="decimal" id="sajha-qty" class="input-field" value="${formatNumber(qty, currentLang)}" style="width: 100%; height: 44px; padding: 8px 12px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 800; font-family: var(--font-family-numbers); box-sizing: border-box;" />
           </div>
           <div>
-            <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.locLabel}</label>
-            <div id="sajha-cluster-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">...</span>
-            </div>
+            <label class="input-label" style="font-weight: 700; margin-bottom: 6px; display: block; font-size: var(--font-size-xs);">${labels.locLabel}</label>
+            <select id="sajha-cluster-select" class="select-field" style="width: 100%; height: 44px; padding: 8px 12px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600; box-sizing: border-box;">
+              <option value="">${currentLang === 'mr' ? 'गाव / तालुका निवडा…' : (currentLang === 'hi' ? 'गांव / तहसील चुनें…' : 'Select Village / Cluster…')}</option>
+            </select>
           </div>
           <div>
-            <button id="sajha-run" class="btn btn-primary" style="width: 100%; font-weight: 800; height: 42px; font-size: var(--font-size-sm);">
+            <button id="sajha-run" class="btn btn-primary" style="width: 100%; font-weight: 800; height: 44px; font-size: var(--font-size-sm); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
               ${labels.findPool}
             </button>
           </div>
         </div>
+
+        <!-- Quick Demo Cluster Pills Bar -->
+        <div style="margin-top: var(--space-3); border-top: 1px dashed rgba(85, 65, 45, 0.15); padding-top: var(--space-2); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 0.72rem; font-weight: 800; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em;">
+            ⚡ ${currentLang === 'mr' ? 'सक्रिय शेतकरी समूह' : (currentLang === 'hi' ? 'सक्रिय किसान समूह' : 'Active Farmer Pools')}:
+          </span>
+          <div id="sajha-cluster-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-muted);">...</span>
+          </div>
+        </div>
+
         <div id="sajha-origin-note" style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-brand-primary); font-weight: 600;">
           ${originOverride ? `${originOverride.label}` : `${translateDistrict(state.userLocation?.district || 'Nashik', currentLang)} ${currentLang === 'mr' ? 'परिसर' : (currentLang === 'hi' ? 'इलाका' : 'area')}`}
         </div>
@@ -241,6 +252,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 
   const resultMount = panel.querySelector('#sajha-result-mount') as HTMLElement;
   const chipsMount = panel.querySelector('#sajha-cluster-chips') as HTMLElement;
+  const clusterSelect = panel.querySelector('#sajha-cluster-select') as HTMLSelectElement | null;
   const cropSelect = panel.querySelector('#sajha-crop') as HTMLSelectElement;
   const qtyInput = panel.querySelector('#sajha-qty') as HTMLInputElement;
   const originNote = panel.querySelector('#sajha-origin-note') as HTMLElement;
@@ -284,44 +296,74 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
     }
   });
 
+  const applyCluster = (c: any, roster: SajhaRosterResponse) => {
+    const talukaName = translateMandiName(c.taluka, currentLang);
+    const distName = translateDistrict(c.district, currentLang);
+    originOverride = {
+      lat: c.centroidLatitude,
+      lon: c.centroidLongitude,
+      label: `${talukaName}, ${distName}`,
+      district: c.district
+    };
+    cropSelect.value = c.crop;
+    store.setSelectedCrop(c.crop);
+    
+    // Auto-set a smallholder demo quantity (5q) so the pool matches effortlessly
+    qtyInput.value = formatNumber(5, currentLang);
+    quantityOverride = 5;
+    store.setHarvestQuantity(5);
+    
+    refresh();
+    buildChips(roster);
+  };
 
-  // Cluster chips with clear labels across all major crops
+  // Cluster chips and dropdown with clear labels across all major crops
   const buildChips = (roster: SajhaRosterResponse) => {
     chipsMount.innerHTML = '';
+    if (clusterSelect) {
+      clusterSelect.innerHTML = '';
+      const defOpt = document.createElement('option');
+      defOpt.value = '';
+      defOpt.textContent = currentLang === 'mr' ? 'गाव / तालुका निवडा…' : (currentLang === 'hi' ? 'गांव / तहसील चुनें…' : 'Select Village / Cluster…');
+      clusterSelect.appendChild(defOpt);
+    }
 
-    for (const c of (roster.clusters || [])) {
+    const clusters = roster.clusters || [];
+    clusters.forEach((c, idx) => {
       const talukaName = translateMandiName(c.taluka, currentLang);
       const distName = translateDistrict(c.district, currentLang);
       const cropLabel = translateCommodity(c.crop, currentLang);
       const isSelected = originOverride?.district === c.district && originOverride?.lat === c.centroidLatitude;
 
+      if (clusterSelect) {
+        const opt = document.createElement('option');
+        opt.value = String(idx);
+        opt.textContent = `${talukaName}, ${distName} (${cropLabel}) · ${c.farmerCount} ${currentLang === 'mr' ? 'शेतकरी' : (currentLang === 'hi' ? 'किसान' : 'farmers')}`;
+        if (isSelected) opt.selected = true;
+        clusterSelect.appendChild(opt);
+      }
+
       const chip = document.createElement('button');
+      chip.type = 'button';
       chip.className = 'qty-pill' + (isSelected ? ' active' : '');
-        
       chip.textContent = `${talukaName} (${cropLabel})`;
       chip.title = `${talukaName}, ${distName} · ${cropLabel} (${formatNumber(c.farmerCount, currentLang)} ${currentLang === 'mr' ? 'शेतकरी' : (currentLang === 'hi' ? 'किसान' : 'farmers')})`;
       
       chip.addEventListener('click', () => {
-        originOverride = {
-          lat: c.centroidLatitude,
-          lon: c.centroidLongitude,
-          label: `${talukaName}, ${distName}`,
-          district: c.district
-        };
-        cropSelect.value = c.crop;
-        store.setSelectedCrop(c.crop);
-        
-        // Auto-set a smallholder demo quantity (5q) so the pool matches effortlessly
-        qtyInput.value = formatNumber(5, currentLang);
-        quantityOverride = 5;
-        store.setHarvestQuantity(5);
-        
-        refresh();
-        buildChips(roster);
+        applyCluster(c, roster);
       });
       chipsMount.appendChild(chip);
-    }
+    });
   };
+
+  clusterSelect?.addEventListener('change', () => {
+    if (!rosterCache || !clusterSelect.value) return;
+    const idx = parseInt(clusterSelect.value, 10);
+    const c = (rosterCache.clusters || [])[idx];
+    if (c) {
+      applyCluster(c, rosterCache);
+    }
+  });
 
 
 

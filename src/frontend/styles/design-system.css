@@ -830,6 +830,20 @@ body, p, span, label, input, select, button,
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.sajha-farmer-strip {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.6fr 1.2fr;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+@media (max-width: 1024px) {
+  .sajha-farmer-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+}
+
 .sajha-card-header {
   display: flex;
   justify-content: space-between;
