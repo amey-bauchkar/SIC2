@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": "vite build --config vite.config.mjs",
+  "outputDirectory": "src/frontend/dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "{data/**,models/**}",
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

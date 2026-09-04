@@ -5,6 +5,7 @@
   "main": "src/backend/server.ts",
   "scripts": {
     "build": "tsc",
+    "build:frontend": "vite build --config vite.config.mjs",
     "start": "node dist/backend/server.js",
     "dev:backend": "ts-node-dev --respawn --transpile-only src/backend/server.ts",
     "dev:frontend": "vite --config vite.config.mjs",

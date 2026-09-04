@@ -100,7 +100,7 @@ app.get('/api/health', (_req, res) => {
 
 const PORT = config.port;
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`[MandiMitra Backend] Server listening on http://localhost:${PORT}`);
     console.log(`[MandiMitra Backend] Mode: ${config.env} | Model: ${config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic'}`);
