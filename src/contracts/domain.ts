@@ -102,6 +102,8 @@ export interface Forecast {
   historyEndDate?: string;
   /** Whether temporal trend inference was permitted (true only with sufficient real history). */
   isForecastEligible: boolean;
+  /** When trend inference was refused, the specific reason - shown to the farmer, not hidden. */
+  forecastIneligibilityReason?: string;
 }
 
 export interface NetRealisation {

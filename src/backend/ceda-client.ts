@@ -328,6 +328,8 @@ export function writeCedaObservedSeries(
 
 export interface ObservedHistoryData {
   trailing7Prices: number[];
+  /** ISO dates aligned 1:1 with trailing7Prices, so the slope can respect real spacing. */
+  trailing7Dates: string[];
   daysSinceLastReport: number;
   reportingDaysCountInLast30Days: number;
   latestPrice: number | null;
@@ -417,10 +419,13 @@ export function readCedaObservedHistory(
       return d >= thirtyDaysAgo && d <= referenceDate;
     }).length;
 
-    const trailing7 = validRecords.slice(-7).map(r => r.modalPrice);
+    const trailingWindow = validRecords.slice(-7);
+    const trailing7 = trailingWindow.map(r => r.modalPrice);
+    const trailing7Dates = trailingWindow.map(r => r.date);
 
     return {
       trailing7Prices: trailing7,
+      trailing7Dates,
       daysSinceLastReport: daysSince,
       reportingDaysCountInLast30Days: count30d,
       latestPrice: lastRec.modalPrice,

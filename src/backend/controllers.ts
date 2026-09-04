@@ -81,6 +81,8 @@ export async function getLivePriceController(req: Request, res: Response): Promi
 
 interface MarketHistoryData {
   trailing7Prices: number[];
+  /** ISO dates aligned 1:1 with trailing7Prices, so the slope respects real calendar spacing. */
+  trailing7Dates: string[];
   daysSinceLastReport: number;
   reportingDaysCountInLast30Days: number;
   latestPrice: number | null;
@@ -105,6 +107,7 @@ function getMarketHistoryFromCsv(
     if (cedaObserved && cedaObserved.trailing7Prices.length >= 2) {
       return {
         trailing7Prices: cedaObserved.trailing7Prices,
+        trailing7Dates: cedaObserved.trailing7Dates,
         daysSinceLastReport: cedaObserved.daysSinceLastReport,
         reportingDaysCountInLast30Days: cedaObserved.reportingDaysCountInLast30Days,
         latestPrice: cedaObserved.latestPrice,
@@ -240,8 +243,19 @@ function buildCandidateEvaluations(
         historySource,
         observationCount: historyObservationCount,
         startDate: history.startDate,
-        endDate: history.endDate
+        endDate: history.endDate,
+        trailingDates: history.trailing7Dates,
+        daysSinceLastObservation: history.daysSinceLastReport
       });
+
+      // A refused trend means there is no usable momentum signal; fall back to the honest flat path
+      // rather than shipping a Forecast that claims a history source it was not allowed to use.
+      if (!forecast.isForecastEligible) {
+        const reason = forecast.forecastIneligibilityReason;
+        forecast = generateCurrentOnlyForecast(basePrice);
+        forecast.forecastIneligibilityReason = reason;
+        historySource = 'CURRENT_ONLY';
+      }
     } else {
       // CURRENT_ONLY: Honest flat price path, 0 slope, 0 uncertainty.
       // Decision is driven by spatial arbitrage and holding costs (storage, decay, freshness).

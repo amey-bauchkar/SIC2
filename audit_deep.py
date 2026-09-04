@@ -491,18 +491,41 @@ audit("D16 A recommended mandi is never data-quality POOR",
 audit("D17 Every recommendation carries template-generated reasons",
       len(ev["recommendation"].get("reasons", [])) >= 2)
 
+OBSERVED_PROVENANCE = {"AGMARKNET_MARKET_OBSERVED", "HISTORICAL_SERIES_OBSERVED"}
+
 if ev.get("evaluations"):
     eligible = [e for e in ev["evaluations"] if e["dataQuality"]["isEligibleForRecommendation"]]
-    if ev["recommendation"]["action"] == "SELL_TODAY" and eligible:
+    # The decision policy deliberately restricts the candidate set to DIRECTLY OBSERVED prices
+    # whenever any exist, so that a distant peer-calibrated estimate can never hijack the
+    # recommendation. The audit must model that rule, not a naive global maximum.
+    observed = [e for e in eligible
+                if e["dataQuality"].get("priceProvenance") in OBSERVED_PROVENANCE]
+    considered = observed if observed else eligible
+
+    if ev["recommendation"]["action"] == "SELL_TODAY" and considered:
         best_day0 = max(next(n["netRealisation"] for n in e["netRealisationByDay"] if n["day"] == 0)
-                        for e in eligible)
+                        for e in considered)
         chosen = next((next(n["netRealisation"] for n in e["netRealisationByDay"] if n["day"] == 0)
-                       for e in eligible if e["market"]["id"] == ev["recommendation"]["market"]["id"]), None)
-        audit("D18 SELL_TODAY picks the highest day-0 net realisation among eligible mandis",
-              chosen is not None and close(chosen, best_day0), f"{chosen} vs {best_day0}")
+                       for e in considered if e["market"]["id"] == ev["recommendation"]["market"]["id"]), None)
+        audit("D18 SELL_TODAY picks the best day-0 net realisation within the considered candidate set",
+              chosen is not None and close(chosen, best_day0),
+              f"chosen {chosen} vs best {best_day0} among {len(considered)} "
+              f"{'directly-observed' if observed else 'eligible'} mandis")
     else:
-        audit("D18 SELL_TODAY picks the highest day-0 net realisation among eligible mandis",
+        audit("D18 SELL_TODAY picks the best day-0 net realisation within the considered candidate set",
               True, "not applicable for this action")
+
+    # The provenance-preference rule itself must hold.
+    if observed and ev["recommendation"].get("market"):
+        chosen_prov = next((e["dataQuality"].get("priceProvenance")
+                            for e in ev["evaluations"]
+                            if e["market"]["id"] == ev["recommendation"]["market"]["id"]), None)
+        audit("D19 A peer-calibrated mandi is never recommended when a directly-observed one exists",
+              chosen_prov in OBSERVED_PROVENANCE,
+              f"recommended provenance = {chosen_prov}")
+    else:
+        audit("D19 A peer-calibrated mandi is never recommended when a directly-observed one exists",
+              True, "no directly-observed mandi in range")
 
 
 # ===========================================================================
