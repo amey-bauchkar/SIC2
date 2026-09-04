@@ -11,18 +11,27 @@
  */
 
 import { Market, NetRealisation, Forecast } from '../contracts/domain';
+import { getCropDecayProfile } from './asli-daam';
 
 export function calculateNetRealisationForMarket(
   market: Market,
   forecast: Forecast,
   transportCostPerKmPerQtl: number,
-  storageCostPerDayPerQtl: number
+  storageCostPerDayPerQtl: number,
+  commodity?: string
 ): NetRealisation[] {
   const roadDistanceKm = market.estimatedRoadDistanceKm || 0.0;
   const transportCostPerQtl = Math.round(roadDistanceKm * transportCostPerKmPerQtl * 10) / 10;
+  const decayProfile = commodity ? getCropDecayProfile(commodity) : null;
 
   return forecast.expectedPriceByDay.map(fp => {
-    const waitingCostPerQtl = Math.round(fp.day * storageCostPerDayPerQtl * 10) / 10;
+    let waitingCostPerQtl = Math.round(fp.day * storageCostPerDayPerQtl * 10) / 10;
+    if (decayProfile && fp.day > 0) {
+      const decayLoss = fp.expectedPrice * decayProfile.dailyDecayRatePct * fp.day;
+      const freshnessLoss = fp.expectedPrice * decayProfile.dailyFreshnessDiscountPct * fp.day;
+      const storageRent = decayProfile.dailyStorageRentRs * fp.day;
+      waitingCostPerQtl = Math.round((decayLoss + freshnessLoss + storageRent) * 10) / 10;
+    }
     const net = Math.round((fp.expectedPrice - transportCostPerQtl - waitingCostPerQtl) * 10) / 10;
 
     return {

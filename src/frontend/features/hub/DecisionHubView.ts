@@ -518,6 +518,7 @@ function renderAsliDaamTab(
           </div>
           <div style="font-size: 0.68rem; color: var(--color-text-muted); margin-top: 3px;">
             Data quality: <strong>${recQuality?.tier || 'n/a'}</strong>${recQuality?.priceProvenance ? ` · ${recQuality.priceProvenance.replace(/_/g, ' ').toLowerCase()}` : ''}
+            ${recEval?.historySource ? ` · <span class="badge ${recEval.historySource === 'CEDA_OBSERVED' ? 'badge-sage' : 'badge-neutral'}" style="font-size: 0.62rem; padding: 2px 6px;">${recEval.historySource === 'CEDA_OBSERVED' ? '🏛️ CEDA Verified History' : (recEval.historySource === 'CURRENT_ONLY' ? 'Live Snapshot Only' : recEval.historySource)}</span>` : ''}
           </div>
         </div>
 
@@ -525,17 +526,17 @@ function renderAsliDaamTab(
 
       <!-- Forecast basis strip: says plainly what the timing advice is standing on -->
       <div style="display: flex; align-items: center; gap: var(--space-3); background: #ffffff; border: 1px dashed var(--color-border); padding: var(--space-3) var(--space-5); border-radius: var(--radius-lg); margin-bottom: var(--space-3); flex-wrap: wrap;">
-        <span style="font-size: 1.2rem;">📈</span>
+        <span style="font-size: 1.2rem;">${recEval?.forecast.isForecastEligible ? '📈' : '⚖️'}</span>
         <div style="flex: 1; min-width: 260px;">
           <div style="font-size: var(--font-size-sm); font-weight: 700; color: var(--color-text-main);">
-            Forecast basis: ${hasRealSeries
-              ? `7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day from the real ${rec.market.name} price series`
-              : 'flat price path — no multi-day series exists for this mandi'}
+            Forecast basis: ${recEval?.forecast.isForecastEligible
+              ? `Verified CEDA 7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day (${recEval.historyObservationCount} observations)`
+              : 'Flat price path — Single-day Agmarknet observation (zero synthetic momentum)'}
           </div>
           <div style="font-size: var(--font-size-xs); color: var(--color-text-muted); line-height: 1.5;">
-            ${hasRealSeries
-              ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes). Waiting is only advised when the projected gain clears this buffer plus holding costs.`
-              : `The Agmarknet pull for this mandi is a single-day snapshot, so MandiMitra holds the price flat rather than inventing a trend. With no forecastable upside, holding can only lose money to storage, decay and the freshness discount — hence "sell today".`}
+            ${recEval?.forecast.isForecastEligible
+              ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes from CEDA archive). Waiting is only advised when the projected gain clears this buffer plus holding costs.`
+              : `This mandi uses observed current Agmarknet prices with zero synthetic trend fallback. With prices held flat across day offsets, holding can only incur storage rent, biological decay and freshness degradation — hence advising optimal immediate sale.`}
           </div>
         </div>
       </div>

@@ -71,6 +71,17 @@ export interface DataQualityAssessment {
 
 export type ModelVersion = 'v0-heuristic' | 'v1-gbm';
 
+/**
+ * How the historical price series backing a forecast was established.
+ * This is the primary data-provenance flag for temporal trend inference.
+ */
+export type HistorySource =
+  | 'CEDA_OBSERVED'           // Verified historical observations from CEDA Agmarknet archive
+  | 'HISTORICAL_CSV_OBSERVED' // Legacy CSV series from data/historical/ (simulated but weather-calibrated)
+  | 'CURRENT_ONLY'            // Real current price exists but insufficient historical observations for trend
+  | 'INSUFFICIENT'            // Not enough data of any kind for a meaningful evaluation
+  | 'SYNTHETIC_DEMO';         // Explicitly synthetic data used only in test/demo fixtures
+
 export interface DailyPriceForecast {
   day: number; // 0, 1, 2, 3
   expectedPrice: number; // INR per quintal
@@ -81,6 +92,16 @@ export interface Forecast {
   expectedPriceByDay: DailyPriceForecast[];
   uncertainty: number; // Standard deviation / volatility buffer in INR
   historicalSlope7d: number; // ₹/day price rate of change
+  /** How the historical observations that produced this forecast were sourced. */
+  historySource: HistorySource;
+  /** Number of real historical observations backing the slope/uncertainty. */
+  historyObservationCount: number;
+  /** ISO date of the earliest historical observation used. */
+  historyStartDate?: string;
+  /** ISO date of the latest historical observation used. */
+  historyEndDate?: string;
+  /** Whether temporal trend inference was permitted (true only with sufficient real history). */
+  isForecastEligible: boolean;
 }
 
 export interface NetRealisation {
@@ -97,6 +118,10 @@ export interface MarketEvaluation {
   dataQuality: DataQualityAssessment;
   forecast: Forecast;
   netRealisationByDay: NetRealisation[];
+  /** How the historical price data for this market was sourced. */
+  historySource: HistorySource;
+  /** Number of real historical observations available for this market/commodity. */
+  historyObservationCount: number;
 }
 
 export type RecommendationAction = 

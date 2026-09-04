@@ -109,11 +109,11 @@ function calculateAlgebraicBreakeven(
     return null;
   }
 
-  // Equation: P1 - T* * D1 - d1*S = P2 - T* * D2 - d2*S
-  // T* * (D1 - D2) = (P1 - P2) - S * (d1 - d2)
+  // Equation: P1 - T* * D1 - W1 = P2 - T* * D2 - W2
+  // T* * (D1 - D2) = (P1 - P2) - (W1 - W2)
   const priceDiff = winner.expectedPrice - runnerUp.expectedPrice;
-  const storageDiff = storageCostPerDay * (winner.day - runnerUp.day);
-  const breakevenT = (priceDiff - storageDiff) / distDiff;
+  const waitingDiff = winner.waitingCost - runnerUp.waitingCost;
+  const breakevenT = (priceDiff - waitingDiff) / distDiff;
 
   if (breakevenT > 0 && breakevenT <= 100.0) {
     return Math.round(breakevenT * 100) / 100;
@@ -162,20 +162,25 @@ export function evaluateNirnayKawach(
   const runnerUp = eligibleOptions.find(o => o.marketId !== winner.marketId) || (eligibleOptions.length > 1 ? eligibleOptions[1] : null);
 
   // 3. Algebraic Breakeven Calculation
-  // Test candidate markets to find the closest positive transport flip rate
+  // Test candidate markets to find the closest transport rate > currentTransportRate where a closer market overtakes
   let breakevenRate: number | null = null;
   const altMarkets = eligibleOptions.filter(o => o.marketId !== winner.marketId);
   for (const alt of altMarkets) {
-    const rate = calculateAlgebraicBreakeven(winner, alt, storageCostPerDay);
-    if (rate !== null && rate > 0) {
-      if (breakevenRate === null || rate < breakevenRate) {
-        breakevenRate = rate;
+    if (winner.roadDistanceKm > alt.roadDistanceKm) {
+      const rate = calculateAlgebraicBreakeven(winner, alt, storageCostPerDay);
+      if (rate !== null && rate > currentTransportRate) {
+        if (breakevenRate === null || rate < breakevenRate) {
+          breakevenRate = rate;
+        }
       }
     }
   }
 
-  if (breakevenRate === null && runnerUp) {
-    breakevenRate = calculateAlgebraicBreakeven(winner, runnerUp, storageCostPerDay);
+  if (breakevenRate === null && runnerUp && winner.roadDistanceKm > runnerUp.roadDistanceKm) {
+    const rate = calculateAlgebraicBreakeven(winner, runnerUp, storageCostPerDay);
+    if (rate !== null && rate > currentTransportRate) {
+      breakevenRate = rate;
+    }
   }
 
   // If winner dominates alternatives across price & distance, compute the resilience threshold:
