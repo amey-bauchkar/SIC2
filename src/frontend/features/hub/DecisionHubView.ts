@@ -62,6 +62,125 @@ type HubTab = 'aslidaam' | 'sajhabazaar' | 'markets' | 'evidence' | 'backtest' |
 let activeTab: HubTab = 'aslidaam';
 let currentLanguage: Language = 'mr';
 let isCostDrawerOpen = false;
+let currentMarketScenario: 'SPOT' | 'BULLISH' = 'SPOT';
+
+interface ColdStorageFacility {
+  id: string;
+  name: string;
+  district: string;
+  mandiVicinity: string;
+  type: string;
+  targetCommodity: string;
+  capacityMt: number;
+  dailyRentPerQtl: number;
+  maxRecommendedDays: number;
+  distanceFromMandiKm: number;
+  isEnwrEligible?: boolean;
+}
+
+const ACCREDITED_STORAGE_FACILITIES: ColdStorageFacility[] = [
+  {
+    id: 'wh_nsk_lasalgaon_01',
+    name: 'Lasalgaon APMC Scientific Onion Storage & Chawl Complex',
+    district: 'Nashik',
+    mandiVicinity: 'Lasalgaon',
+    type: 'Ventilated Onion Chawl / Scientific Storage',
+    targetCommodity: 'Onion',
+    capacityMt: 12000,
+    dailyRentPerQtl: 0.45,
+    maxRecommendedDays: 90,
+    distanceFromMandiKm: 1.2,
+    isEnwrEligible: true
+  },
+  {
+    id: 'wh_nsk_pimpalgaon_01',
+    name: 'Pimpalgaon Agro Cold Chain & Pre-cooling Facility',
+    district: 'Nashik',
+    mandiVicinity: 'Pimpalgaon Baswant',
+    type: 'Controlled Atmosphere Cold Storage',
+    targetCommodity: 'Tomato, Grapes, Onion',
+    capacityMt: 5000,
+    dailyRentPerQtl: 1.10,
+    maxRecommendedDays: 15,
+    distanceFromMandiKm: 2.5,
+    isEnwrEligible: true
+  },
+  {
+    id: 'wh_pun_narayangaon_01',
+    name: 'Junnar Taluka Tomato Processing & Pre-Cooling Center',
+    district: 'Pune',
+    mandiVicinity: 'Junnar(Narayangaon)',
+    type: 'Perishable Horticultural Cold Storage',
+    targetCommodity: 'Tomato, Vegetables',
+    capacityMt: 3500,
+    dailyRentPerQtl: 1.25,
+    maxRecommendedDays: 7,
+    distanceFromMandiKm: 0.8,
+    isEnwrEligible: false
+  },
+  {
+    id: 'wh_pun_gultekdi_01',
+    name: 'Pune Market Yard Terminal Cold Warehouse',
+    district: 'Pune',
+    mandiVicinity: 'Pune(Gultekdi)',
+    type: 'Urban Terminal Cold Storage',
+    targetCommodity: 'Fruits, Vegetables, Onion',
+    capacityMt: 8500,
+    dailyRentPerQtl: 1.20,
+    maxRecommendedDays: 14,
+    distanceFromMandiKm: 0.5,
+    isEnwrEligible: true
+  },
+  {
+    id: 'wh_lat_cwc_01',
+    name: 'Central Warehousing Corporation (CWC) Latur Mega Facility',
+    district: 'Latur',
+    mandiVicinity: 'Latur',
+    type: 'WDRA Accredited Dry Grain & Oilseed Warehouse',
+    targetCommodity: 'Soyabean, Tur, Gram',
+    capacityMt: 45000,
+    dailyRentPerQtl: 0.25,
+    maxRecommendedDays: 365,
+    distanceFromMandiKm: 1.8,
+    isEnwrEligible: true
+  },
+  {
+    id: 'wh_bom_vashi_01',
+    name: 'Navi Mumbai Vashi APMC Apex Central Cold Complex',
+    district: 'Mumbai Suburban',
+    mandiVicinity: 'Navi Mumbai (Vashi APMC)',
+    type: 'Multi-Chamber Industrial Cold Storage',
+    targetCommodity: 'All Agricultural Produce',
+    capacityMt: 35000,
+    dailyRentPerQtl: 1.50,
+    maxRecommendedDays: 30,
+    distanceFromMandiKm: 0.6,
+    isEnwrEligible: true
+  }
+];
+
+function resolveStorageFacility(crop: string, district: string, mandiName: string): ColdStorageFacility {
+  const normMandi = (mandiName || '').toLowerCase();
+  const byMandi = ACCREDITED_STORAGE_FACILITIES.find(f => 
+    normMandi.includes(f.mandiVicinity.toLowerCase()) || f.mandiVicinity.toLowerCase().includes(normMandi)
+  );
+  if (byMandi) return byMandi;
+
+  const normDistrict = (district || '').toLowerCase();
+  const normCrop = (crop || '').toLowerCase();
+  const byDistCrop = ACCREDITED_STORAGE_FACILITIES.find(f =>
+    f.district.toLowerCase() === normDistrict && f.targetCommodity.toLowerCase().includes(normCrop)
+  );
+  if (byDistCrop) return byDistCrop;
+
+  const byDist = ACCREDITED_STORAGE_FACILITIES.find(f => f.district.toLowerCase() === normDistrict);
+  if (byDist) return byDist;
+
+  if (normCrop.includes('onion')) return ACCREDITED_STORAGE_FACILITIES[0];
+  if (normCrop.includes('tomato')) return ACCREDITED_STORAGE_FACILITIES[2];
+  if (normCrop.includes('soya')) return ACCREDITED_STORAGE_FACILITIES[4];
+  return ACCREDITED_STORAGE_FACILITIES[0];
+}
 
 const rs = (n: number): string => formatCurrency(n, currentLanguage);
 const rs1 = (n: number): string => formatCurrency(n, currentLanguage, true);
@@ -289,7 +408,8 @@ export function renderDecisionHubView(): HTMLElement {
       longitude: state.userLocation?.lon || 73.7898,
       transportCostPerKmPerQtl: state.costConfig.transportCostPerKmPerQtl,
       storageCostPerDayPerQtl: state.costConfig.storageCostPerDayPerQtl,
-      radiusKm: state.costConfig.searchRadiusKm
+      radiusKm: state.costConfig.searchRadiusKm,
+      marketScenario: currentMarketScenario
     }).then(res => {
       store.setEvaluationData(res);
     }).catch(err => {
@@ -455,16 +575,45 @@ export function renderDecisionHubView(): HTMLElement {
           </div>
         </div>
 
-        <!-- Cost Simulator Integrated Drawer -->
-        <div class="cockpit-cost-toggle-row">
-          <button type="button" class="cockpit-cost-toggle-btn ${isCostDrawerOpen ? 'open' : ''}" id="btn-toggle-cost-sim" aria-expanded="${isCostDrawerOpen ? 'true' : 'false'}" aria-controls="cockpit-cost-drawer">
-            <span>⚙️</span>
-            <span>${currentLanguage === 'mr' ? 'वाहतूक व खर्च सिम्युलेटर' : (currentLanguage === 'hi' ? 'परिवहन व लागत सिम्युलेटर' : 'Cost & Freight Simulator')}</span>
-            <span class="cost-toggle-pill">
-              ${formatCurrency(costConfig.transportCostPerKmPerQtl, currentLanguage, true)}/km · ${formatCurrency(costConfig.storageCostPerDayPerQtl, currentLanguage, true)}/day · ${formatUnit(costConfig.searchRadiusKm, 'km', currentLanguage)}
-            </span>
-            <span class="cost-toggle-arrow">▾</span>
-          </button>
+        <!-- Institutional Market Regime & Logistics Toolbar -->
+        <div class="cockpit-regime-toolbar" style="margin-top: 14px; padding: 12px 14px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          
+          <!-- Market Regime Segmented Switch -->
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1B3B2B;"></span>
+              <span style="font-family: var(--font-family-heading); font-size: 0.72rem; font-weight: 800; color: var(--color-text-main); letter-spacing: 0.05em; text-transform: uppercase;">
+                ${currentLanguage === 'mr' ? 'बाजार पुरवठा स्थिती' : (currentLanguage === 'hi' ? 'मंडी आपूर्ति स्थिति' : 'Market Supply Regime')}
+              </span>
+            </div>
+
+            <div class="scenario-pills-group" style="display: inline-flex; background: #F1F3EE; padding: 2px; border-radius: 6px; border: 1px solid #E2E5DC; gap: 2px;">
+              <button type="button" class="scenario-pill ${currentMarketScenario === 'SPOT' ? 'active' : ''}" data-scenario="SPOT" style="font-family: var(--font-family-heading); font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 5px; border: none; background: ${currentMarketScenario === 'SPOT' ? '#FFFFFF' : 'transparent'}; color: ${currentMarketScenario === 'SPOT' ? '#182014' : '#586151'}; cursor: pointer; transition: all 0.15s ease; box-shadow: ${currentMarketScenario === 'SPOT' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'}; display: inline-flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${currentMarketScenario === 'SPOT' ? '#2C7A3C' : '#9CA3AF'};"></span>
+                <span>${currentLanguage === 'mr' ? 'थेट चालू बाजार भाव' : (currentLanguage === 'hi' ? 'हाजिर दैनिक भाव' : 'Observed Spot Baseline')}</span>
+                <span style="font-size: 0.64rem; opacity: 0.7; font-weight: 600;">(Day 0)</span>
+              </button>
+
+              <button type="button" class="scenario-pill ${currentMarketScenario === 'BULLISH' ? 'active' : ''}" data-scenario="BULLISH" style="font-family: var(--font-family-heading); font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 5px; border: none; background: ${currentMarketScenario === 'BULLISH' ? '#182014' : 'transparent'}; color: ${currentMarketScenario === 'BULLISH' ? '#FEF3A3' : '#586151'}; cursor: pointer; transition: all 0.15s ease; box-shadow: ${currentMarketScenario === 'BULLISH' ? '0 1px 3px rgba(24,32,20,0.18)' : 'none'}; display: inline-flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${currentMarketScenario === 'BULLISH' ? '#FEF3A3' : '#9CA3AF'};"></span>
+                <span>${currentLanguage === 'mr' ? 'आवक टंचाई व सणासुदीची तेजी' : (currentLanguage === 'hi' ? 'आवक कमी व त्योहारी तेजी' : 'Supply Squeeze / Festive Deficit')}</span>
+                <span style="font-size: 0.64rem; font-weight: 800; background: ${currentMarketScenario === 'BULLISH' ? 'rgba(254,243,163,0.18)' : 'rgba(0,0,0,0.05)'}; padding: 1px 5px; border-radius: 3px;">+₹350/qtl</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cost & Haulage Parameters Drawer Toggle -->
+          <div>
+            <button type="button" class="cockpit-cost-toggle-btn ${isCostDrawerOpen ? 'open' : ''}" id="btn-toggle-cost-sim" aria-expanded="${isCostDrawerOpen ? 'true' : 'false'}" aria-controls="cockpit-cost-drawer" style="font-family: var(--font-family-heading); font-size: 0.74rem; font-weight: 700; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 6px; padding: 5px 11px; color: var(--color-text-main); display: inline-flex; align-items: center; gap: 7px; cursor: pointer; transition: all 0.15s ease;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-brand-primary-dark);"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+              <span>${currentLanguage === 'mr' ? 'वाहतूक व खर्च निकष' : (currentLanguage === 'hi' ? 'परिवहन व भाड़ा मानदंड' : 'Haulage & Storage Tariffs')}</span>
+              <span class="cost-toggle-pill" style="font-size: 0.66rem; font-family: var(--font-family-body); background: #F1F3EE; padding: 2px 6px; border-radius: 4px; color: var(--color-text-muted); font-weight: 600;">
+                ${formatCurrency(costConfig.transportCostPerKmPerQtl, currentLanguage, true)}/km · ${formatCurrency(costConfig.storageCostPerDayPerQtl, currentLanguage, true)}/day
+              </span>
+              <span class="cost-toggle-arrow" style="font-size: 0.68rem; color: #78716C;">▾</span>
+            </button>
+          </div>
+
         </div>
 
         <div class="cockpit-cost-drawer" id="cockpit-cost-drawer" style="display: ${isCostDrawerOpen ? 'block' : 'none'};">
@@ -583,6 +732,19 @@ export function renderDecisionHubView(): HTMLElement {
     });
   });
 
+  // ---- Scenario pills (Spot vs Bullish Surge Demo) ----
+  container.querySelectorAll('.scenario-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      const scenario = (e.currentTarget as HTMLElement).getAttribute('data-scenario') as 'SPOT' | 'BULLISH';
+      if (scenario && scenario !== currentMarketScenario) {
+        currentMarketScenario = scenario;
+        const cState = store.getState();
+        const d = getDistrictConfig(cState.userLocation?.district || 'Nashik');
+        void reevaluate({ crop: cState.selectedCrop || 'Onion', lat: d.latitude, lon: d.longitude });
+      }
+    });
+  });
+
   const reevaluate = async (params: { crop?: string; lat?: number; lon?: number }) => {
     const cState = store.getState();
     store.setLoading(true);
@@ -593,7 +755,8 @@ export function renderDecisionHubView(): HTMLElement {
         longitude: params.lon ?? (cState.userLocation?.lon || 73.7898),
         transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
         storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
-        radiusKm: cState.costConfig.searchRadiusKm
+        radiusKm: cState.costConfig.searchRadiusKm,
+        marketScenario: currentMarketScenario
       });
       store.setEvaluationData(res);
     } catch (err) {
@@ -797,6 +960,9 @@ function renderAsliDaamTab(
   const bhed = evalData.bhedVivek;
   const decay = opt.decayProfile;
 
+  const district = store.getState().userLocation?.district || 'Nashik';
+  const storageFacility = resolveStorageFacility(crop, district, rec.market.name);
+
   const recEval = evalData.evaluations.find(e => e.market.id === rec.market.id);
   const recQuality = recEval?.dataQuality;
   const forecastUncertainty = recEval?.forecast.uncertainty ?? 0;
@@ -971,6 +1137,113 @@ function renderAsliDaamTab(
           ${currentLanguage === 'mr' ? 'आवाज ऐका (मराठी)' : (currentLanguage === 'hi' ? 'आवाज सुनें (हिंदी)' : 'Play Audio')}
         </button>
       </div>
+
+      ${isWait ? `
+      <!-- Cold Storage & Scientific Holding Facility Dossier (Active when WAIT is recommended) -->
+      <div class="cold-storage-dossier" style="margin-top: 14px; background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #166534; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); position: relative;">
+        
+        <!-- Header Regulatory Roster -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #F1F5F9;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 7l9-4 9 4v14H3V7zm4 4h2v4H7v-4zm6 0h2v4h-2v-4z"/></svg>
+              <span style="font-family: var(--font-family-heading); font-size: 0.72rem; font-weight: 800; color: #166534; letter-spacing: 0.05em; text-transform: uppercase;">
+                ${currentLanguage === 'mr' ? 'शासनमान्य शीतगृह व साठवणूक पायाभूत सुविधा' : (currentLanguage === 'hi' ? 'शासकीय मान्यताप्राप्त कोल्ड स्टोरेज व भंडारण संरचना' : 'Accredited Storage Infrastructure Allocation')}
+              </span>
+            </div>
+            <div style="font-size: 0.69rem; color: #64748B; font-weight: 500;">
+              WDRA License Registry: ${storageFacility.id.toUpperCase()} · MSAMB Maharashtra Cold Chain Network
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 6px;">
+            ${storageFacility.isEnwrEligible ? `
+            <span style="font-family: var(--font-family-heading); font-size: 0.68rem; font-weight: 700; color: #15803D; background: #F0FDF4; border: 1px solid #BBF7D0; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              ${currentLanguage === 'mr' ? 'e-NWR तारण कर्ज: ७०% मर्यादा पात्र' : (currentLanguage === 'hi' ? 'e-NWR ऋण पात्र: 70% उठाव' : 'e-NWR Pledge Loan: 70% LTV Eligible')}
+            </span>` : ''}
+            <span style="font-family: var(--font-family-heading); font-size: 0.68rem; font-weight: 600; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 4px;">
+              ${storageFacility.district} District
+            </span>
+          </div>
+        </div>
+
+        <!-- Facility Name & Mandi Proximity -->
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+          <div>
+            <h4 style="font-family: var(--font-family-heading); font-size: 0.98rem; font-weight: 800; color: #0F172A; margin: 0 0 3px 0;">
+              ${storageFacility.name}
+            </h4>
+            <div style="font-size: 0.74rem; color: #475569; display: flex; align-items: center; gap: 5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              <span>${formatUnit(storageFacility.distanceFromMandiKm, 'km', currentLanguage)} ${currentLanguage === 'mr' ? `(${translateMandiName(storageFacility.mandiVicinity, currentLanguage)} बाजार समिती आवारापासून थेट अंतर)` : (currentLanguage === 'hi' ? `(${translateMandiName(storageFacility.mandiVicinity, currentLanguage)} मंडी यार्ड से सीधी दूरी)` : `direct transit from ${storageFacility.mandiVicinity} APMC yard`)}</span>
+            </div>
+          </div>
+          <span style="font-family: var(--font-family-heading); font-size: 0.72rem; font-weight: 700; color: #0F172A; background: #F1F5F9; border: 1px solid #E2E8F0; padding: 3px 9px; border-radius: 4px;">
+            ${storageFacility.type}
+          </span>
+        </div>
+
+        <!-- 4-Column Structured Technical Ledger -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; padding: 10px 12px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; margin-bottom: 12px;">
+          <div>
+            <div style="font-family: var(--font-family-body); font-size: 0.65rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;">
+              ${currentLanguage === 'mr' ? 'नियमित दैनिक भाडे' : (currentLanguage === 'hi' ? 'दैनिक भंडारण शुल्क' : 'Approved Daily Tariff')}
+            </div>
+            <div style="font-family: var(--font-family-heading); font-size: 0.92rem; font-weight: 800; color: #0F172A;">
+              ${formatCurrency(storageFacility.dailyRentPerQtl, currentLanguage, true)} <span style="font-size: 0.7rem; font-weight: 500; color: #64748B;">/ ${formatUnit(1, 'qtl', currentLanguage)} / ${currentLanguage === 'mr' ? 'दिवस' : (currentLanguage === 'hi' ? 'दिन' : 'day')}</span>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family: var(--font-family-body); font-size: 0.65rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;">
+              ${currentLanguage === 'mr' ? `${formatNumber(rec.dayOffset, currentLanguage)} दिवसांचे एकूण भाडे` : (currentLanguage === 'hi' ? `${formatNumber(rec.dayOffset, currentLanguage)} दिनों का कुल शुल्क` : `Retention Cost (${rec.dayOffset} Days)`)}
+            </div>
+            <div style="font-family: var(--font-family-heading); font-size: 0.92rem; font-weight: 800; color: #166534;">
+              ${formatCurrency(storageFacility.dailyRentPerQtl * rec.dayOffset * qty, currentLanguage)} <span style="font-size: 0.7rem; font-weight: 500; color: #64748B;">(${formatUnit(qty, 'qtl', currentLanguage)} एकूण)</span>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family: var(--font-family-body); font-size: 0.65rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;">
+              ${currentLanguage === 'mr' ? 'अधिकृत साठवणूक क्षमता' : (currentLanguage === 'hi' ? 'अधिकृत भंडारण क्षमता' : 'Audited Capacity')}
+            </div>
+            <div style="font-family: var(--font-family-heading); font-size: 0.92rem; font-weight: 800; color: #0F172A;">
+              ${formatNumber(storageFacility.capacityMt, currentLanguage)} MT
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family: var(--font-family-body); font-size: 0.65rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;">
+              ${currentLanguage === 'mr' ? 'कमाल शिफारस कालावधी' : (currentLanguage === 'hi' ? 'अधिकतम सुरक्षित अवधि' : 'Safe Holding Limit')}
+            </div>
+            <div style="font-family: var(--font-family-heading); font-size: 0.92rem; font-weight: 800; color: #0F172A;">
+              ${formatNumber(storageFacility.maxRecommendedDays, currentLanguage)} ${currentLanguage === 'mr' ? 'दिवस' : (currentLanguage === 'hi' ? 'दिन' : 'Days')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Reconciliation Audit Bar -->
+        <div style="background: #FAF8F5; border: 1px solid rgba(85, 65, 45, 0.14); border-radius: 6px; padding: 10px 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 4px;">
+            <span style="font-family: var(--font-family-heading); font-size: 0.72rem; font-weight: 800; color: #55412D; text-transform: uppercase; letter-spacing: 0.05em;">
+              ${currentLanguage === 'mr' ? 'आर्थिक ताळेबंद: साठवणूक नफा पडताळणी' : (currentLanguage === 'hi' ? 'वित्तीय विवरण: भंडारण लाभ सत्यापन' : 'Holding Arbitrage Reconciliation')}
+            </span>
+            <span style="font-family: var(--font-family-body); font-size: 0.72rem; color: #166534; font-weight: 700;">
+              ${currentLanguage === 'mr' ? `खिशात निव्वळ जास्तीचा फायदा: +${formatCurrency(opt.totalPocketCashGain, currentLanguage)}` : (currentLanguage === 'hi' ? `जेब में शुद्ध अतिरिक्त लाभ: +${formatCurrency(opt.totalPocketCashGain, currentLanguage)}` : `Net Pocket Surplus: +${formatCurrency(opt.totalPocketCashGain, currentLanguage)}`)}
+            </span>
+          </div>
+          <div style="font-family: var(--font-family-body); font-size: 0.73rem; color: #443322; line-height: 1.5;">
+            ${currentLanguage === 'mr'
+              ? `${formatNumber(rec.dayOffset, currentLanguage)} दिवस माल थांबवल्यास बाजारात भाववाढ +${formatCurrency(opt.gainPerQtl, currentLanguage)}/क्विंटल अपेक्षित आहे. एकूण साठवणूक खर्च केवळ ${formatCurrency(storageFacility.dailyRentPerQtl * rec.dayOffset * qty, currentLanguage)} लागेल. नैसर्गिक वजन घट आणि वाहतूक खर्च वजा करूनही त्वरित विक्रीपेक्षा निव्वळ नफा जास्त मिळतो.`
+              : (currentLanguage === 'hi'
+              ? `${formatNumber(rec.dayOffset, currentLanguage)} दिन माल रोकने पर भाव में +${formatCurrency(opt.gainPerQtl, currentLanguage)}/क्विंटल वृद्धि संभावित है। कुल भंडारण शुल्क मात्र ${formatCurrency(storageFacility.dailyRentPerQtl * rec.dayOffset * qty, currentLanguage)} देय होगा। प्राकृतिक वजन घट व भाड़ा काटने के बाद भी तत्काल बिक्री की तुलना में शुद्ध लाभ सुरक्षित है।`
+              : `Holding stock for ${rec.dayOffset} days captures a projected +₹${opt.gainPerQtl.toFixed(1)}/qtl gross spread against a total warehouse tariff of only ₹${(storageFacility.dailyRentPerQtl * rec.dayOffset * qty).toFixed(2)}. Net cash after factoring biological shrinkage and freight remains substantially superior to immediate liquidation.`)}
+          </div>
+        </div>
+
+      </div>
+      ` : ''}
 
     </div>
 

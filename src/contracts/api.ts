@@ -56,6 +56,7 @@ export interface EvaluateRequestBody {
   transportCostPerKmPerQtl?: number; // Optional override; defaults to config
   storageCostPerDayPerQtl?: number;  // Optional override; defaults to config
   radiusKm?: number;                 // Optional override; defaults to 100km
+  marketScenario?: 'SPOT' | 'BULLISH'; // Scenario toggle: spot or bullish surge
 }
 
 export interface EvaluateResponse {
