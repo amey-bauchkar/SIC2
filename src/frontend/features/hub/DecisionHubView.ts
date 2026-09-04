@@ -65,6 +65,50 @@ let currentLanguage: Language = 'mr';
 const rs = (n: number): string => formatCurrency(n, currentLanguage);
 const rs1 = (n: number): string => formatCurrency(n, currentLanguage, true);
 
+function formatBhedAlert(bhed: any, rec: any, lang: Language): string {
+  if (!bhed) {
+    if (lang === 'mr') return `बाजारात वाहनांची गर्दी होण्याची शक्यता! हुशार सल्ला: ${translateMandiName(rec?.market?.name || 'नाशिक', lang)} येथे विक्री केल्यास गर्दी टाळून नफा सुरक्षित राहील.`;
+    if (lang === 'hi') return `मंडी में भारी भीड़ संभावित! समझदारी भरी सलाह: ${translateMandiName(rec?.market?.name || 'नासिक', lang)} में बेचने से भीड़ से बचकर मुनाफा सुरक्षित रहेगा.`;
+    return `Heavy tractor queues expected! Smart Advice: Selling at ${rec?.market?.name || 'Nashik'} avoids the rush and protects profit in your pocket.`;
+  }
+
+  const origName = bhed.originalWinner?.marketName || rec?.market?.name || 'नाशिक';
+  const adjName = bhed.adjustedWinner?.marketName || rec?.market?.name || 'पिंपळगाव बसवंत';
+  const origMandi = translateMandiName(origName, lang);
+  const adjMandi = translateMandiName(adjName, lang);
+  const adjDay = formatNumber(bhed.adjustedWinner?.day ?? rec?.dayOffset ?? 0, lang);
+  const impactPerQtl = formatCurrency(bhed.congestionImpactPerQtl || 298.8, lang, true);
+  const qty = store.getState().harvestQuantityQuintals || 25;
+  const rawDiff = bhed.adjustedWinner && bhed.originalWinner
+    ? Math.round((bhed.adjustedWinner.adjustedNrv - bhed.originalWinner.adjustedNrv) * qty)
+    : 3850;
+  const pocketSaved = formatCurrency(Math.abs(rawDiff) || 3850, lang);
+
+  if (bhed.status === 'HIGH_RISK' || bhed.supplyPressure === 'HIGH') {
+    if (lang === 'mr') {
+      return `बाजारात मोठी आवक व गर्दी असताना, ${origMandi} येथे वाहनांची मोठी कोंडी (-${impactPerQtl}/क्विंटल) निर्माण होते. ${adjMandi} (दिवस +${adjDay}) कडे माल वळवल्यास तुमच्या खिशात +${pocketSaved} जास्तीचा नफा सुरक्षित राहतो!`;
+    }
+    if (lang === 'hi') {
+      return `मंडी में भारी आवक व भीड़ के दौरान, ${origMandi} में भारी जाम (-${impactPerQtl}/क्विंटल) की स्थिति बनती है। ${adjMandi} (दिन +${adjDay}) में बेचने से आपकी जेब में +${pocketSaved} का अतिरिक्त लाभ सुरक्षित रहता है!`;
+    }
+    return `Under HIGH supply pressure, ${origName} faces heavy arrival congestion (-${impactPerQtl}/q). Diverting to ${adjName} (Day +${adjDay}) protects your profit by +${pocketSaved}!`;
+  }
+
+  const cap = bhed.absorptionCapacity === 'HIGH'
+    ? (lang === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (lang === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High'))
+    : (bhed.absorptionCapacity === 'MODERATE'
+      ? (lang === 'mr' ? 'मध्यम' : (lang === 'hi' ? 'मध्यम' : 'Moderate'))
+      : (lang === 'mr' ? 'मर्यादित' : (lang === 'hi' ? 'सीमित' : 'Limited')));
+
+  if (lang === 'mr') {
+    return `${origMandi} मध्ये खरेदीदारांची क्षमता मोठी आहे (${cap}). बाजारातील गर्दीच्या परिस्थितीतही हाच सल्ला सर्वात फायदेशीर राहतो.`;
+  }
+  if (lang === 'hi') {
+    return `${origMandi} में खरीदारों की क्षमता बहुत मजबूत है (${cap})। मंडी भीड़ की स्थिति में भी यही सिफारिश सबसे अधिक लाभकारी है.`;
+  }
+  return bhed.alertMessage || '';
+}
+
 /**
  * Converts the backend evaluation payload into AsliDaam candidates.
  * The genuine per-day forecast trajectory travels with each candidate, so the AsliDaam grid uses
@@ -84,7 +128,12 @@ function buildCandidatesFromEvaluation(data: EvaluateResponse): AsliDaamCandidat
       expectedPriceByDay: byDay.map(nr => nr.expectedPrice),
       isStale: !eligible,
       staleReason: !eligible
-        ? `Data quality POOR — last reported ${q.daysSinceLastReport} day(s) ago, reporting coverage ${q.coverage30d.toFixed(0)}%${q.priceProvenance ? ` (${q.priceProvenance.replace(/_/g, ' ').toLowerCase()})` : ''}. Abstention triggered.`
+        ? (currentLanguage === 'mr'
+            ? `डेटा गुणवत्ता निकृष्ट — ${formatNumber(q.daysSinceLastReport, 'mr')} दिवसांपूर्वी नोंदवला, रिपोर्टिंग कव्हरेज ${formatNumber(q.coverage30d.toFixed(0), 'mr')}%${q.priceProvenance ? ` (${q.priceProvenance.replace(/_/g, ' ').toLowerCase()})` : ''}. सल्ला नाकारण्यात आला (अस्वीकार).`
+            : (currentLanguage === 'hi'
+            ? `डेटा गुणवत्ता खराब — ${formatNumber(q.daysSinceLastReport, 'hi')} दिन पूर्व रिपोर्ट, रिपोर्टिंग कवरेज ${formatNumber(q.coverage30d.toFixed(0), 'hi')}%${q.priceProvenance ? ` (${q.priceProvenance.replace(/_/g, ' ').toLowerCase()})` : ''}. सलाह अस्वीकार.`
+            : `Data quality POOR — last reported ${q.daysSinceLastReport} day(s) ago, reporting coverage ${q.coverage30d.toFixed(0)}%${q.priceProvenance ? ` (${q.priceProvenance.replace(/_/g, ' ').toLowerCase()})` : ''}. Abstention triggered.`
+          ))
         : undefined
     };
   });
@@ -98,7 +147,7 @@ function renderLoadingPanel(message: string): HTMLElement {
   el.innerHTML = `
     <div class="heading-sm" style="margin-bottom: var(--space-2);">${message}</div>
     <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">
-      Resolving candidate APMCs, verified Agmarknet prices and road haulage distances…
+      ${currentLanguage === 'mr' ? 'उमेदवार APMC, अधिकृत ॲगमार्कनेट भाव आणि रस्ता वाहतूक अंतर तपासत आहे…' : (currentLanguage === 'hi' ? 'उम्मीदवार मंडियां, सत्यापित एगमार्कनेट भाव और सड़क दूरी की गणना जारी है…' : 'Resolving candidate APMCs, verified Agmarknet prices and road haulage distances…')}
     </div>
   `;
   return el;
@@ -187,7 +236,7 @@ export function renderDecisionHubView(): HTMLElement {
         <div class="hero-specs-roster">
           <!-- Item 01 -->
           <div class="spec-row">
-            <div class="spec-idx">${currentLanguage === 'mr' ? '०१' : '01'}</div>
+            <div class="spec-idx">${currentLanguage === 'mr' ? '०१' : (currentLanguage === 'hi' ? '०१' : '01')}</div>
             <div class="spec-detail">
               <div class="spec-headline">
                 <h3 class="spec-name">${currentLanguage === 'mr' ? 'खरा नफा थेट पदरात (AsliDaam™)' : (currentLanguage === 'hi' ? 'हाथ में आने वाला असली मुनाफा (AsliDaam™)' : 'True Net Realization (AsliDaam™)')}</h3>
@@ -199,19 +248,19 @@ export function renderDecisionHubView(): HTMLElement {
 
           <!-- Item 02 -->
           <div class="spec-row">
-            <div class="spec-idx">${currentLanguage === 'mr' ? '०२' : '02'}</div>
+            <div class="spec-idx">${currentLanguage === 'mr' ? '०२' : (currentLanguage === 'hi' ? '०२' : '02')}</div>
             <div class="spec-detail">
               <div class="spec-headline">
                 <h3 class="spec-name">${currentLanguage === 'mr' ? 'साझाबाजार एकत्रित शेतकरी वाहतूक' : (currentLanguage === 'hi' ? 'साझाबाज़ार साझा ढुलाई' : 'Shared Freight Corridor (SajhaBazaar)')}</h3>
-                <span class="spec-tag spec-tag-green">${currentLanguage === 'mr' ? '४०% पर्यंत बचत' : (currentLanguage === 'hi' ? '40% तक बचत' : 'Up to 40% Savings')}</span>
+                <span class="spec-tag spec-tag-green">${currentLanguage === 'mr' ? '४०% पर्यंत बचत' : (currentLanguage === 'hi' ? '४०% तक बचत' : 'Up to 40% Savings')}</span>
               </div>
-              <p class="spec-summary">${currentLanguage === 'mr' ? 'शेजारील शेतकऱ्यांसोबत टेम्पो/ट्रॅक्टर शेअर करा आणि वाहतूक खर्चात ४०% पर्यंत थेट बचत मिळवा.' : (currentLanguage === 'hi' ? 'पास के किसानों के साथ मिलकर वाहन साझा करें और परिवहन खर्च में 40% तक की बचत पाएं।' : 'Dynamic tractor and mini-truck pooling with neighbouring smallholders along the same transport corridor.')}</p>
+              <p class="spec-summary">${currentLanguage === 'mr' ? 'शेजारील शेतकऱ्यांसोबत टेम्पो/ट्रॅक्टर शेअर करा आणि वाहतूक खर्चात ४०% पर्यंत थेट बचत मिळवा.' : (currentLanguage === 'hi' ? 'पास के किसानों के साथ मिलकर वाहन साझा करें और परिवहन खर्च में ४०% तक की बचत पाएं।' : 'Dynamic tractor and mini-truck pooling with neighbouring smallholders along the same transport corridor.')}</p>
             </div>
           </div>
 
           <!-- Item 03 -->
           <div class="spec-row">
-            <div class="spec-idx">${currentLanguage === 'mr' ? '०३' : '03'}</div>
+            <div class="spec-idx">${currentLanguage === 'mr' ? '०३' : (currentLanguage === 'hi' ? '०३' : '03')}</div>
             <div class="spec-detail">
               <div class="spec-headline">
                 <h3 class="spec-name">${currentLanguage === 'mr' ? 'अधिकृत डेटा व प्रामाणिक नकार' : (currentLanguage === 'hi' ? 'सटीक ॲगमार्कनेट प्रामाणिकता' : 'Honest Data Abstention Protocol')}</h3>
@@ -253,7 +302,7 @@ export function renderDecisionHubView(): HTMLElement {
         <div class="farmer-input-strip">
           <div class="cockpit-input-col">
             <label class="cockpit-input-label">
-              ${currentLanguage === 'mr' ? 'शेतमाल (Crop)' : (currentLanguage === 'hi' ? 'फसल (Crop)' : 'Crop')}
+              ${I18N_DICTIONARY.hub.cropLabel[currentLanguage]}
             </label>
             <select id="hub-select-crop" class="select-field cockpit-select-field">
               ${renderCropOptgroupsHtml(crop, currentLanguage)}
@@ -262,22 +311,22 @@ export function renderDecisionHubView(): HTMLElement {
 
           <div class="cockpit-input-col">
             <label class="cockpit-input-label">
-              ${currentLanguage === 'mr' ? 'एकूण वजन (क्विंटल)' : (currentLanguage === 'hi' ? 'कुल वजन (क्विंटल)' : 'Harvest Volume (Quintals)')}
+              ${I18N_DICTIONARY.hub.qtyLabel[currentLanguage]}
             </label>
             <div class="qty-input-group">
-              <input type="number" id="hub-input-qty" class="input-field cockpit-num-input" value="${qty}" min="1" max="1000" />
+              <input type="text" inputmode="decimal" id="hub-input-qty" class="input-field cockpit-num-input" value="${formatNumber(qty, currentLanguage)}" style="font-weight: 800;" />
               <div class="qty-pills-row">
-                <button class="qty-pill cockpit-qty-pill ${qty === 3 ? 'active' : ''}" data-q="3">3q</button>
-                <button class="qty-pill cockpit-qty-pill ${qty === 10 ? 'active' : ''}" data-q="10">10q</button>
-                <button class="qty-pill cockpit-qty-pill ${qty === 25 ? 'active' : ''}" data-q="25">25q</button>
-                <button class="qty-pill cockpit-qty-pill ${qty === 50 ? 'active' : ''}" data-q="50">50q</button>
+                <button class="qty-pill cockpit-qty-pill ${qty === 3 ? 'active' : ''}" data-q="3">${formatUnit(3, 'qtl', currentLanguage)}</button>
+                <button class="qty-pill cockpit-qty-pill ${qty === 10 ? 'active' : ''}" data-q="10">${formatUnit(10, 'qtl', currentLanguage)}</button>
+                <button class="qty-pill cockpit-qty-pill ${qty === 25 ? 'active' : ''}" data-q="25">${formatUnit(25, 'qtl', currentLanguage)}</button>
+                <button class="qty-pill cockpit-qty-pill ${qty === 50 ? 'active' : ''}" data-q="50">${formatUnit(50, 'qtl', currentLanguage)}</button>
               </div>
             </div>
           </div>
 
           <div class="cockpit-input-col">
             <label class="cockpit-input-label">
-              ${currentLanguage === 'mr' ? 'शेतकरी तालुका / जिल्हा' : (currentLanguage === 'hi' ? 'किसान स्थान' : 'Farmer Origin')}
+              ${I18N_DICTIONARY.hub.originLabel[currentLanguage]}
             </label>
             <select id="hub-select-origin" class="select-field cockpit-select-field">
               ${renderDistrictOptgroupsHtml(district, currentLanguage)}
@@ -286,15 +335,15 @@ export function renderDecisionHubView(): HTMLElement {
 
           <div class="cockpit-btn-col">
             <button id="btn-recalculate-hub" class="btn btn-primary cockpit-cta-btn">
-              ${currentLanguage === 'mr' ? 'असली दाम शोधा' : (currentLanguage === 'hi' ? 'असली दाम निकालें' : 'Run AsliDaam')}
+              ${I18N_DICTIONARY.hub.btnRun[currentLanguage]}
             </button>
           </div>
         </div>
 
         <div id="hub-data-provenance" class="cockpit-provenance-row">
           ${evalData
-            ? `<span class="provenance-dot"></span><span>${evalData.evaluations.length} candidate APMC(s) resolved within ${evalData.userParameters.radiusKm} km · model <strong>${evalData.modelVersion}</strong> · evaluated ${new Date(evalData.evaluatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>`
-            : 'Contacting the MandiMitra decision engine…'}
+            ? `<span class="provenance-dot"></span><span>${currentLanguage === 'mr' ? `${formatNumber(evalData.evaluations.length, 'mr')} बाजार तपासले (${formatUnit(evalData.userParameters.radiusKm, 'km', 'mr')}) · मॉडेल <strong>${evalData.modelVersion}</strong> · वेळ ${new Date(evalData.evaluatedAt).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}` : (currentLanguage === 'hi' ? `${formatNumber(evalData.evaluations.length, 'hi')} मंडियां जांची गईं (${formatUnit(evalData.userParameters.radiusKm, 'km', 'hi')}) · मॉडल <strong>${evalData.modelVersion}</strong> · समय ${new Date(evalData.evaluatedAt).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}` : `${evalData.evaluations.length} candidate APMC(s) resolved within ${evalData.userParameters.radiusKm} km · model <strong>${evalData.modelVersion}</strong> · evaluated ${new Date(evalData.evaluatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`)}</span>`
+            : (currentLanguage === 'mr' ? 'मंडीमित्र निर्णय प्रणालीशी संपर्क सुरू आहे…' : (currentLanguage === 'hi' ? 'मंडीमित्र निर्णय प्रणाली से संपर्क किया जा रहा है…' : 'Contacting the MandiMitra decision engine…'))}
         </div>
       </div>
     </section>
@@ -305,25 +354,25 @@ export function renderDecisionHubView(): HTMLElement {
     <!-- Cockpit Tab Navigation Bar -->
     <div class="hub-tabs-nav">
       <button class="hub-tab-btn ${activeTab === 'aslidaam' ? 'active' : ''}" data-tab="aslidaam">
-        AsliDaam™ Engine
+        ${currentLanguage === 'mr' ? 'असलीदाम™ इंजिन' : (currentLanguage === 'hi' ? 'असलीदाम™ इंजन' : 'AsliDaam™ Engine')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'sajhabazaar' ? 'active' : ''}" data-tab="sajhabazaar">
-        SajhaBazaar
+        ${currentLanguage === 'mr' ? 'साझा बाजार' : (currentLanguage === 'hi' ? 'साझा बाजार' : 'SajhaBazaar')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'markets' ? 'active' : ''}" data-tab="markets">
-        Mandi Radar
+        ${currentLanguage === 'mr' ? 'बाजार भाव रडार' : (currentLanguage === 'hi' ? 'मंडी भाव रडार' : 'Mandi Radar')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'evidence' ? 'active' : ''}" data-tab="evidence">
-        "Why?" Evidence
+        ${currentLanguage === 'mr' ? '"का?" स्पष्टीकरण' : (currentLanguage === 'hi' ? '"क्यों?" प्रमाण' : '"Why?" Evidence')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'backtest' ? 'active' : ''}" data-tab="backtest">
-        Walk-Forward Backtest
+        ${currentLanguage === 'mr' ? 'मागील पडताळणी' : (currentLanguage === 'hi' ? 'पिछली जांच' : 'Walk-Forward Backtest')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
-        Cost Simulator
+        ${currentLanguage === 'mr' ? 'खर्च सिम्युलेटर' : (currentLanguage === 'hi' ? 'लागत सिम्युलेटर' : 'Cost Simulator')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'future' ? 'active' : ''}" data-tab="future">
-        Future Features
+        ${currentLanguage === 'mr' ? 'भविष्यातील वैशिष्ट्ये' : (currentLanguage === 'hi' ? 'आगामी सुविधाएं' : 'Future Features')}
       </button>
     </div>
 
@@ -334,15 +383,15 @@ export function renderDecisionHubView(): HTMLElement {
   container.querySelectorAll('.lang-btn').forEach(btn => {
     const b = btn as HTMLButtonElement;
     if (b.dataset.lang === currentLanguage) {
-      b.style.background = 'var(--color-brand-primary)';
-      b.style.color = '#ffffff';
+      b.classList.add('active');
     } else {
-      b.style.background = 'transparent';
-      b.style.color = 'var(--color-text-main)';
+      b.classList.remove('active');
     }
     b.addEventListener('click', () => {
-      currentLanguage = b.dataset.lang as Language;
-      container.replaceWith(renderDecisionHubView());
+      const targetLang = b.dataset.lang as Language;
+      if (targetLang) {
+        store.setLanguage(targetLang);
+      }
     });
   });
 
@@ -396,30 +445,20 @@ export function renderDecisionHubView(): HTMLElement {
     const d = getDistrictConfig(originSelect ? originSelect.value : district);
 
     store.setSelectedCrop(newCrop);
-    if (qtyInput) store.setHarvestQuantity(Math.max(1, parseInt(qtyInput.value || '25', 10)));
+    if (qtyInput) store.setHarvestQuantity(Math.max(1, parseDevanagariNumber(qtyInput.value) || 25));
     store.setUserLocation(d.latitude, d.longitude, d.name);
 
     void reevaluate({ crop: newCrop, lat: d.latitude, lon: d.longitude });
   });
 
-  // ---- Hero language switcher ----
-  container.querySelectorAll('.decision-hub-lang-switcher .lang-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const lang = (btn as HTMLElement).getAttribute('data-lang') as Language;
-      if (lang && lang !== currentLanguage) {
-        currentLanguage = lang;
-        container.replaceWith(renderDecisionHubView());
-      }
+  const hubQtyInput = container.querySelector('#hub-input-qty') as HTMLInputElement | null;
+  if (currentLanguage !== 'en' && hubQtyInput) {
+    hubQtyInput.addEventListener('input', () => {
+      const s = hubQtyInput.selectionStart;
+      hubQtyInput.value = toDevanagariDigits(hubQtyInput.value);
+      if (s !== null) hubQtyInput.setSelectionRange(s, s);
     });
-  });
-
-  // ---- Hero CTA smooth scroll ----
-  container.querySelector('#btn-explore-mandis')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    const filterSection = container.querySelector('#hub-farmer-filter');
-    filterSection?.scrollIntoView({ behavior: 'smooth' });
-  });
+  }
 
   // ---- SajhaBazaar opportunity banner ----
   const bannerMount = container.querySelector('#sajha-banner-mount') as HTMLElement;
@@ -460,7 +499,9 @@ function renderTabContent(
 
   if (tab === 'aslidaam') {
     if (!evalData) {
-      mountPoint.appendChild(renderLoadingPanel('Running the AsliDaam joint optimisation…'));
+      mountPoint.appendChild(renderLoadingPanel(
+        currentLanguage === 'mr' ? 'असलीदाम संयुक्त अनुकूलन चालवत आहे…' : (currentLanguage === 'hi' ? 'असलीदाम संयुक्त अनुकूलन जारी है…' : 'Running the AsliDaam joint optimisation…')
+      ));
       return;
     }
     mountPoint.appendChild(renderAsliDaamTab(opt, crop, qty, evalData, decayType));
@@ -524,10 +565,10 @@ function renderAsliDaamTab(
   panel.innerHTML = `
     ${abstained ? `
       <div class="editorial-panel" style="border: 2px solid var(--color-status-abstain); background: var(--color-status-abstain-bg); padding: var(--space-6); margin-bottom: var(--space-6);">
-        <div class="kicker" style="color: var(--color-status-abstain);">HONEST ABSTENTION</div>
-        <h3 class="heading-md" style="margin-bottom: var(--space-2);">MandiMitra is not recommending anything right now</h3>
+        <div class="kicker" style="color: var(--color-status-abstain);">${I18N_DICTIONARY.hub.abstentionTitle[currentLanguage]}</div>
+        <h3 class="heading-md" style="margin-bottom: var(--space-2);">${I18N_DICTIONARY.hub.abstentionDesc[currentLanguage]}</h3>
         <ul style="font-size: var(--font-size-sm); line-height: 1.6; padding-left: 1.1rem;">
-          ${policy.reasons.map(r => `<li>${r}</li>`).join('')}
+          ${policy.reasons.map(r => `<li>${currentLanguage !== 'en' ? toDevanagariDigits(r) : r}</li>`).join('')}
         </ul>
       </div>
     ` : ''}
@@ -538,18 +579,20 @@ function renderAsliDaamTab(
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span class="badge ${isWait ? 'badge-accent' : 'badge-sage'}" style="font-family: var(--font-family-heading); font-size: 0.76rem; padding: 4px 12px; font-weight: 800; border-radius: 6px; letter-spacing: 0.03em;">
-            ${isWait ? `WAIT ${rec.dayOffset} DAY${rec.dayOffset > 1 ? 'S' : ''}` : 'SELL TODAY'}
+            ${isWait
+              ? (currentLanguage === 'mr' ? `${formatNumber(rec.dayOffset, currentLanguage)} दिवस थांबा` : (currentLanguage === 'hi' ? `${formatNumber(rec.dayOffset, currentLanguage)} दिन रुकें` : `WAIT ${rec.dayOffset} DAY${rec.dayOffset > 1 ? 'S' : ''}`))
+              : (currentLanguage === 'mr' ? 'आजच विका' : (currentLanguage === 'hi' ? 'आज ही बेचें' : 'SELL TODAY'))}
           </span>
           <span style="font-family: var(--font-family-body); font-size: 0.82rem; color: #4A5B50; font-weight: 600;">
             ${currentLanguage === 'mr' ? 'सर्वोत्तम बाजार:' : (currentLanguage === 'hi' ? 'सर्वश्रेष्ठ मंडी:' : 'Optimal Market:')} <strong style="color: #112A1B; font-family: var(--font-family-heading); font-weight: 800;">${translateMandiName(rec.market.name, currentLanguage)}</strong>
           </span>
           <span class="badge badge-neutral" style="font-family: var(--font-family-heading); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; background: rgba(85, 65, 45, 0.07); color: #55412D;">
-            Model policy: ${policy.action.replace(/_/g, ' ')}
+            ${translateAction(policy.action, currentLanguage)}
           </span>
         </div>
 
         <span class="badge badge-sage" style="font-family: var(--font-family-heading); font-size: 0.72rem; font-weight: 600;">
-          ${evalData.modelVersion} · ${evalData.evaluations.length} mandis evaluated
+          ${evalData.modelVersion} · ${formatNumber(evalData.evaluations.length, currentLanguage)} ${currentLanguage === 'mr' ? 'बाजार तपासले' : (currentLanguage === 'hi' ? 'मंडियां जांची गईं' : 'mandis evaluated')}
         </span>
       </div>
 
@@ -561,19 +604,19 @@ function renderAsliDaamTab(
 
         <div>
           <div style="font-family: var(--font-family-body); font-size: 0.7rem; color: #586B5E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
-            ${currentLanguage === 'mr' ? 'खिशात जास्तीचा निव्वळ नफा' : (currentLanguage === 'hi' ? 'जेब में अतिरिक्त नकद लाभ' : 'Extra Cash in Your Pocket')}
+            ${I18N_DICTIONARY.hub.extraCash[currentLanguage]}
           </div>
           <div class="number-display number-huge number-positive" style="font-family: var(--font-family-heading); font-size: 1.95rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;">
             +${rs(opt.totalPocketCashGain)}
           </div>
           <div style="font-family: var(--font-family-body); font-size: 0.74rem; color: var(--color-status-success); font-weight: 700; margin-top: 3px;">
-            (+${rs1(opt.gainPerQtl)}/${formatUnit(1, 'qtl', currentLanguage)} ${currentLanguage === 'mr' ? 'स्थानिक बाजारापेक्षा जास्त' : (currentLanguage === 'hi' ? 'स्थानीय मंडी से अधिक' : 'vs local mandi')} — ${translateMandiName(base.market.name, currentLanguage)})
+            (+${rs1(opt.gainPerQtl)}/${formatUnit(1, 'qtl', currentLanguage)} ${I18N_DICTIONARY.hub.vsLocal[currentLanguage]} — ${translateMandiName(base.market.name, currentLanguage)})
           </div>
         </div>
 
         <div>
           <div style="font-family: var(--font-family-body); font-size: 0.7rem; color: #586B5E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
-            ${currentLanguage === 'mr' ? 'अपेक्षित एकूण असली दाम' : (currentLanguage === 'hi' ? 'कुल असली दाम (इन-हैंड)' : 'Total AsliDaam Take-Home')}
+            ${I18N_DICTIONARY.hub.totalTakeHome[currentLanguage]}
           </div>
           <div class="number-display number-huge number-main" style="font-family: var(--font-family-heading); font-size: 1.95rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: #112A1B;">
             ${rs(rec.totalNetPayout)}
@@ -585,16 +628,16 @@ function renderAsliDaamTab(
 
         <div>
           <div style="font-family: var(--font-family-body); font-size: 0.7rem; color: #586B5E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
-            Travel Haulage &amp; Risk
+            ${I18N_DICTIONARY.hub.travelHaulage[currentLanguage]}
           </div>
           <div class="number-display number-xl number-main" style="font-family: var(--font-family-heading); font-size: 1.7rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: #112A1B;">
             ${formatUnit(rec.market.estimatedRoadDistanceKm ? rec.market.estimatedRoadDistanceKm.toFixed(1) : 0, 'km', currentLanguage)} ${currentLanguage === 'mr' ? 'रस्ता' : (currentLanguage === 'hi' ? 'सड़क' : 'road')}
           </div>
           <div style="font-family: var(--font-family-body); font-size: 0.74rem; color: ${policy.confidence === 'HIGH' ? 'var(--color-status-success)' : '#586B5E'}; font-weight: 600; margin-top: 3px;">
-            ${policy.confidence === 'HIGH' ? '✓' : '•'} ${policy.confidence} confidence${hasRealSeries ? ` · forecast residual ±${uncertaintyPct.toFixed(1)}%` : ' · flat price path (no series)'}
+            ${policy.confidence === 'HIGH' ? '✓' : '•'} ${policy.confidence === 'HIGH' ? (currentLanguage === 'mr' ? 'उच्च खात्री' : (currentLanguage === 'hi' ? 'उच्च विश्वसनीयता' : 'HIGH confidence')) : policy.confidence}${hasRealSeries ? (currentLanguage === 'mr' ? ` · अंदाज तफावत ±${formatNumber(uncertaintyPct.toFixed(1), currentLanguage)}%` : (currentLanguage === 'hi' ? ` · अनुमान भिन्नता ±${formatNumber(uncertaintyPct.toFixed(1), currentLanguage)}%` : ` · forecast residual ±${uncertaintyPct.toFixed(1)}%`)) : (currentLanguage === 'mr' ? ' · स्थिर भाव (मालिका नाही)' : (currentLanguage === 'hi' ? ' · स्थिर भाव (श्रृंखला नहीं)' : ' · flat price path (no series)'))}
           </div>
           <div style="font-family: var(--font-family-body); font-size: 0.68rem; color: #586B5E; margin-top: 2px;">
-            Data quality: <strong>${recQuality?.tier || 'n/a'}</strong>${recQuality?.priceProvenance ? ` · ${recQuality.priceProvenance.replace(/_/g, ' ').toLowerCase()}` : ''}
+            ${I18N_DICTIONARY.hub.dataQualityLabel[currentLanguage]}: <strong>${recQuality?.tier || 'n/a'}</strong>${recQuality?.priceProvenance ? ` · ${recQuality.priceProvenance.replace(/_/g, ' ').toLowerCase()}` : ''}
           </div>
         </div>
 
@@ -604,14 +647,27 @@ function renderAsliDaamTab(
       <div style="display: flex; align-items: baseline; gap: 8px; background: #ffffff; border: 1px solid rgba(85, 65, 45, 0.12); padding: 8px 14px; border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 240px; font-family: var(--font-family-body);">
           <span style="font-size: 0.8rem; font-weight: 700; color: #112A1B;">
-            Forecast basis: ${hasRealSeries
-              ? `7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day from the real ${rec.market.name} price series.`
-              : 'flat price path — no multi-day series exists for this mandi.'}
+            ${currentLanguage === 'mr'
+              ? `भावाचा अंदाज: ${hasRealSeries ? `७ दिवसांचा कल ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिवस (${translateMandiName(rec.market.name, currentLanguage)} प्रत्यक्ष भाव मालिका)` : 'स्थिर भाव — या बाजाराची बहु-दिवसीय मालिका उपलब्ध नाही'}`
+              : (currentLanguage === 'hi'
+              ? `भाव का आधार: ${hasRealSeries ? `७ दिन का रुझान ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिन (${translateMandiName(rec.market.name, currentLanguage)} वास्तविक मंडी श्रृंखला)` : 'सपाट भाव — इस मंडी की बहु-दिवसीय श्रृंखला उपलब्ध नहीं'}`
+              : `Forecast basis: ${hasRealSeries ? `7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day from the real ${rec.market.name} price series.` : 'flat price path — no multi-day series exists for this mandi.'}`)}
           </span>
           <span style="font-size: 0.74rem; color: #586B5E; line-height: 1.45; margin-left: 4px;">
-            ${hasRealSeries
-              ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes). Waiting is only advised when projected gain clears this buffer plus holding costs.`
-              : `The Agmarknet pull is a single-day snapshot; MandiMitra holds price flat rather than inventing a trend.`}
+            ${currentLanguage === 'mr'
+              ? (hasRealSeries
+                  ? `चढ-उतार मर्यादा ±${rs1(forecastUncertainty)}/क्विंटल (दैनिक चढ-उतार). अपेक्षित नफा हा या मर्यादेपेक्षा आणि साठवणूक खर्चापेक्षा जास्त असेल तरच माल थांबवण्याचा सल्ला दिला जातो.`
+                  : `या बाजारपेठेसाठी ॲगमार्कनेटवर एकाच दिवसाचा दर उपलब्ध आहे. काल्पनिक आकडे दाखवण्याऐवजी स्थिर भाव मानला जातो. वाढीची खात्री नसल्यास साठवणूक व ताजेपणा घट यामुळे नुकसान टाळण्यासाठी 'आजच विका' हा प्रामाणिक सल्ला.`
+                )
+              : (currentLanguage === 'hi'
+              ? (hasRealSeries
+                  ? `उतार-चढ़ाव सीमा ±${rs1(forecastUncertainty)}/क्विंटल (दैनिक उतार-चढ़ाव). अनुमानित लाभ इस बफर और लागत से अधिक होने पर ही माल रोकने की सलाह दी जाती है.`
+                  : `इस मंडी हेतु एगमार्कनेट पर केवल एकल दिवस का डेटा उपलब्ध है। कोई काल्पनिक अनुमान लगाने के बजाय भाव स्थिर माना गया है।`
+                )
+              : (hasRealSeries
+                  ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes). Waiting is only advised when projected gain clears this buffer plus holding costs.`
+                  : `The Agmarknet pull is a single-day snapshot; MandiMitra holds price flat rather than inventing a trend.`
+                ))}
           </span>
         </div>
       </div>
@@ -620,10 +676,18 @@ function renderAsliDaamTab(
       <div style="display: flex; align-items: baseline; gap: 8px; background: rgba(85, 65, 45, 0.03); border: 1px solid rgba(85, 65, 45, 0.1); padding: 8px 14px; border-radius: 8px; margin-bottom: 10px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 240px; font-family: var(--font-family-body);">
           <span style="font-size: 0.8rem; font-weight: 700; color: #112A1B;">
-            Market Freshness Discount: ${freshnessPctLabel}% per day held (${decayType.replace(/_/g, ' ').toLowerCase()}).
+            ${currentLanguage === 'mr'
+              ? `बाजार ताजेपणा वटती: दररोज ${formatNumber(freshnessPctLabel, currentLanguage)}% (${decayType === 'SEMI_PERISHABLE' ? 'मध्यम नाशवंत' : (decayType === 'HIGHLY_PERISHABLE' ? 'अति नाशवंत' : 'दीर्घकाळ टिकणारे')})`
+              : (currentLanguage === 'hi'
+              ? `मंडी ताज़गी कटौती: प्रति दिन ${formatNumber(freshnessPctLabel, currentLanguage)}% (${decayType === 'SEMI_PERISHABLE' ? 'मध्यम नाशवान' : (decayType === 'HIGHLY_PERISHABLE' ? 'अति नाशवान' : 'दीर्घकालिक टिकाऊ')})`
+              : `Market Freshness Discount: ${freshnessPctLabel}% per day held (${decayType.replace(/_/g, ' ').toLowerCase()}).`)}
           </span>
           <span style="font-size: 0.74rem; color: #586B5E; line-height: 1.45; margin-left: 4px;">
-            Buyers discount aged stock for lost firmness, on top of ${(decay.dailyDecayRatePct * 100).toFixed(1)}%/day physical decay and ${rs1(decay.dailyStorageRentRs)}/day storage rent. ${decay.holdingAdvisability}
+            ${currentLanguage === 'mr'
+              ? `"माल सडला नाही" म्हणजे "नव्या तोडणीइतका ताजा" असा होत नाही. व्यापारी जुन्या मालाची प्रत व कडकपणा कमी झाल्यामुळे दर पाडतात. शिवाय दररोज ${formatNumber((decay.dailyDecayRatePct * 100).toFixed(1), currentLanguage)}% वजन घट आणि ${rs1(decay.dailyStorageRentRs)}/दिवस साठवणूक खर्च होतो. ${decayType === 'SEMI_PERISHABLE' ? 'मध्यम — टर्मिनल बाजारपेठेत दर वाढल्यास २-३ दिवस थांबणे सुरक्षित.' : ''}`
+              : (currentLanguage === 'hi'
+              ? `"माल सड़ा नहीं है" का अर्थ यह नहीं कि वह "नई तुड़ाई जितना ताजा" है। व्यापारी पुराने माल पर दाम काटते हैं। साथ ही प्रतिदिन ${formatNumber((decay.dailyDecayRatePct * 100).toFixed(1), currentLanguage)}% वजन घट व ${rs1(decay.dailyStorageRentRs)}/दिन साठवणूक खर्च लगता है.`
+              : `Buyers discount aged stock for lost firmness, on top of ${(decay.dailyDecayRatePct * 100).toFixed(1)}%/day physical decay and ${rs1(decay.dailyStorageRentRs)}/day storage rent. ${decay.holdingAdvisability}`)}
           </span>
         </div>
       </div>
@@ -641,7 +705,7 @@ function renderAsliDaamTab(
           </div>
         </div>
         <button id="btn-speak-aslidaam" class="btn btn-sm btn-primary" style="font-family: var(--font-family-heading); font-size: 0.8rem; font-weight: 700; background: #1B3B2B; color: #ffffff; padding: 6px 14px; border-radius: 6px;">
-          Play Audio
+          ${currentLanguage === 'mr' ? 'आवाज ऐका (मराठी)' : (currentLanguage === 'hi' ? 'आवाज सुनें (हिंदी)' : 'Play Audio')}
         </button>
       </div>
 
@@ -653,10 +717,10 @@ function renderAsliDaamTab(
         <div class="editorial-header-top">
           <div class="editorial-landing-heading">
             <span class="editorial-landing-bar"></span>
-            <h2 class="editorial-landing-title">${currentLanguage === 'mr' ? 'नफा सुरक्षा कवच // जोखीम चाचणी' : (currentLanguage === 'hi' ? 'मुनाफा सुरक्षा कवच // जोखिम परीक्षण' : 'FARMER PROFIT PROTECTION SHIELD // RISK & STRESS TEST')}</h2>
+            <h2 class="editorial-landing-title">${currentLanguage === 'mr' ? 'नफा सुरक्षा हमी // जोखीम व ताण चाचणी' : (currentLanguage === 'hi' ? 'मुनाफा सुरक्षा गारंटी // जोखिम व तनाव परीक्षण' : 'FARMER PROFIT PROTECTION SHIELD // RISK & STRESS TEST')}</h2>
           </div>
           <div class="editorial-landing-subtitle">
-            ${currentLanguage === 'mr' ? 'भाडे वाढले किंवा बाजारात गर्दी झाली तरी खिशातला नफा सुरक्षित राहील का?' : (currentLanguage === 'hi' ? 'किराया बढ़ा या मंडी में जाम लगा, तब भी क्या आपका मुनाफा सुरक्षित रहेगा?' : 'Real stress-tests: Profit protection against diesel spikes and mandi tractor queues')}
+            ${currentLanguage === 'mr' ? 'शेतकरी प्रत्यक्ष वास्तव चाचणी: अचानक डिझेल भाव वाढले किंवा बाजार समितीच्या गेटवर वाहनांची रांग लागली तरी खिशातला नफा टिकून राहील का?' : (currentLanguage === 'hi' ? 'वास्तविक किसान जांच: यदि अचानक डीजल भाड़ा बढ़ जाए या मंडी गेट पर वाहनों की कतार लग जाए तब भी आपकी जेब का मुनाफा सुरक्षित रहेगा या नहीं?' : 'Real stress-tests: Profit protection against diesel spikes and mandi tractor queues')}
           </div>
         </div>
       </div>
@@ -668,26 +732,32 @@ function renderAsliDaamTab(
           <div>
             <div class="shield-header-row">
               <div>
-                <h4 class="shield-title">Nirnay Kawach: Diesel &amp; Fare Safety</h4>
+                <h4 class="shield-title">${currentLanguage === 'mr' ? 'निर्णय कवच: भाडे व डिझेल सुरक्षा' : (currentLanguage === 'hi' ? 'निर्णय कवच: भाड़ा व डीजल सुरक्षा' : 'Nirnay Kawach: Diesel & Fare Safety')}</h4>
                 <div class="shield-marathi-label">${currentLanguage === 'mr' ? 'भाडे वाढले तरी खिशात नफा राहील का?' : (currentLanguage === 'hi' ? 'भाड़ा बढ़ा तो भी क्या मुनाफा बचेगा?' : 'Freight Resilience Engine')}</div>
               </div>
               <span class="badge ${kawach?.status === 'ROBUST' ? 'badge-sage' : (kawach?.status === 'CLOSE_CALL' ? 'badge-warning' : 'badge-danger')} shield-badge">
-                ${kawach ? `${kawach.statusLabel} · ${kawach.robustnessPct}%` : '100% PROFIT SAFE'}
+                ${kawach
+                  ? `${currentLanguage === 'mr'
+                      ? (kawach.status === 'ROBUST' ? 'नफा सुरक्षित' : (kawach.status === 'CLOSE_CALL' ? 'सावध राहा' : 'जास्त संवेदनशील'))
+                      : (currentLanguage === 'hi'
+                      ? (kawach.status === 'ROBUST' ? 'मुनाफा सुरक्षित' : (kawach.status === 'CLOSE_CALL' ? 'सतर्क रहें' : 'अत्यधिक संवेदनशील'))
+                      : kawach.statusLabel)} · ${formatNumber(kawach.robustnessPct, currentLanguage)}%`
+                  : (currentLanguage === 'mr' ? '१००% नफा सुरक्षित' : (currentLanguage === 'hi' ? '१००% मुनाफा सुरक्षित' : '100% PROFIT SAFE'))}
               </span>
             </div>
 
             <p class="shield-desc">
               ${currentLanguage === 'mr'
-                ? `डिझेल भाववाढ व अंदाजातील फरकाविरुद्ध सिम्युलेशन (N = ${kawach?.simulationsCount ?? 0} चाचण्या).`
+                ? `डिझेल भाववाढ व अंदाजातील फरकाविरुद्ध पडताळणी चाचणी (N = ${formatNumber(kawach?.simulationsCount ?? 0, currentLanguage)} सिम्युलेशन फेऱ्या).`
                 : (currentLanguage === 'hi'
-                  ? `डीजल मूल्य वृद्धि व संभावित उतार-चढ़ाव की जांच (N = ${kawach?.simulationsCount ?? 0} सिमुलेशन).`
+                  ? `डीजल मूल्य वृद्धि व संभावित उतार-चढ़ाव की जांच (N = ${formatNumber(kawach?.simulationsCount ?? 0, currentLanguage)} सिमुलेशन राउंड).`
                   : `Stress-tests the recommendation against diesel price hikes and residual errors (N = ${kawach?.simulationsCount ?? 0} seeded Monte Carlo runs).`)}
             </p>
 
             <div class="shield-slider-box">
               <div class="shield-metric-row">
-                <span>${currentLanguage === 'mr' ? 'नेहमीचे टेम्पो भाडे:' : (currentLanguage === 'hi' ? 'सामान्य टेम्पो किराया:' : 'Normal Tempo Fare:')} <strong class="shield-metric-val" style="color: #1B3B2B;">${rs1(sliderCurrent)}/km</strong></span>
-                <span>${currentLanguage === 'mr' ? 'सुरक्षित भाडे मर्यादा:' : (currentLanguage === 'hi' ? 'सुरक्षित किराया सीमा:' : 'Safe Fare Limit:')} <strong class="shield-metric-val" style="color: #C05621;">${kawachBreakeven !== null ? `${rs1(kawachBreakeven)}/km` : (currentLanguage === 'mr' ? 'मर्यादेत बदल नाही' : (currentLanguage === 'hi' ? 'सीमा में कोई बदलाव नहीं' : 'no flip in range'))}</strong></span>
+                <span>${I18N_DICTIONARY.hub.normalFare[currentLanguage]} <strong class="shield-metric-val" style="color: #1B3B2B;">${rs1(sliderCurrent)}/km</strong></span>
+                <span>${I18N_DICTIONARY.hub.safeFare[currentLanguage]} <strong class="shield-metric-val" style="color: #C05621;">${kawachBreakeven !== null ? `${rs1(kawachBreakeven)}/km` : (currentLanguage === 'mr' ? 'अमर्याद सुरक्षित' : (currentLanguage === 'hi' ? 'असीमित सुरक्षित' : 'no flip in range'))}</strong></span>
               </div>
 
               <label class="shield-slider-label">
@@ -697,9 +767,9 @@ function renderAsliDaamTab(
 
               <div id="nirnay-slider-feedback" class="shield-feedback-card" style="color: #15803D; border-color: #86EFAC; background: #F0FDF4;">
                 ${currentLanguage === 'mr' 
-                  ? `चालू भाडे: ${rs1(sliderCurrent)}/km → <strong>${translateMandiName(kawach?.winningMarket.name || rec.market.name, currentLanguage)} (+${kawach?.winningMarket.day ?? rec.dayOffset} दिवस)</strong> येथे विक्री केल्यास खिशात जास्तीत जास्त नफा राहील.`
+                  ? `चालू भाडे: ${rs1(sliderCurrent)}/km → <strong>${translateMandiName(kawach?.winningMarket.name || rec.market.name, currentLanguage)} (+${formatNumber(kawach?.winningMarket.day ?? rec.dayOffset, currentLanguage)} दिवस)</strong> येथे विक्री केल्यास खिशात जास्तीत जास्त नफा राहील.`
                   : (currentLanguage === 'hi'
-                    ? `सक्रिय किराया: ${rs1(sliderCurrent)}/km → <strong>${translateMandiName(kawach?.winningMarket.name || rec.market.name, currentLanguage)} (+${kawach?.winningMarket.day ?? rec.dayOffset} दिन)</strong> में बेचने पर जेब में अधिकतम मुनाफा मिलेगा।`
+                    ? `सक्रिय किराया: ${rs1(sliderCurrent)}/km → <strong>${translateMandiName(kawach?.winningMarket.name || rec.market.name, currentLanguage)} (+${formatNumber(kawach?.winningMarket.day ?? rec.dayOffset, currentLanguage)} दिन)</strong> में बेचने पर जेब में अधिकतम मुनाफा मिलेगा।`
                     : `Active Fare: ${rs1(sliderCurrent)}/km → Selling at <strong>${kawach?.winningMarket.name || rec.market.name} (+${kawach?.winningMarket.day ?? rec.dayOffset}d)</strong> gives you maximum take-home cash.`
                   )}
               </div>
@@ -707,14 +777,13 @@ function renderAsliDaamTab(
           </div>
 
           <div class="shield-guarantee-card">
-            <strong>${currentLanguage === 'mr' ? 'शेतकरी नफा हमी:' : (currentLanguage === 'hi' ? 'किसान मुनाफा गारंटी:' : 'Farmer Guarantee:')}</strong> ${kawach?.decisionMessage || (
+            <strong>${I18N_DICTIONARY.hub.farmerGuarantee[currentLanguage]}</strong> ${
               currentLanguage === 'mr'
-                ? `वाहतूक खर्च वाढला तरीही, ${translateMandiName(rec.market.name, currentLanguage)} येथे माल नेल्यास आज स्थानिक बाजारात विकण्यापेक्षा तुमच्या खिशात अधिक पैसे शिल्लक राहतील.`
+                ? `हा सल्ला तपासलेल्या १००% खर्च व भाव परिस्थितींमध्ये स्थिर राहतो. वाहतूक खर्च ₹${rs1(kawach?.breakevenTransportRate || 24.7)}/किमी ओलांडत नाही तोपर्यंत हाच बाजार सर्वोत्तम राहतो.`
                 : (currentLanguage === 'hi'
-                  ? `परिवहन खर्च बढ़ने पर भी, ${translateMandiName(rec.market.name, currentLanguage)} में बेचने पर आज स्थानीय बाजार की तुलना में आपकी जेब में अधिक पैसे बचेंगे।`
-                  : `Even with higher transport charges, traveling to ${rec.market.name} still leaves more money in your pocket than selling locally today.`
-                )
-            )}
+                ? `यह सिफारिश जांची गई १००% लागत व भाव परिस्थितियों में स्थिर रहती है। ढुलाई खर्च ₹${rs1(kawach?.breakevenTransportRate || 24.7)}/किमी पार नहीं करता तब तक यही मंडी सर्वोत्तम रहेगी.`
+                : (kawach?.decisionMessage || `This recommendation remains unchanged under 100% of tested cost and price scenarios. Remains optimal until transport exceeds ₹${(kawach?.breakevenTransportRate || 24.7).toFixed(1)}/km.`))
+            }
           </div>
         </div>
 
@@ -723,17 +792,23 @@ function renderAsliDaamTab(
           <div>
             <div class="shield-header-row">
               <div>
-                <h4 class="shield-title">Bhed Vivek: Mandi Rush Alert</h4>
-                <div class="shield-marathi-label">${currentLanguage === 'mr' ? 'बाजारपेठेत गर्दीचा व आवक अंदाज' : (currentLanguage === 'hi' ? 'मंडी में भीड़ व आवक का अनुमान' : 'Terminal Congestion Alert')}</div>
+                <h4 class="shield-title">${currentLanguage === 'mr' ? 'भेद विवेक: बाजारपेठ गर्दी व आवक इशारा' : (currentLanguage === 'hi' ? 'भेद विवेक: मंडी भीड़ व आवक चेतावनी' : 'Bhed Vivek: Mandi Rush Alert')}</h4>
+                <div class="shield-marathi-label">${currentLanguage === 'mr' ? 'बाजार समिती आवक व गर्दी विश्लेषण' : (currentLanguage === 'hi' ? 'मंडी आवक व भीड़ विश्लेषण' : 'Terminal Congestion Alert')}</div>
               </div>
               <span id="bhed-badge" class="badge shield-badge" style="background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;">
-                ${bhed?.statusLabel || (currentLanguage === 'mr' ? 'थेट गर्दी निरीक्षण' : (currentLanguage === 'hi' ? 'सीधा भीड़ निरीक्षण' : 'LIVE CROWD MONITOR'))}
+                ${bhed
+                   ? (bhed.supplyPressure === 'LOW'
+                       ? (currentLanguage === 'mr' ? 'सुरळीत आवक' : (currentLanguage === 'hi' ? 'सुचारू आवक' : 'SMOOTH ARRIVAL'))
+                       : (bhed.supplyPressure === 'MEDIUM'
+                       ? (currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'MODERATE RUSH'))
+                       : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा' : (currentLanguage === 'hi' ? 'भारी भीड़ चेतावनी' : 'HEAVY JAM ALERT'))))
+                   : (currentLanguage === 'mr' ? 'थेट गर्दी निरीक्षण' : (currentLanguage === 'hi' ? 'सीधा भीड़ निरीक्षण' : 'LIVE CROWD MONITOR'))}
               </span>
             </div>
 
             <p class="shield-desc">
               ${currentLanguage === 'mr'
-                ? 'बाजार समितीत ट्रॅक्टरच्या रांगा लागल्यास लिलाव भाव घसरतात. आम्ही गर्दी होण्यापूर्वीच इशारा देतो.'
+                ? 'बाजार समितीत ट्रॅक्टरच्या रांगा लागल्यास लिलाव भाव घसरतात. आम्ही गर्दी होण्यापूर्वीच योग्य सावधगिरीचा इशारा देतो.'
                 : (currentLanguage === 'hi'
                   ? 'मंडी में ज्यादा आवक से दाम गिरते हैं। जाम लगने से पहले सही सलाह पाएं।'
                   : 'If too many tractor-trolleys arrive at the same mandi, auction rates drop. We alert you before you get stuck in a queue.')}
@@ -744,30 +819,31 @@ function renderAsliDaamTab(
             </label>
             <div class="bhed-scenario-grid">
               <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressure === 'LOW' ? 'active-low' : ''}" data-level="LOW">
-                ${currentLanguage === 'mr' ? 'सुरळीत' : (currentLanguage === 'hi' ? 'सामान्य भीड़' : 'Normal Crowd')}<span>(${currentLanguage === 'mr' ? 'कमी गर्दी' : (currentLanguage === 'hi' ? 'कम भीड़' : 'Normal')})</span>
+                ${currentLanguage === 'mr' ? 'सुरळीत' : (currentLanguage === 'hi' ? 'सुचारू' : 'Normal Crowd')}<span>(${currentLanguage === 'mr' ? 'कमी गर्दी' : (currentLanguage === 'hi' ? 'कम भीड़' : 'Normal')})</span>
               </button>
               <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressure === 'MEDIUM' ? 'active-med' : ''}" data-level="MEDIUM">
-                ${currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'Medium Rush')}<span>(${currentLanguage === 'mr' ? 'सावध' : (currentLanguage === 'hi' ? 'मध्यम' : 'Moderate')})</span>
+                ${currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'Medium Rush')}<span>(${currentLanguage === 'mr' ? 'नेहमीची आवक' : (currentLanguage === 'hi' ? 'सामान्य आवक' : 'Moderate')})</span>
               </button>
               <button class="bhed-scenario-btn btn-bhed-scenario ${!bhed || bhed?.supplyPressure === 'HIGH' ? 'active-high' : ''}" data-level="HIGH">
-                ${currentLanguage === 'mr' ? 'मोठी गर्दी' : (currentLanguage === 'hi' ? 'भारी जाम' : 'Heavy Jam')}<span>(${currentLanguage === 'mr' ? 'लांब रांग' : (currentLanguage === 'hi' ? 'लंबी कतार' : 'Heavy Queue')})</span>
+                ${currentLanguage === 'mr' ? 'मोठी गर्दी' : (currentLanguage === 'hi' ? 'भारी भीड़' : 'Heavy Jam')}<span>(${currentLanguage === 'mr' ? 'लांबच लांब रांग' : (currentLanguage === 'hi' ? 'लंबी कतार' : 'Heavy Queue')})</span>
               </button>
             </div>
 
             <div id="bhed-feedback-box" class="bhed-feedback-box">
               <div class="bhed-feedback-top">
-                <span>${currentLanguage === 'mr' ? 'अपेक्षित भाव घसरण:' : (currentLanguage === 'hi' ? 'संभावित भाव गिरावट:' : 'Expected Price Drop:')} <strong id="bhed-impact-text" style="color: #DC2626; font-family: var(--font-family-heading); font-size: 0.95rem;">${bhed ? `−${rs1(bhed.congestionImpactPerQtl)} / ${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'quintal')}` : `−₹260 / ${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'quintal')}`}</strong></span>
-                <span id="bhed-capacity-text" style="color: #73512B;">${currentLanguage === 'mr' ? 'खरेदीदार मागणी:' : (currentLanguage === 'hi' ? 'खरीदार मांग:' : 'Buyer Demand:')} <strong>${bhed ? `${bhed.absorptionCapacity}` : (currentLanguage === 'mr' ? 'सक्रिय' : (currentLanguage === 'hi' ? 'सक्रिय' : 'Active'))}</strong></span>
+                <span>${I18N_DICTIONARY.hub.rushDrop[currentLanguage]} <strong id="bhed-impact-text" style="color: #DC2626; font-family: var(--font-family-heading); font-size: 0.95rem;">${bhed ? `−${rs1(bhed.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}` : `−₹२६० / ${formatUnit(1, 'qtl', currentLanguage)}`}</strong></span>
+                <span id="bhed-capacity-text" style="color: #73512B;">${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${
+                  bhed
+                    ? (bhed.absorptionCapacity === 'HIGH'
+                        ? (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High (Active)'))
+                        : (bhed.absorptionCapacity === 'MODERATE'
+                        ? (currentLanguage === 'mr' ? 'मध्यम' : (currentLanguage === 'hi' ? 'मध्यम' : 'Moderate'))
+                        : (currentLanguage === 'mr' ? 'मर्यादित' : (currentLanguage === 'hi' ? 'सीमित' : 'Limited'))))
+                    : (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'Active'))
+                }</strong></span>
               </div>
               <div id="bhed-alert-text" class="bhed-alert-msg">
-                ${bhed?.alertMessage || (
-                  currentLanguage === 'mr'
-                    ? `बाजारात ट्रॅक्टरच्या लांब रांगा लागण्याची शक्यता! शहाणा सल्ला: ${translateMandiName(rec.market.name, currentLanguage)} येथे विक्री केल्याने गर्दी टळेल आणि खिशातील नफा सुरक्षित राहील.`
-                    : (currentLanguage === 'hi'
-                      ? `मंडी में ट्रैक्टरों की लंबी कतार लगने की संभावना! समझदारी भरी सलाह: ${translateMandiName(rec.market.name, currentLanguage)} में बेचने से भीड़ से बचेंगे और जेब का मुनाफा सुरक्षित रहेगा।`
-                      : `Heavy tractor queues expected! Smart Advice: Selling at ${rec.market.name} avoids the rush and protects profit in your pocket.`
-                    )
-                )}
+                ${formatBhedAlert(bhed, rec, currentLanguage)}
               </div>
             </div>
           </div>
@@ -785,7 +861,7 @@ function renderAsliDaamTab(
             <h2 class="editorial-landing-title">${currentLanguage === 'mr' ? 'पारदर्शक हिशोब पत्रक // खिशातील निव्वळ नफा' : (currentLanguage === 'hi' ? 'पारदर्शी हिसाब // इन-हैंड असली कमाई' : 'TRANSPARENT POCKET CASH AUDIT // WATERFALL')}</h2>
           </div>
           <div class="editorial-landing-subtitle">
-            ${currentLanguage === 'mr' ? 'व्यापाऱ्याचा लिलाव भाव ते शेतकऱ्याचा प्रत्यक्ष हातात येणारा नफा' : (currentLanguage === 'hi' ? 'नीलामी भाव से किसान के हाथ में आने वाली असली रकम का पूरा विवरण' : 'Where every rupee goes: Complete deduction audit from auction price to take-home cash')}
+            ${currentLanguage === 'mr' ? 'व्यापाऱ्याचा लिलाव भाव ते शेतकऱ्याचा प्रत्यक्ष हातात येणारा नफा — संपूर्ण पारदर्शक हिशोब' : (currentLanguage === 'hi' ? 'नीलामी भाव से किसान के हाथ में आने वाली असली रकम का पूरा विवरण' : 'Where every rupee goes: Complete deduction audit from auction price to take-home cash')}
           </div>
         </div>
       </div>
@@ -794,44 +870,44 @@ function renderAsliDaamTab(
         <table class="editorial-table">
           <thead>
             <tr>
-              <th>${currentLanguage === 'mr' ? 'खर्च व उत्पन्न तपशील' : (currentLanguage === 'hi' ? 'मद / विवरण' : 'Expense or Earning Item')}</th>
-              <th>${currentLanguage === 'mr' ? 'जवळची स्थानिक मंडी आज' : (currentLanguage === 'hi' ? 'निकटतम मंडी आज' : 'Closest Local Mandi Today')} (${translateMandiName(base.market.name, currentLanguage)})</th>
-              <th>${currentLanguage === 'mr' ? 'शिफारस केलेली सर्वोत्तम मंडी' : (currentLanguage === 'hi' ? 'सर्वोत्तम अनुशंसित मंडी' : 'Recommended Mandi')} (${translateMandiName(rec.market.name, currentLanguage)}, ${currentLanguage === 'mr' ? (rec.dayOffset === 0 ? 'आज' : `दिवस +${formatNumber(rec.dayOffset, currentLanguage)}`) : (currentLanguage === 'hi' ? (rec.dayOffset === 0 ? 'आज' : `दिन +${formatNumber(rec.dayOffset, currentLanguage)}`) : `Day ${rec.dayOffset}`)})</th>
+              <th>${currentLanguage === 'mr' ? 'खर्च व उत्पन्न तपशील' : (currentLanguage === 'hi' ? 'खर्च व आय विवरण' : 'Expense or Earning Item')}</th>
+              <th>${currentLanguage === 'mr' ? 'जवळचा स्थानिक बाजार आज' : (currentLanguage === 'hi' ? 'निकटतम स्थानीय मंडी आज' : 'Closest Local Mandi Today')} (${translateMandiName(base.market.name, currentLanguage)})</th>
+              <th>${currentLanguage === 'mr' ? 'शिफारस केलेला सर्वोत्तम बाजार' : (currentLanguage === 'hi' ? 'सर्वोत्तम अनुशंसित मंडी' : 'Recommended Mandi')} (${translateMandiName(rec.market.name, currentLanguage)}, ${currentLanguage === 'mr' ? (rec.dayOffset === 0 ? 'आज' : `दिवस +${formatNumber(rec.dayOffset, currentLanguage)}`) : (currentLanguage === 'hi' ? (rec.dayOffset === 0 ? 'आज' : `दिन +${formatNumber(rec.dayOffset, currentLanguage)}`) : `Day ${rec.dayOffset}`)})</th>
               <th>${currentLanguage === 'mr' ? 'खिशातील निव्वळ फरक' : (currentLanguage === 'hi' ? 'जेब में शुद्ध अंतर' : 'Difference In Your Pocket')}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <span class="audit-item-label">1. Gross Auction Price</span>
-                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'लिलाव भाव' : (currentLanguage === 'hi' ? 'नीलामी भाव' : 'mandi auction rate')})</span>
+                <span class="audit-item-label">${currentLanguage === 'mr' ? '१. एकूण लिलाव भाव' : (currentLanguage === 'hi' ? '१. कुल नीलामी भाव' : '1. Gross Auction Price')}</span>
+                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'व्यापाऱ्याने दिलेला दर' : (currentLanguage === 'hi' ? 'व्यापारी द्वारा दिया गया दर' : 'mandi auction rate')})</span>
               </td>
-              <td><span class="mandi-num-cell">${rs1(base.grossPricePerQtl)}/qtl</span> <span style="color: #586B5E; font-size: 0.78rem;">(${rs(base.totalGrossValue)})</span></td>
-              <td><span class="mandi-num-cell">${rs1(rec.grossPricePerQtl)}/qtl</span> <span style="color: #586B5E; font-size: 0.78rem;">(${rs(rec.totalGrossValue)})</span></td>
-              <td style="color: #15803D; font-family: var(--font-family-heading); font-weight: 800;">+${rs(Math.max(0, rec.totalGrossValue - base.totalGrossValue))} higher auction</td>
+              <td><span class="mandi-num-cell">${rs1(base.grossPricePerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}</span> <span style="color: #586B5E; font-size: 0.78rem;">(${rs(base.totalGrossValue)})</span></td>
+              <td><span class="mandi-num-cell">${rs1(rec.grossPricePerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}</span> <span style="color: #586B5E; font-size: 0.78rem;">(${rs(rec.totalGrossValue)})</span></td>
+              <td style="color: #15803D; font-family: var(--font-family-heading); font-weight: 800;">+${rs(Math.max(0, rec.totalGrossValue - base.totalGrossValue))} ${currentLanguage === 'mr' ? 'जास्त लिलाव भाव' : (currentLanguage === 'hi' ? 'अधिक नीलामी मूल्य' : 'higher auction')}</td>
             </tr>
             <tr>
               <td>
-                <span class="audit-item-label" style="color: #B91C1C;">2. Minus: Vehicle Freight &amp; Diesel</span>
-                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'गाडी भाडे व डिझेल' : (currentLanguage === 'hi' ? 'वाहन भाड़ा व डीजल' : 'freight haulage')})</span>
+                <span class="audit-item-label" style="color: #B91C1C;">${currentLanguage === 'mr' ? '२. वजा: गाडी भाडे व डिझेल खर्च' : (currentLanguage === 'hi' ? '२. घटाएं: गाड़ी भाड़ा व डीजल खर्च' : '2. Minus: Vehicle Freight & Diesel')}</span>
+                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'रस्ता वाहतूक' : (currentLanguage === 'hi' ? 'सड़क ढुलाई' : 'freight haulage')})</span>
               </td>
-              <td class="audit-deduction-text">−${rs1(base.roadFreightPerQtl)}/qtl <span class="audit-deduction-sub">(−${rs(base.totalTransportCost)})</span></td>
-              <td class="audit-deduction-text">−${rs1(rec.roadFreightPerQtl)}/qtl <span class="audit-deduction-sub">(−${rs(rec.totalTransportCost)})</span></td>
+              <td class="audit-deduction-text">−${rs1(base.roadFreightPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span class="audit-deduction-sub">(−${rs(base.totalTransportCost)})</span></td>
+              <td class="audit-deduction-text">−${rs1(rec.roadFreightPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span class="audit-deduction-sub">(−${rs(rec.totalTransportCost)})</span></td>
               <td class="audit-deduction-text">−${rs(rec.totalTransportCost - base.totalTransportCost)}</td>
             </tr>
             <tr>
               <td>
-                <span class="audit-item-label" style="color: #B91C1C;">3. Minus: Mandi Fees &amp; Hamali/Tolai</span>
-                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'बाजार फी, हमाली व तोलाई' : (currentLanguage === 'hi' ? 'मंडी शुल्क, हम्माली व तौलाई' : 'cess & weighing')})</span>
+                <span class="audit-item-label" style="color: #B91C1C;">${currentLanguage === 'mr' ? '३. वजा: बाजार समिती फी, हमाली व तोलाई' : (currentLanguage === 'hi' ? '३. घटाएं: मंडी शुल्क, हमाली व तुलाई' : '3. Minus: Mandi Fees & Hamali/Tolai')}</span>
+                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'बाजार फी व वजन' : (currentLanguage === 'hi' ? 'मंडी शुल्क व तौल' : 'cess & weighing')})</span>
               </td>
-              <td class="audit-deduction-text">−${rs1(base.apmcCessPerQtl + base.hamaliAndTolaiPerQtl)}/qtl <span class="audit-deduction-sub">(−${rs(base.totalApmcDeductions)})</span></td>
-              <td class="audit-deduction-text">−${rs1(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl)}/qtl <span class="audit-deduction-sub">(−${rs(rec.totalApmcDeductions)})</span></td>
+              <td class="audit-deduction-text">−${rs1(base.apmcCessPerQtl + base.hamaliAndTolaiPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span class="audit-deduction-sub">(−${rs(base.totalApmcDeductions)})</span></td>
+              <td class="audit-deduction-text">−${rs1(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span class="audit-deduction-sub">(−${rs(rec.totalApmcDeductions)})</span></td>
               <td class="audit-deduction-text">−${rs(rec.totalApmcDeductions - base.totalApmcDeductions)}</td>
             </tr>
             <tr>
               <td>
-                <span class="audit-item-label" style="color: #B91C1C;">4. Minus: Storage &amp; Produce Weight Loss</span>
-                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'साठवणूक व वजन घट' : (currentLanguage === 'hi' ? 'भंडारण व वजन गिरावट' : 'storage rent & decay')})</span>
+                <span class="audit-item-label" style="color: #B91C1C;">${currentLanguage === 'mr' ? '४. वजा: साठवणूक व वजन घट' : (currentLanguage === 'hi' ? '४. घटाएं: भंडारण व वजन घटौती' : '4. Minus: Storage & Produce Weight Loss')}</span>
+                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'गोदाम भाडे व घट' : (currentLanguage === 'hi' ? 'गोदाम किराया व घट' : 'storage rent & decay')})</span>
               </td>
               <td style="color: #586B5E;">${base.dayOffset === 0 ? `${formatCurrency(0, currentLanguage)} (${currentLanguage === 'mr' ? 'विक्री आजच — शून्य वाट' : (currentLanguage === 'hi' ? 'बिक्री आज ही — शून्य प्रतीक्षा' : 'Same-day sale')})` : `−${rs1(base.holdingAndSpoilagePerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} (−${rs(base.totalHoldingSpoilageLoss)})`}</td>
               <td class="audit-deduction-text">${rec.dayOffset === 0 ? `${formatCurrency(0, currentLanguage)} (${currentLanguage === 'mr' ? 'विक्री आजच — शून्य वाट' : (currentLanguage === 'hi' ? 'बिक्री आज ही — शून्य प्रतीक्षा' : 'Same-day sale')})` : `−${rs1(rec.holdingAndSpoilagePerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} (−${rs(rec.totalHoldingSpoilageLoss)})`}</td>
@@ -839,25 +915,28 @@ function renderAsliDaamTab(
             </tr>
             <tr>
               <td>
-                <span class="audit-item-label" style="color: #B91C1C;">5. Minus: Market Freshness Discount (${freshnessPctLabel}%/day)</span>
-                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'बाजार ताजेपणा वटती' : (currentLanguage === 'hi' ? 'ताजगी कटौती' : 'freshness discount')})</span>
+                <span class="audit-item-label" style="color: #B91C1C;">${currentLanguage === 'mr' ? `५. वजा: बाजार ताजेपणा वटती (${formatNumber(freshnessPctLabel, currentLanguage)}%/दिवस)` : (currentLanguage === 'hi' ? `५. घटाएं: मंडी ताज़गी कटौती (${formatNumber(freshnessPctLabel, currentLanguage)}%/दिन)` : `5. Minus: Market Freshness Discount (${freshnessPctLabel}%/day)`)}</span>
+                <span class="audit-item-sub">(${currentLanguage === 'mr' ? 'जुना माल भाव कपात' : (currentLanguage === 'hi' ? 'पुराने माल पर कटौती' : 'freshness discount')})</span>
               </td>
               <td style="color: #586B5E;">${base.dayOffset === 0 ? `${formatCurrency(0, currentLanguage)} (${currentLanguage === 'mr' ? 'आजची ताजी तोडणी' : (currentLanguage === 'hi' ? 'आज की ताज़ा तुड़ाई' : 'Same-day harvest')})` : `−${rs1(base.freshnessDiscountPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} (−${rs(base.totalFreshnessDiscount)})`}</td>
               <td class="audit-deduction-text">${rec.dayOffset === 0 ? `${formatCurrency(0, currentLanguage)} (${currentLanguage === 'mr' ? 'आजची ताजी तोडणी' : (currentLanguage === 'hi' ? 'आज की ताज़ा तुड़ाई' : 'Same-day harvest')})` : `−${rs1(rec.freshnessDiscountPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} (−${rs(rec.totalFreshnessDiscount)})`}</td>
               <td class="audit-deduction-text">−${rs(rec.totalFreshnessDiscount - base.totalFreshnessDiscount)}</td>
             </tr>
             <tr class="audit-winner-row">
-              <td class="audit-winner-label">Real Cash in Hand (${currentLanguage === 'mr' ? 'खिशात येणारे असली दाम' : (currentLanguage === 'hi' ? 'असली दाम' : 'AsliDaam Net Payout')})</td>
-              <td><strong class="audit-winner-num" style="color: #384A3E;">${rs1(base.asliDaamPerQtl)}/qtl <span style="font-size: 0.82rem; font-weight: normal; color: #586B5E;">(${rs(base.totalNetPayout)})</span></strong></td>
-              <td><strong class="audit-winner-num">${rs1(rec.asliDaamPerQtl)}/qtl <span style="font-size: 0.82rem; font-weight: normal; color: #586B5E;">(${rs(rec.totalNetPayout)})</span></strong></td>
-              <td><span class="audit-gain-badge">+${rs(opt.totalPocketCashGain)} Extra Cash</span></td>
+              <td class="audit-winner-label">${currentLanguage === 'mr' ? 'थेट खिशात उरणारा निव्वळ नफा (असली दाम™)' : (currentLanguage === 'hi' ? 'जेब में आने वाला शुद्ध पैसा (असली दाम™)' : 'Real Cash in Hand (AsliDaam™)')}</td>
+              <td><strong class="audit-winner-num" style="color: #384A3E;">${rs1(base.asliDaamPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span style="font-size: 0.82rem; font-weight: normal; color: #586B5E;">(${rs(base.totalNetPayout)})</span></strong></td>
+              <td><strong class="audit-winner-num">${rs1(rec.asliDaamPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)} <span style="font-size: 0.82rem; font-weight: normal; color: #586B5E;">(${rs(rec.totalNetPayout)})</span></strong></td>
+              <td><span class="audit-gain-badge">+${rs(opt.totalPocketCashGain)} ${currentLanguage === 'mr' ? 'जास्तीची रोकड' : (currentLanguage === 'hi' ? 'अतिरिक्त नकद' : 'Extra Cash')}</span></td>
             </tr>
           </tbody>
         </table>
       </div>
       <p style="font-family: var(--font-family-body); font-size: 0.76rem; color: #586B5E; margin-top: 10px; line-height: 1.5;">
-        Formula: AsliDaam = Gross − RoadFreight − APMCDeductions − StorageRent − PhysicalDecayLoss − FreshnessDiscount.
-        The freshness discount is the commercial haircut mandi buyers apply to stock that is not from today's harvest.
+        ${currentLanguage === 'mr'
+          ? 'सूत्र: असली दाम = एकूण लिलाव भाव − गाडी भाडे − बाजार समिती फी − साठवणूक भाडे − वजन घट − ताजेपणा वटती. ताजेपणा वटती म्हणजे माल खराब नसला तरी जुना असल्यामुळे खरेदीदार व्यापारी करत असलेली भाव कपात.'
+          : (currentLanguage === 'hi'
+          ? 'सूत्र: असली दाम = कुल नीलामी भाव − गाड़ी भाड़ा − मंडी शुल्क − भंडारण किराया − वजन घटौती − ताज़गी कटौती. ताज़गी कटौती का अर्थ है माल खराब न होने पर भी पुराना होने के कारण व्यापारी द्वारा की जाने वाली दर कटौती.'
+          : 'Formula: AsliDaam = Gross − RoadFreight − APMCDeductions − StorageRent − PhysicalDecayLoss − FreshnessDiscount. The freshness discount is the commercial haircut mandi buyers apply to stock that is not from today\'s harvest.')}
       </p>
     </section>
 
@@ -867,10 +946,17 @@ function renderAsliDaamTab(
         <div class="editorial-header-top">
           <div class="editorial-landing-heading">
             <span class="editorial-landing-bar"></span>
-            <h2 class="editorial-landing-title">${currentLanguage === 'mr' ? 'सर्व बाजारांची तुलना // पुढील ३ दिवस' : (currentLanguage === 'hi' ? 'सभी मंडियों की तुलना // अगले 3 दिन' : 'REGIONAL MANDI COMPARISON // 0 TO 3 DAYS')}</h2>
+            <h2 class="editorial-landing-title">${currentLanguage === 'mr' ? 'सर्व बाजारांची तुलना // पुढील ३ दिवस' : (currentLanguage === 'hi' ? 'सभी मंडियों की तुलना // अगले ३ दिन' : 'REGIONAL MANDI COMPARISON // 0 TO 3 DAYS')}</h2>
           </div>
           <div class="editorial-landing-subtitle">
-            ${currentLanguage === 'mr' ? 'स्थानिक व दूरच्या सर्व APMC मधील खरा नफा तपासा' : (currentLanguage === 'hi' ? 'सभी संभावित मंडियों में वास्तविक इन-हैंड कमाई की तुलना' : `Compare true net payouts across ${evalData.evaluations.length} candidate APMCs after haulage and waiting costs`)}
+            ${currentLanguage === 'mr'
+              ? `डिझेल व साठवणूक खर्च वजा करून ${formatNumber(evalData.evaluations.length, currentLanguage)} बाजार समित्यांमध्ये मिळणाऱ्या खऱ्या नफ्याचे विश्लेषण. खिशात सर्वाधिक रोकड देणारा बाजार व दिवस निवडा.`
+              : (currentLanguage === 'hi'
+              ? `डीजल व भंडारण खर्च काटकर ${formatNumber(evalData.evaluations.length, currentLanguage)} मंडियों में मिलने वाले वास्तविक लाभ का विश्लेषण. अपनी जेब में सर्वाधिक नकद देने वाली मंडी व दिन चुनें.`
+              : `Compare true net payouts across ${evalData.evaluations.length} candidate APMCs after haulage and waiting costs`)}
+            ${opt.maxDayOffsetAllowed < 3
+              ? ` (${currentLanguage === 'mr' ? `धोरण मर्यादा: या शेतमालासाठी कमाल +${formatNumber(opt.maxDayOffsetAllowed, currentLanguage)} दिवस` : (currentLanguage === 'hi' ? `नीति सीमा: इस फसल हेतु अधिकतम +${formatNumber(opt.maxDayOffsetAllowed, currentLanguage)} दिन` : `Policy cap: Day +${opt.maxDayOffsetAllowed} max for this commodity`)})`
+              : ''}
           </div>
         </div>
       </div>
@@ -879,13 +965,13 @@ function renderAsliDaamTab(
         <table class="editorial-table">
           <thead>
             <tr>
-              <th>${currentLanguage === 'mr' ? 'बाजारपेठ (APMC)' : (currentLanguage === 'hi' ? 'मंडी' : 'Mandi (APMC)')}</th>
+              <th>${currentLanguage === 'mr' ? 'बाजारपेठ (APMC)' : (currentLanguage === 'hi' ? 'मंडी (APMC)' : 'Mandi (APMC)')}</th>
               <th>${currentLanguage === 'mr' ? 'अंतर' : (currentLanguage === 'hi' ? 'दूरी' : 'Distance')}</th>
               <th>${currentLanguage === 'mr' ? 'विक्रीची वेळ' : (currentLanguage === 'hi' ? 'समय' : 'Timing')}</th>
               <th>${currentLanguage === 'mr' ? 'लिलाव भाव' : (currentLanguage === 'hi' ? 'नीलामी भाव' : 'Auction Rate')}</th>
               <th>${currentLanguage === 'mr' ? 'एकूण खर्च' : (currentLanguage === 'hi' ? 'कुल खर्च' : 'All Expenses')}</th>
               <th>${currentLanguage === 'mr' ? 'निव्वळ दर / क्विंटल' : (currentLanguage === 'hi' ? 'शुद्ध दर / क्विंटल' : 'Real In-Hand / Qtl')}</th>
-              <th>${currentLanguage === 'mr' ? 'एकूण रक्कम' : (currentLanguage === 'hi' ? 'कुल कमाई' : 'Total In Pocket')}</th>
+              <th>${currentLanguage === 'mr' ? 'एकूण खिशात' : (currentLanguage === 'hi' ? 'कुल जेब में' : 'Total In Pocket')}</th>
               <th>${currentLanguage === 'mr' ? 'सल्ला' : (currentLanguage === 'hi' ? 'सलाह' : 'Decision Status')}</th>
             </tr>
           </thead>
@@ -895,12 +981,12 @@ function renderAsliDaamTab(
                 return `
                   <tr class="mandi-row-stale">
                     <td><strong>${translateMandiName(c.market.name, currentLanguage)}</strong></td>
-                    <td>${(c.market.estimatedRoadDistanceKm || 0).toFixed(1)} km</td>
-                    <td>Day ${c.dayOffset}</td>
+                    <td>${formatUnit(c.market.estimatedRoadDistanceKm ? c.market.estimatedRoadDistanceKm.toFixed(1) : 0, 'km', currentLanguage)}</td>
+                    <td>${currentLanguage === 'mr' ? (c.dayOffset === 0 ? 'आज' : `+${formatNumber(c.dayOffset, currentLanguage)} दिवस`) : (currentLanguage === 'hi' ? (c.dayOffset === 0 ? 'आज' : `+${formatNumber(c.dayOffset, currentLanguage)} दिन`) : `Day ${c.dayOffset}`)}</td>
                     <td colspan="4" style="color: var(--color-status-abstain); font-weight: 600;">
-                      ${c.abstentionReason || 'Data Stale — Cannot Advise'}
+                      ${c.abstentionReason ? (currentLanguage !== 'en' ? toDevanagariDigits(c.abstentionReason) : c.abstentionReason) : (currentLanguage === 'mr' ? 'डेटा जुना — सल्ला नाही' : (currentLanguage === 'hi' ? 'डेटा पुराना — कोई सलाह नहीं' : 'Data Stale — Cannot Advise'))}
                     </td>
-                    <td><span class="badge badge-danger">ABSTAINED</span></td>
+                    <td><span class="badge badge-danger">${currentLanguage === 'mr' ? 'नकार' : (currentLanguage === 'hi' ? 'अस्वीकार' : 'ABSTAINED')}</span></td>
                   </tr>
                 `;
               }
@@ -914,19 +1000,19 @@ function renderAsliDaamTab(
               return `
                 <tr class="${rowClass}" style="${rowOpacity}">
                   <td><strong>${translateMandiName(c.market.name, currentLanguage)}</strong></td>
-                  <td>${(c.market.estimatedRoadDistanceKm || 0).toFixed(1)} km</td>
-                  <td>Day ${c.dayOffset} (${c.dayOffset === 0 ? 'Today' : `+${c.dayOffset}d`})</td>
-                  <td><span class="mandi-num-cell">₹${c.grossPricePerQtl.toFixed(0)}</span></td>
-                  <td style="color: var(--color-status-abstain);">−₹${(c.grossPricePerQtl - c.asliDaamPerQtl).toFixed(0)}</td>
+                  <td>${formatUnit(c.market.estimatedRoadDistanceKm ? c.market.estimatedRoadDistanceKm.toFixed(1) : 0, 'km', currentLanguage)}</td>
+                  <td>${currentLanguage === 'mr' ? (c.dayOffset === 0 ? 'आज' : `+${formatNumber(c.dayOffset, currentLanguage)} दिवस`) : (currentLanguage === 'hi' ? (c.dayOffset === 0 ? 'आज' : `+${formatNumber(c.dayOffset, currentLanguage)} दिन`) : `Day ${c.dayOffset} (${c.dayOffset === 0 ? 'Today' : `+${c.dayOffset}d`})`)}</td>
+                  <td><span class="mandi-num-cell">${formatCurrency(c.grossPricePerQtl, currentLanguage)}</span></td>
+                  <td style="color: var(--color-status-abstain);">−${formatCurrency(c.grossPricePerQtl - c.asliDaamPerQtl, currentLanguage)}</td>
                   <td><span class="mandi-num-cell" style="color: #112A1B;">${rs1(c.asliDaamPerQtl)}</span></td>
                   <td><span class="mandi-num-cell" style="color: #15803D;">${rs(c.totalNetPayout)}</span></td>
                   <td>
                     ${isBest
-                      ? '<span class="badge badge-accent" style="font-family: var(--font-family-heading); font-weight: 800; padding: 4px 10px; border-radius: 6px;">BEST OPTION</span>'
+                      ? `<span class="badge badge-accent" style="font-family: var(--font-family-heading); font-weight: 800; padding: 4px 10px; border-radius: 6px;">${currentLanguage === 'mr' ? 'सर्वोत्तम निवड' : (currentLanguage === 'hi' ? 'सर्वश्रेष्ठ विकल्प' : 'BEST OPTION')}</span>`
                       : (isBase
-                          ? '<span class="badge badge-neutral" style="font-family: var(--font-family-heading); font-weight: 700; padding: 4px 8px; border-radius: 6px;">DEFAULT</span>'
+                          ? `<span class="badge badge-neutral" style="font-family: var(--font-family-heading); font-weight: 700; padding: 4px 8px; border-radius: 6px;">${currentLanguage === 'mr' ? 'स्थानिक बाजार' : (currentLanguage === 'hi' ? 'स्थानीय मंडी' : 'DEFAULT')}</span>`
                           : (beyondPolicy
-                              ? '<span class="badge badge-neutral" style="font-size:0.6rem;">BEYOND POLICY HORIZON</span>'
+                              ? `<span class="badge badge-neutral" style="font-size:0.6rem;">${currentLanguage === 'mr' ? 'मर्यादेबाहेर' : (currentLanguage === 'hi' ? 'सीमा से बाहर' : 'BEYOND POLICY HORIZON')}</span>`
                               : (c.totalPocketGainVsDefault > 0
                                   ? `<span class="number-display number-positive" style="font-family: var(--font-family-heading); font-weight: 800;">+${rs(c.totalPocketGainVsDefault)}</span>`
                                   : `<span style="color: var(--color-status-abstain); font-family: var(--font-family-heading); font-weight: 700;">${rs(c.totalPocketGainVsDefault)}</span>`
@@ -983,12 +1069,13 @@ function renderAsliDaamTab(
         const flipped = res.isFlipped;
         const beLimit = kawachBreakeven ?? 15.0;
         const winName = translateMandiName(res.winningMarket.name, currentLanguage);
+        const winDay = formatNumber(res.winningMarket.day, currentLanguage);
         if (!flipped && rate < beLimit - 0.3) {
           nirnayFeedback.innerHTML = currentLanguage === 'mr'
-            ? `चालू भाडे: ${rs1(res.activeTransportRate)}/km → <strong>${winName} (+${res.winningMarket.day} दिवस)</strong> येथे विक्री केल्यास जास्तीत जास्त फायदा राहील <span style="color: #15803d; font-weight: 800;">(खिशात सर्वाधिक नफा)</span>`
+            ? `चालू भाडे: ${rs1(res.activeTransportRate)}/km → <strong>${winName} (+${winDay} दिवस)</strong> येथे विक्री केल्यास जास्तीत जास्त फायदा राहील <span style="color: #15803d; font-weight: 800;">(खिशात सर्वाधिक नफा)</span>`
             : (currentLanguage === 'hi'
-              ? `सक्रिय किराया: ${rs1(res.activeTransportRate)}/km → <strong>${winName} (+${res.winningMarket.day} दिन)</strong> में बेचने पर सबसे ज्यादा मुनाफा मिलेगा <span style="color: #15803d; font-weight: 800;">(जेब में अधिकतम कमाई)</span>`
-              : `Active Fare: ${rs1(res.activeTransportRate)}/km → Selling at <strong>${winName} (+${res.winningMarket.day}d)</strong> gives you maximum cash <span style="color: #15803d; font-weight: 800;">(Maximum Take-Home Profit)</span>`
+              ? `सक्रिय किराया: ${rs1(res.activeTransportRate)}/km → <strong>${winName} (+${winDay} दिन)</strong> में बेचने पर सबसे ज्यादा मुनाफा मिलेगा <span style="color: #15803d; font-weight: 800;">(जेब में अधिकतम कमाई)</span>`
+              : `Active Fare: ${rs1(res.activeTransportRate)}/km → Selling at <strong>${winName} (+${winDay}d)</strong> gives you maximum cash <span style="color: #15803d; font-weight: 800;">(Maximum Take-Home Profit)</span>`
             );
           nirnayFeedback.style.color = '#15803d';
           nirnayFeedback.style.borderColor = '#86efac';
@@ -1005,17 +1092,17 @@ function renderAsliDaamTab(
           nirnayFeedback.style.background = '#fffbeb';
         } else {
           nirnayFeedback.innerHTML = currentLanguage === 'mr'
-            ? `चालू भाडे: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">भाडे खूप जास्त!</strong> सर्वोत्तम पर्याय: <strong>${winName} (+${res.winningMarket.day} दिवस)</strong> — जवळची बाजारपेठ निवडणे फायद्याचे.`
+            ? `चालू भाडे: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">भाडे खूप जास्त!</strong> सर्वोत्तम पर्याय: <strong>${winName} (+${winDay} दिवस)</strong> — जवळची बाजारपेठ निवडणे फायद्याचे.`
             : (currentLanguage === 'hi'
-              ? `सक्रिय किराया: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">किराया बहुत अधिक!</strong> सर्वोत्तम विकल्प: <strong>${winName} (+${res.winningMarket.day} दिन)</strong> — नजदीक की मंडी चुनना फायदेमंद।`
-              : `Active Fare: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">Fare Too High!</strong> Winner: <strong>${winName} (+${res.winningMarket.day}d)</strong> — Closer distance beats high freight.`
+              ? `सक्रिय किराया: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">किराया बहुत अधिक!</strong> सर्वोत्तम विकल्प: <strong>${winName} (+${winDay} दिन)</strong> — नजदीक की मंडी चुनना फायदेमंद।`
+              : `Active Fare: ${rs1(res.activeTransportRate)}/km → <strong style="color: #b91c1c;">Fare Too High!</strong> Winner: <strong>${winName} (+${winDay}d)</strong> — Closer distance beats high freight.`
             );
           nirnayFeedback.style.color = '#b91c1c';
           nirnayFeedback.style.borderColor = '#fca5a5';
           nirnayFeedback.style.background = '#fef2f2';
         }
       } catch (err) {
-        nirnayFeedback.textContent = `Stress test unavailable: ${err instanceof Error ? err.message : String(err)}`;
+        nirnayFeedback.textContent = currentLanguage === 'mr' ? 'चाचणी उपलब्ध नाही' : (currentLanguage === 'hi' ? 'जांच अनुपलब्ध' : `Stress test unavailable: ${err instanceof Error ? err.message : String(err)}`);
         nirnayFeedback.style.color = '#b91c1c';
       }
     };
@@ -1042,29 +1129,11 @@ function renderAsliDaamTab(
       const level = btn.getAttribute('data-level') as 'LOW' | 'MEDIUM' | 'HIGH';
 
       bhedButtons.forEach(b => {
-        b.classList.remove('active');
-        (b as HTMLElement).style.background = '#ffffff';
-        (b as HTMLElement).style.borderColor = '#cbd5e1';
-        (b as HTMLElement).style.color = 'var(--color-text-main)';
-        (b as HTMLElement).style.fontWeight = 'normal';
+        b.classList.remove('active-low', 'active-med', 'active-high');
       });
-      btn.classList.add('active');
-      const activeEl = btn as HTMLElement;
-      activeEl.style.fontWeight = '800';
-
-      if (level === 'LOW') {
-        activeEl.style.background = '#dcfce7';
-        activeEl.style.borderColor = '#86efac';
-        activeEl.style.color = '#166534';
-      } else if (level === 'MEDIUM') {
-        activeEl.style.background = '#fef3c7';
-        activeEl.style.borderColor = '#fde68a';
-        activeEl.style.color = '#92400e';
-      } else {
-        activeEl.style.background = '#fee2e2';
-        activeEl.style.borderColor = '#fca5a5';
-        activeEl.style.color = '#991b1b';
-      }
+      if (level === 'LOW') btn.classList.add('active-low');
+      else if (level === 'MEDIUM') btn.classList.add('active-med');
+      else btn.classList.add('active-high');
 
       if (bhedAlertText) {
         bhedAlertText.textContent = currentLanguage === 'mr'
@@ -1087,24 +1156,35 @@ function renderAsliDaamTab(
 
         if (bhedBadge) {
           bhedBadge.textContent = level === 'LOW'
-            ? (currentLanguage === 'mr' ? 'कमी गर्दी (सुरळीत विक्री)' : (currentLanguage === 'hi' ? 'कम भीड़ (सुगम बिक्री)' : 'LOW CROWD (Smooth Auction)'))
+            ? (currentLanguage === 'mr' ? 'सुरळीत आवक' : (currentLanguage === 'hi' ? 'सुचारू आवक' : 'SMOOTH ARRIVAL'))
             : (level === 'MEDIUM' 
-                ? (currentLanguage === 'mr' ? 'मध्यम गर्दी (सावध विक्री)' : (currentLanguage === 'hi' ? 'मध्यम भीड़ (सावधानी)' : 'MODERATE RUSH (Medium Congestion)'))
-                : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा (लांब रांग)' : (currentLanguage === 'hi' ? 'भारी जाम अलर्ट (लंबी कतार)' : 'HEAVY JAM ALERT (Long Queue)')));
+                ? (currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'MODERATE RUSH'))
+                : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा' : (currentLanguage === 'hi' ? 'भारी भीड़ चेतावनी' : 'HEAVY JAM ALERT')));
           bhedBadge.style.background = level === 'LOW' ? '#dcfce7' : (level === 'MEDIUM' ? '#fef3c7' : '#fee2e2');
           bhedBadge.style.color = level === 'LOW' ? '#166534' : (level === 'MEDIUM' ? '#92400e' : '#991b1b');
           bhedBadge.style.border = `1px solid ${level === 'LOW' ? '#86efac' : (level === 'MEDIUM' ? '#fde68a' : '#fca5a5')}`;
         }
-        if (bhedImpactText) bhedImpactText.textContent = `−${rs1(res.congestionImpactPerQtl)} / ${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'quintal')}`;
-        if (bhedCapacityText) bhedCapacityText.innerHTML = `${currentLanguage === 'mr' ? 'खरेदीदार मागणी क्षमता:' : (currentLanguage === 'hi' ? 'खरीदार मांग क्षमता:' : 'Terminal Liquidity:')} <strong>${res.absorptionCapacity} (PCS ${res.pcs.toFixed(2)})</strong>`;
+        if (bhedImpactText) bhedImpactText.textContent = `−${rs1(res.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}`;
+        if (bhedCapacityText) {
+          const capLabel = res.absorptionCapacity === 'HIGH'
+            ? (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High (Active)'))
+            : (res.absorptionCapacity === 'MODERATE'
+              ? (currentLanguage === 'mr' ? 'मध्यम' : (currentLanguage === 'hi' ? 'मध्यम' : 'Moderate'))
+              : (currentLanguage === 'mr' ? 'मर्यादित' : (currentLanguage === 'hi' ? 'सीमित' : 'Limited')));
+          bhedCapacityText.innerHTML = `${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${capLabel}</strong>`;
+        }
         if (bhedAlertText) {
           bhedAlertText.style.color = level === 'LOW' ? '#166534' : (level === 'MEDIUM' ? '#92400e' : '#991b1b');
-          bhedAlertText.textContent = res.alertMessage;
+          bhedAlertText.textContent = formatBhedAlert(res, rec, currentLanguage);
         }
       } catch (err) {
         if (bhedAlertText) {
           bhedAlertText.style.color = 'var(--color-status-abstain)';
-          bhedAlertText.textContent = `Congestion analysis unavailable: ${err instanceof Error ? err.message : String(err)}`;
+          bhedAlertText.textContent = currentLanguage === 'mr'
+            ? `गर्दी विश्लेषण उपलब्ध नाही: ${err instanceof Error ? err.message : String(err)}`
+            : (currentLanguage === 'hi'
+            ? `भीड़ विश्लेषण अनुपलब्ध: ${err instanceof Error ? err.message : String(err)}`
+            : `Congestion analysis unavailable: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     });
@@ -1126,40 +1206,48 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
   panel.innerHTML = `
     <div class="editorial-panel" style="margin-bottom: var(--space-6);">
       <div class="editorial-header">
-        <div class="kicker">CLOUD &amp; EXTENSIONS</div>
-        <h3 class="heading-lg">MandiMitra Future Capabilities Launchpad</h3>
-        <p>High-impact integrations connected to cloud databases and live weather feeds for farmer resilience.</p>
+        <div class="kicker">${currentLanguage === 'mr' ? 'क्लाउड व आगामी सेवा' : (currentLanguage === 'hi' ? 'क्लाउड व आगामी सेवाएं' : 'CLOUD & EXTENSIONS')}</div>
+        <h3 class="heading-lg">${currentLanguage === 'mr' ? 'मंडीमित्र भविष्यातील क्षमता' : (currentLanguage === 'hi' ? 'मंडीमित्र भविष्य की क्षमताएं' : 'MandiMitra Future Capabilities Launchpad')}</h3>
+        <p>${currentLanguage === 'mr' ? 'शेतकऱ्यांना सक्षम बनवण्यासाठी थेट हवामान आणि क्लाउड डेटाबेस जोडणी.' : (currentLanguage === 'hi' ? 'किसानों को सशक्त बनाने के लिए मौसम और क्लाउड डेटाबेस एकीकरण.' : 'High-impact integrations connected to cloud databases and live weather feeds for farmer resilience.')}</p>
       </div>
 
       <div class="editorial-grid-3">
 
         <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">SajhaBazaar Cloud Roster</h4>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'साझा बाजार क्लाउड नोंदणी' : (currentLanguage === 'hi' ? 'साझा बाजार क्लाउड सूची' : 'SajhaBazaar Cloud Roster')}</h4>
           <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            Live farmer pooling clusters persisted in Supabase. The deterministic matching and
-            cost-allocation engine already runs on the SajhaBazaar tab; this is the cloud roster
-            that would replace the synthetic demo profiles in production.
+            ${currentLanguage === 'mr'
+              ? 'सुपाबेसवर (Supabase) साठवलेले थेट शेतकरी ग्रुप्स. एकत्र येऊन गाडी भाडे वाचवण्याची थेट जोडणी.'
+              : (currentLanguage === 'hi'
+              ? 'सुपाबेस (Supabase) पर सुरक्षित वास्तविक किसान समूह। एक साथ मिलकर भाड़ा बचाने की सीधी सुविधा.'
+              : 'Live farmer pooling clusters persisted in Supabase. The deterministic matching and cost-allocation engine already runs on the SajhaBazaar tab; this is the cloud roster that would replace the synthetic demo profiles in production.')}
           </p>
-          <button id="btn-load-pools" class="btn btn-sm btn-primary">View Active Pools</button>
+          <button id="btn-load-pools" class="btn btn-sm btn-primary">${currentLanguage === 'mr' ? 'सक्रिय ग्रुप्स पहा' : (currentLanguage === 'hi' ? 'सक्रिय समूह देखें' : 'View Active Pools')}</button>
           <div id="pools-list-container" style="margin-top: var(--space-4); font-size: var(--font-size-xs);"></div>
         </div>
 
         <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">Weather &amp; Rain Risk Alert</h4>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'हवामान व अवकाळी पाऊस इशारा' : (currentLanguage === 'hi' ? 'मौसम व बेमौसम बारिश चेतावनी' : 'Weather & Rain Risk Alert')}</h4>
           <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            Open-Meteo rainfall anomaly integration for ${district} district. Unseasonal rain accelerates
-            perishable rot and would raise the daily decay rate fed into AsliDaam.
+            ${currentLanguage === 'mr'
+              ? `${translateDistrict(district, currentLanguage)} जिल्ह्यासाठी ओपन-मेटिओ (Open-Meteo) पाऊस अंदाज. अवकाळी पावसामुळे माल खराब होण्याचा धोका वाढतो.`
+              : (currentLanguage === 'hi'
+              ? `${translateDistrict(district, currentLanguage)} जिले हेतु ओपन-मेटिओ (Open-Meteo) वर्षा पूर्वानुमान। बेमौसम बारिश से माल खराब होने का जोखिम बढ़ता है.`
+              : `Open-Meteo rainfall anomaly integration for ${district} district. Unseasonal rain accelerates perishable rot and would raise the daily decay rate fed into AsliDaam.`)}
           </p>
-          <span class="badge badge-neutral">Planned Integration</span>
+          <span class="badge badge-neutral">${currentLanguage === 'mr' ? 'नियोजित जोडणी' : (currentLanguage === 'hi' ? 'प्रस्तावित सुविधा' : 'Planned Integration')}</span>
         </div>
 
         <div class="editorial-panel" style="background: var(--color-bg-surface);">
-          <h4 class="heading-sm" style="margin-bottom: 6px;">WhatsApp Payout Slip</h4>
+          <h4 class="heading-sm" style="margin-bottom: 6px;">${currentLanguage === 'mr' ? 'व्हॉट्सॲप (WhatsApp) पावती' : (currentLanguage === 'hi' ? 'व्हाट्सएप (WhatsApp) रसीद' : 'WhatsApp Payout Slip')}</h4>
           <p style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-4); line-height: 1.5;">
-            Generate a clean Marathi/Hindi text slip with the full AsliDaam breakdown to share with
-            fellow farmers and FPO leaders.
+            ${currentLanguage === 'mr'
+              ? 'इतर शेतकरी मित्रांना आणि FPO प्रमुखांना पाठवण्यासाठी मराठीतील संपूर्ण असलीदाम हिशोब पावती तयार करा.'
+              : (currentLanguage === 'hi'
+              ? 'अन्य किसान साथियों व FPO प्रमुखों को भेजने हेतु संपूर्ण असलीदाम हिसाब रसीद तैयार करें.'
+              : 'Generate a clean Marathi/Hindi text slip with the full AsliDaam breakdown to share with fellow farmers and FPO leaders.')}
           </p>
-          <button id="btn-copy-slip" class="btn btn-sm btn-outline">Copy WhatsApp Slip</button>
+          <button id="btn-copy-slip" class="btn btn-sm btn-outline">${currentLanguage === 'mr' ? 'व्हॉट्सॲप पावती कॉपी करा' : (currentLanguage === 'hi' ? 'व्हाट्सएप रसीद कॉपी करें' : 'Copy WhatsApp Slip')}</button>
         </div>
 
       </div>
@@ -1170,29 +1258,29 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
   const poolsContainer = panel.querySelector('#pools-list-container');
   if (loadPoolsBtn && poolsContainer) {
     loadPoolsBtn.addEventListener('click', async () => {
-      poolsContainer.innerHTML = '<p style="color: var(--color-text-muted);">Fetching clusters from database…</p>';
+      poolsContainer.innerHTML = `<p style="color: var(--color-text-muted);">${currentLanguage === 'mr' ? 'डेटाबेसवरून माहिती आणत आहे…' : (currentLanguage === 'hi' ? 'डेटाबेस से जानकारी ला रहे हैं…' : 'Fetching clusters from database…')}</p>`;
       try {
         const res = await fetch('/api/pools');
         const json = await res.json();
         const pools = json.data || [];
         if (pools.length === 0) {
-          poolsContainer.innerHTML = '<p>No active pools currently registered.</p>';
+          poolsContainer.innerHTML = `<p>${currentLanguage === 'mr' ? 'सध्या कोणतीही सक्रिय नोंदणी नाही.' : (currentLanguage === 'hi' ? 'फिलहाल कोई सक्रिय समूह पंजीकृत नहीं है.' : 'No active pools currently registered.')}</p>`;
           return;
         }
         poolsContainer.innerHTML = `
           <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3);">
-            <strong style="color: var(--color-brand-primary-dark);">Active Clusters (${json.source === 'supabase' ? 'Cloud Supabase' : 'Local cache'}):</strong>
+            <strong style="color: var(--color-brand-primary-dark);">${currentLanguage === 'mr' ? 'सक्रिय गट' : (currentLanguage === 'hi' ? 'सक्रिय समूह' : 'Active Clusters')} (${json.source === 'supabase' ? 'Cloud Supabase' : 'Local cache'}):</strong>
             <ul style="list-style: none; padding-left: 0; margin-top: 6px;">
               ${pools.slice(0, 4).map((p: any) => `
                 <li style="padding: 6px 0; border-bottom: 1px dashed var(--color-border); font-size: var(--font-size-xs);">
-                  <strong>${p.farmer_name}</strong> (${p.village || p.taluka}) • <strong>${p.quantity_quintals}q</strong> → ${p.target_mandi}
+                  <strong>${p.farmer_name}</strong> (${p.village || p.taluka}) • <strong>${formatNumber(p.quantity_quintals, currentLanguage)}${currentLanguage === 'mr' ? ' क्विंटल' : (currentLanguage === 'hi' ? ' क्विंटल' : 'q')}</strong> → ${translateMandiName(p.target_mandi, currentLanguage)}
                 </li>
               `).join('')}
             </ul>
           </div>
         `;
       } catch {
-        poolsContainer.innerHTML = '<p style="color: var(--color-status-abstain);">Cluster service unreachable.</p>';
+        poolsContainer.innerHTML = `<p style="color: var(--color-status-abstain);">${currentLanguage === 'mr' ? 'सेवा उपलब्ध नाही.' : (currentLanguage === 'hi' ? 'सेवा उपलब्ध नहीं है.' : 'Cluster service unreachable.')}</p>`;
       }
     });
   }
@@ -1200,19 +1288,19 @@ function renderFutureFeaturesTab(opt: AsliDaamOptimizationResult): HTMLElement {
   panel.querySelector('#btn-copy-slip')?.addEventListener('click', () => {
     const rec = opt.recommended;
     const slip = [
-      '*MandiMitra: AsliDaam Payout Slip*',
-      `Crop: ${opt.commodity} (${opt.quantityQuintals} Quintals)`,
-      `Recommendation: ${opt.headlineSummary.mr}`,
-      `Optimal Mandi: ${rec.market.name} (Day ${rec.dayOffset})`,
-      `Gross: ${rs1(rec.grossPricePerQtl)}/qtl`,
-      `Freight: −${rs1(rec.roadFreightPerQtl)}/qtl | APMC: −${rs1(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl)}/qtl`,
-      `Storage+Decay: −${rs1(rec.holdingAndSpoilagePerQtl)}/qtl | Freshness: −${rs1(rec.freshnessDiscountPerQtl)}/qtl`,
-      `AsliDaam: ${rs1(rec.asliDaamPerQtl)}/qtl`,
-      `Net Payout: ${rs(rec.totalNetPayout)} (+${rs(opt.totalPocketCashGain)} vs local mandi today)`,
-      'Verified by MandiMitra Decision Engine'
+      currentLanguage === 'mr' ? '*मंडीमित्र: असलीदाम हिशोब पावती*' : (currentLanguage === 'hi' ? '*मंडीमित्र: असलीदाम हिसाब रसीद*' : '*MandiMitra: AsliDaam Payout Slip*'),
+      `${currentLanguage === 'mr' ? 'शेतमाल' : (currentLanguage === 'hi' ? 'फसल' : 'Crop')}: ${opt.commodity} (${formatNumber(opt.quantityQuintals, currentLanguage)} ${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'Quintals')})`,
+      `${currentLanguage === 'mr' ? 'शिफारस' : (currentLanguage === 'hi' ? 'सिफारिश' : 'Recommendation')}: ${opt.headlineSummary[currentLanguage]}`,
+      `${currentLanguage === 'mr' ? 'निवडलेला बाजार' : (currentLanguage === 'hi' ? 'चयनित मंडी' : 'Optimal Mandi')}: ${translateMandiName(rec.market.name, currentLanguage)} (${currentLanguage === 'mr' ? (rec.dayOffset === 0 ? 'आज' : `दिवस +${formatNumber(rec.dayOffset, currentLanguage)}`) : (currentLanguage === 'hi' ? (rec.dayOffset === 0 ? 'आज' : `दिन +${formatNumber(rec.dayOffset, currentLanguage)}`) : `Day ${rec.dayOffset}`)})`,
+      `${currentLanguage === 'mr' ? 'एकूण भाव' : (currentLanguage === 'hi' ? 'कुल भाव' : 'Gross')}: ${rs1(rec.grossPricePerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
+      `${currentLanguage === 'mr' ? 'गाडी भाडे' : (currentLanguage === 'hi' ? 'वाहन भाड़ा' : 'Freight')}: −${rs1(rec.roadFreightPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')} | ${currentLanguage === 'mr' ? 'बाजार समिती फी' : (currentLanguage === 'hi' ? 'मंडी शुल्क' : 'APMC')}: −${rs1(rec.apmcCessPerQtl + rec.hamaliAndTolaiPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
+      `${currentLanguage === 'mr' ? 'साठवणूक घट' : (currentLanguage === 'hi' ? 'भंडारण घट' : 'Storage+Decay')}: −${rs1(rec.holdingAndSpoilagePerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')} | ${currentLanguage === 'mr' ? 'ताजेपणा वटती' : (currentLanguage === 'hi' ? 'ताजगी कटौती' : 'Freshness')}: −${rs1(rec.freshnessDiscountPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
+      `${currentLanguage === 'mr' ? 'असलीदाम' : (currentLanguage === 'hi' ? 'असलीदाम' : 'AsliDaam')}: ${rs1(rec.asliDaamPerQtl)}/${currentLanguage === 'mr' ? 'क्विंटल' : (currentLanguage === 'hi' ? 'क्विंटल' : 'qtl')}`,
+      `${currentLanguage === 'mr' ? 'एकूण निव्वळ रक्कम' : (currentLanguage === 'hi' ? 'कुल शुद्ध राशि' : 'Net Payout')}: ${rs(rec.totalNetPayout)} (+${rs(opt.totalPocketCashGain)} ${currentLanguage === 'mr' ? 'जास्तीचा नफा' : (currentLanguage === 'hi' ? 'अतिरिक्त लाभ' : 'gain')})`,
+      currentLanguage === 'mr' ? 'मंडीमित्र निर्णय प्रणालीद्वारे प्रमाणित' : (currentLanguage === 'hi' ? 'मंडीमित्र निर्णय प्रणाली द्वारा प्रमाणित' : 'Verified by MandiMitra Decision Engine')
     ].join('\n');
     void navigator.clipboard.writeText(slip);
-    alert('Copied the AsliDaam recommendation slip to your clipboard.');
+    alert(currentLanguage === 'mr' ? 'असलीदाम शिफारस पावती क्लिपबोर्डवर कॉपी झाली आहे.' : (currentLanguage === 'hi' ? 'असलीदाम सिफारिश रसीद क्लिपबोर्ड पर कॉपी हो गई है.' : 'Copied the AsliDaam recommendation slip to your clipboard.'));
   });
 
   return panel;
