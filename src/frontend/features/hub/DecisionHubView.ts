@@ -61,6 +61,7 @@ type HubTab = 'aslidaam' | 'sajhabazaar' | 'markets' | 'evidence' | 'backtest' |
 
 let activeTab: HubTab = 'aslidaam';
 let currentLanguage: Language = 'mr';
+let isCostDrawerOpen = false;
 
 const rs = (n: number): string => formatCurrency(n, currentLanguage);
 const rs1 = (n: number): string => formatCurrency(n, currentLanguage, true);
@@ -275,6 +276,7 @@ export function renderDecisionHubView(): HTMLElement {
   const crop = state.selectedCrop || 'Onion';
   const qty = state.harvestQuantityQuintals || 25;
   const district = state.userLocation?.district || 'Nashik';
+  const costConfig = state.costConfig;
   const cropConfig = getCropConfig(crop);
   const evalData = state.evaluationData;
 
@@ -453,6 +455,76 @@ export function renderDecisionHubView(): HTMLElement {
           </div>
         </div>
 
+        <!-- Cost Simulator Integrated Drawer -->
+        <div class="cockpit-cost-toggle-row">
+          <button type="button" class="cockpit-cost-toggle-btn ${isCostDrawerOpen ? 'open' : ''}" id="btn-toggle-cost-sim" aria-expanded="${isCostDrawerOpen ? 'true' : 'false'}" aria-controls="cockpit-cost-drawer">
+            <span>⚙️</span>
+            <span>${currentLanguage === 'mr' ? 'वाहतूक व खर्च सिम्युलेटर' : (currentLanguage === 'hi' ? 'परिवहन व लागत सिम्युलेटर' : 'Cost & Freight Simulator')}</span>
+            <span class="cost-toggle-pill">
+              ${formatCurrency(costConfig.transportCostPerKmPerQtl, currentLanguage, true)}/km · ${formatCurrency(costConfig.storageCostPerDayPerQtl, currentLanguage, true)}/day · ${formatUnit(costConfig.searchRadiusKm, 'km', currentLanguage)}
+            </span>
+            <span class="cost-toggle-arrow">▾</span>
+          </button>
+        </div>
+
+        <div class="cockpit-cost-drawer" id="cockpit-cost-drawer" style="display: ${isCostDrawerOpen ? 'block' : 'none'};">
+          <div class="cockpit-cost-grid">
+            <!-- Transport Cost Input -->
+            <div class="cockpit-input-col">
+              <div class="cockpit-cost-label-row">
+                <label class="cockpit-input-label" for="cockpit-input-transport-cost">
+                  ${currentLanguage === 'mr' ? 'वाहतूक भाडे दर' : (currentLanguage === 'hi' ? 'ढुलाई भाड़ा दर' : 'Haulage Cost')}
+                </label>
+                <span class="cost-badge">${currentLanguage === 'mr' ? '₹ प्रति किमी/क्विंटल' : (currentLanguage === 'hi' ? '₹ प्रति किमी/क्विंटल' : '₹/km/qtl')}</span>
+              </div>
+              <input 
+                type="text" 
+                inputmode="decimal" 
+                id="cockpit-input-transport-cost" 
+                class="cockpit-cost-input" 
+                value="${formatNumber(costConfig.transportCostPerKmPerQtl, currentLanguage)}" 
+              />
+              <span class="cost-hint">${currentLanguage === 'mr' ? 'पिकअप किंवा ट्रॅक्टर ट्रॉली डिझेल व ड्रायव्हर भाडे' : (currentLanguage === 'hi' ? 'पिकअप या ट्रैक्टर डीजल व चालक खर्च' : 'Pickup/tractor freight per km per quintal')}</span>
+            </div>
+
+            <!-- Storage Cost Input -->
+            <div class="cockpit-input-col">
+              <div class="cockpit-cost-label-row">
+                <label class="cockpit-input-label" for="cockpit-input-storage-cost">
+                  ${currentLanguage === 'mr' ? 'साठवणूक खर्च' : (currentLanguage === 'hi' ? 'भंडारण खर्च' : 'Holding Cost')}
+                </label>
+                <span class="cost-badge">${currentLanguage === 'mr' ? '₹ प्रति दिवस/क्विंटल' : (currentLanguage === 'hi' ? '₹ प्रति दिन/क्विंटल' : '₹/day/qtl')}</span>
+              </div>
+              <input 
+                type="text" 
+                inputmode="decimal" 
+                id="cockpit-input-storage-cost" 
+                class="cockpit-cost-input" 
+                value="${formatNumber(costConfig.storageCostPerDayPerQtl, currentLanguage)}" 
+              />
+              <span class="cost-hint">${currentLanguage === 'mr' ? 'नैसर्गिक वजन घट व गोदामाचे दैनंदिन भाडे' : (currentLanguage === 'hi' ? 'प्राकृतिक वजन घट व गोदाम का दैनिक किराया' : 'Crop shrinkage loss & daily shed holding cost')}</span>
+            </div>
+
+            <!-- Search Radius Input -->
+            <div class="cockpit-input-col">
+              <div class="cockpit-cost-label-row">
+                <label class="cockpit-input-label" for="cockpit-input-radius">
+                  ${currentLanguage === 'mr' ? 'कमाल शोध अंतर' : (currentLanguage === 'hi' ? 'अधिकतम खोज दायरा' : 'Search Radius')}
+                </label>
+                <span class="cost-badge">${formatUnit(costConfig.searchRadiusKm, 'km', currentLanguage)}</span>
+              </div>
+              <input 
+                type="text" 
+                inputmode="numeric" 
+                id="cockpit-input-radius" 
+                class="cockpit-cost-input" 
+                value="${formatNumber(costConfig.searchRadiusKm, currentLanguage)}" 
+              />
+              <span class="cost-hint">${currentLanguage === 'mr' ? 'नफ्याची बाजारपेठ शोधण्यासाठी शेताभोवतीचे अंतर' : (currentLanguage === 'hi' ? 'लाभकारी मंडी खोजने हेतु खेत के आसपास का दायरा' : 'Driving distance considered around your farm')}</span>
+            </div>
+          </div>
+        </div>
+
         <div id="hub-data-provenance" class="cockpit-provenance-row">
           ${evalData
             ? `<span class="provenance-dot"></span><span>${currentLanguage === 'mr' ? `${formatNumber(evalData.evaluations.length, 'mr')} बाजार तपासले (${formatUnit(evalData.userParameters.radiusKm, 'km', 'mr')}) · मॉडेल <strong>${evalData.modelVersion}</strong> · वेळ ${new Date(evalData.evaluatedAt).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}` : (currentLanguage === 'hi' ? `${formatNumber(evalData.evaluations.length, 'hi')} मंडियां जांची गईं (${formatUnit(evalData.userParameters.radiusKm, 'km', 'hi')}) · मॉडल <strong>${evalData.modelVersion}</strong> · समय ${new Date(evalData.evaluatedAt).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}` : `${evalData.evaluations.length} candidate APMC(s) resolved within ${evalData.userParameters.radiusKm} km · model <strong>${evalData.modelVersion}</strong> · evaluated ${new Date(evalData.evaluatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`)}</span>`
@@ -477,9 +549,6 @@ export function renderDecisionHubView(): HTMLElement {
       </button>
       <button class="hub-tab-btn ${activeTab === 'backtest' ? 'active' : ''}" data-tab="backtest">
         ${currentLanguage === 'mr' ? 'मागील पडताळणी' : (currentLanguage === 'hi' ? 'पिछली जांच' : 'Walk-Forward Backtest')}
-      </button>
-      <button class="hub-tab-btn ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
-        ${currentLanguage === 'mr' ? 'खर्च सिम्युलेटर' : (currentLanguage === 'hi' ? 'लागत सिम्युलेटर' : 'Cost Simulator')}
       </button>
       <button class="hub-tab-btn ${activeTab === 'future' ? 'active' : ''}" data-tab="future">
         ${currentLanguage === 'mr' ? 'भविष्यातील वैशिष्ट्ये' : (currentLanguage === 'hi' ? 'आगामी सुविधाएं' : 'Future Features')}
@@ -546,6 +615,33 @@ export function renderDecisionHubView(): HTMLElement {
     void reevaluate({ lat: d.latitude, lon: d.longitude });
   });
 
+  // Cost Simulator inputs
+  const cockpitTransportInput = container.querySelector('#cockpit-input-transport-cost') as HTMLInputElement | null;
+  const cockpitStorageInput = container.querySelector('#cockpit-input-storage-cost') as HTMLInputElement | null;
+  const cockpitRadiusInput = container.querySelector('#cockpit-input-radius') as HTMLInputElement | null;
+
+  // Cost Simulator drawer toggle
+  const costToggleBtn = container.querySelector('#btn-toggle-cost-sim') as HTMLButtonElement | null;
+  const costDrawer = container.querySelector('#cockpit-cost-drawer') as HTMLElement | null;
+  costToggleBtn?.addEventListener('click', () => {
+    isCostDrawerOpen = !isCostDrawerOpen;
+    if (costDrawer) {
+      costDrawer.style.display = isCostDrawerOpen ? 'block' : 'none';
+    }
+    costToggleBtn.classList.toggle('open', isCostDrawerOpen);
+    costToggleBtn.setAttribute('aria-expanded', isCostDrawerOpen ? 'true' : 'false');
+  });
+
+  if (currentLanguage !== 'en') {
+    [cockpitTransportInput, cockpitStorageInput, cockpitRadiusInput].forEach(inp => {
+      inp?.addEventListener('input', () => {
+        const s = inp.selectionStart;
+        inp.value = toDevanagariDigits(inp.value);
+        if (s !== null) inp.setSelectionRange(s, s);
+      });
+    });
+  }
+
   container.querySelector('#btn-recalculate-hub')?.addEventListener('click', () => {
     const cropSelect = container.querySelector('#hub-select-crop') as HTMLSelectElement | null;
     const qtyInput = container.querySelector('#hub-input-qty') as HTMLInputElement | null;
@@ -557,6 +653,17 @@ export function renderDecisionHubView(): HTMLElement {
     store.setSelectedCrop(newCrop);
     if (qtyInput) store.setHarvestQuantity(Math.max(1, parseDevanagariNumber(qtyInput.value) || 25));
     store.setUserLocation(d.latitude, d.longitude, d.name);
+
+    // Save Cost Simulator settings directly from Cockpit
+    const transportVal = cockpitTransportInput ? parseDevanagariNumber(cockpitTransportInput.value) : undefined;
+    const storageVal = cockpitStorageInput ? parseDevanagariNumber(cockpitStorageInput.value) : undefined;
+    const radiusVal = cockpitRadiusInput ? parseDevanagariNumber(cockpitRadiusInput.value) : undefined;
+
+    store.updateCostConfig({
+      transportCostPerKmPerQtl: (transportVal !== undefined && !isNaN(transportVal) && transportVal > 0) ? transportVal : costConfig.transportCostPerKmPerQtl,
+      storageCostPerDayPerQtl: (storageVal !== undefined && !isNaN(storageVal) && storageVal >= 0) ? storageVal : costConfig.storageCostPerDayPerQtl,
+      searchRadiusKm: (radiusVal !== undefined && !isNaN(radiusVal) && radiusVal > 0) ? radiusVal : costConfig.searchRadiusKm
+    });
 
     void reevaluate({ crop: newCrop, lat: d.latitude, lon: d.longitude });
   });
