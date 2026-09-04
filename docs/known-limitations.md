@@ -77,7 +77,11 @@ These are limitations we disclose **proactively** in the presentation. Saying th
 
 > **What we don't do (yet):**
 >
-> 1. The public price API doesn't carry **arrival volumes** — CEDA does; that's our first integration post-hackathon
+> 1. The public price API doesn't carry **arrival volumes**. Bhed Vivek therefore forecasts arrival
+>    *pressure* from live outlet scarcity, measured yard absorption, the published harvest calendar
+>    and a live rainfall forecast — it is explicitly **not** a tonnage prediction, and every
+>    `/api/mandi-rush` response says so in its `methodology`. A real arrivals feed (CEDA paid tier
+>    or MSAMB yard-gate) is the first post-hackathon integration; the engine already has a slot for it.
 > 2. Agmarknet has **reporting gaps** — which is why the abstention gate exists
 > 3. We **don't fix procurement access** — we scope to the 75% selling locally, where timing is the lever
 > 4. We cover **3 commodities** — adding more is config, not code
@@ -89,3 +93,22 @@ These are limitations we disclose **proactively** in the presentation. Saying th
 ## The Philosophy
 
 > A team that pre-empts all six of its own weaknesses reads as **senior**. A team that hides them reads as naive. Disclose early, disclose precisely, disclose with the mitigation in the same sentence.
+
+---
+
+## Limitation: the mandi-rush forecast
+
+| | |
+|-|-|
+| **What** | Agmarknet publishes no arrival tonnage, so the crowd forecast is built from *proxies* for arrival pressure, not from measured arrivals. |
+| **Impact** | It ranks yards and days by expected congestion; it cannot state how many quintals will show up. |
+| **Mitigation** | Every component is labelled `measured` or `reference` in the API response, the score recomposes exactly from its published drivers, and the missing-arrivals limitation is disclosed on every response. The weekly closed-day rhythm is flagged as documented yard practice rather than a measurement. |
+| **What to Say** | "Agmarknet gives us prices, not arrivals. So we forecast arrival *pressure* from four things we can actually measure or cite, we show the farmer which is which, and we say on every response that this is not a tonnage prediction. A real arrivals feed drops straight into the fifth slot." |
+
+### Rejected proxy, recorded on purpose
+
+Intra-day price dispersion `(max−min)/modal` was tested as a liquidity proxy and **rejected**: it
+correlates **+0.29** with yard size, i.e. the wrong way round, because small yards report a single
+flat price for a single lot. It measures reporting granularity, not absorption. The rejection is
+documented in the header of `src/core/mandi-rush.ts` rather than quietly dropped.
+

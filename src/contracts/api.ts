@@ -51,6 +51,8 @@ export interface EvaluateRequestBody {
   commodity: string;
   latitude: number;
   longitude: number;
+  /** Harvest volume, used to size the congestion impact on the farmer's actual load. */
+  quantityQuintals?: number;
   transportCostPerKmPerQtl?: number; // Optional override; defaults to config
   storageCostPerDayPerQtl?: number;  // Optional override; defaults to config
   radiusKm?: number;                 // Optional override; defaults to 100km
@@ -69,6 +71,13 @@ export interface EvaluateResponse {
   };
   nirnayKawach?: import('./domain').NirnayKawachResult;
   bhedVivek?: import('./domain').BhedVivekEvaluation;
+  /** Per-mandi, per-day arrival-pressure forecast backing Bhed Vivek. */
+  mandiRush?: {
+    forecasts: import('../core/mandi-rush').MandiRushForecast[];
+    weatherSource: string;
+    weatherSourceNote: string;
+    isWeatherLive: boolean;
+  };
 }
 
 // ==========================================
@@ -119,6 +128,30 @@ export interface BhedVivekRequestBody {
 }
 
 export type BhedVivekResponse = import('./domain').BhedVivekEvaluation;
+
+// ==========================================
+// 5b. /api/mandi-rush (Predicted Arrival Pressure)
+// ==========================================
+export interface MandiRushRequestBody {
+  commodity: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  horizonDays?: number;
+  transportCostPerKmPerQtl?: number;
+  storageCostPerDayPerQtl?: number;
+}
+
+export interface MandiRushResponse {
+  commodity: string;
+  evaluatedAt: string;
+  weatherSource: string;
+  weatherSourceNote: string;
+  isWeatherLive: boolean;
+  /** Sorted quietest-first, so the least crowded yard is the first row. */
+  forecasts: import('../core/mandi-rush').MandiRushForecast[];
+  methodology: string[];
+}
 
 // ==========================================
 // 4. /api/backtest

@@ -65,6 +65,117 @@ let currentLanguage: Language = 'mr';
 const rs = (n: number): string => formatCurrency(n, currentLanguage);
 const rs1 = (n: number): string => formatCurrency(n, currentLanguage, true);
 
+/** Level -> farmer-facing crowd word, in the active language. */
+function rushLevelWord(level: string, lang: Language): string {
+  if (level === 'LOW') return lang === 'mr' ? 'कमी गर्दी' : (lang === 'hi' ? 'कम भीड़' : 'Light');
+  if (level === 'MEDIUM') return lang === 'mr' ? 'मध्यम गर्दी' : (lang === 'hi' ? 'मध्यम भीड़' : 'Moderate');
+  return lang === 'mr' ? 'मोठी गर्दी' : (lang === 'hi' ? 'भारी भीड़' : 'Heavy');
+}
+
+function rushLevelColors(level: string): { bg: string; fg: string; border: string } {
+  if (level === 'LOW') return { bg: '#dcfce7', fg: '#166534', border: '#86efac' };
+  if (level === 'MEDIUM') return { bg: '#fef3c7', fg: '#92400e', border: '#fde68a' };
+  return { bg: '#fee2e2', fg: '#991b1b', border: '#fca5a5' };
+}
+
+/**
+ * Renders the day-by-day arrival outlook for the recommended mandi. This is the part a farmer
+ * actually acts on: which of the next few days is worth loading the trolley for.
+ */
+function renderRushOutlook(bhed: any, lang: Language): string {
+  const rush = bhed?.winnerRushForecast;
+  if (!rush || !Array.isArray(rush.byDay) || rush.byDay.length === 0) return '';
+
+  const chips = rush.byDay.map((d: any) => {
+    const c = rushLevelColors(d.level);
+    const closed = d.isYardClosed;
+    // The umbrella is reserved for rain heavy enough to actually hold arrivals back; a trace
+    // amount is still shown, but without implying a washout.
+    const wet = d.rainClass === 'light' || d.rainClass === 'heavy';
+    const rain = (d.expectedRainMm !== null && d.expectedRainMm !== undefined && d.expectedRainMm >= 0.1)
+      ? `<div style="font-size:0.6rem;color:${wet ? '#1d4ed8' : '#94a3b8'};margin-top:2px;">${wet ? '☔' : '·'} ${d.expectedRainMm.toFixed(1)}mm</div>`
+      : '';
+    const dayLabel = lang === 'mr' || lang === 'hi'
+      ? formatNumber(d.day, lang)
+      : String(d.day);
+    return `
+      <div title="${escapeAttr(d.note)}" style="flex:1;min-width:74px;text-align:center;padding:8px 4px;border-radius:10px;
+           background:${closed ? '#f1f5f9' : c.bg};border:1px solid ${closed ? '#cbd5e1' : c.border};">
+        <div style="font-size:0.62rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.03em;">
+          ${d.weekdayName.slice(0, 3)} · +${dayLabel}d
+        </div>
+        <div style="font-size:0.72rem;font-weight:800;color:${closed ? '#64748b' : c.fg};margin-top:3px;">
+          ${closed ? I18N_DICTIONARY.hub.rushYardClosed[lang] : rushLevelWord(d.level, lang)}
+        </div>
+        ${rain}
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="margin-top:12px;">
+      <div style="font-size:0.68rem;font-weight:800;color:#73512B;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">
+        ${I18N_DICTIONARY.hub.rushOutlookTitle[lang]}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">${chips}</div>
+      <div style="font-size:0.7rem;color:#5b4a33;line-height:1.5;margin-top:8px;">
+        ${escapeHtml(rush.farmerAdvice?.[lang] || rush.farmerAdvice?.en || '')}
+      </div>
+    </div>`;
+}
+
+/** Renders the evidence behind the prediction, tagging each driver measured vs reference. */
+function renderRushDrivers(bhed: any, lang: Language): string {
+  const rush = bhed?.winnerRushForecast;
+  if (!rush || !Array.isArray(rush.drivers) || rush.drivers.length === 0) return '';
+
+  const rows = rush.drivers.map((d: any) => {
+    const label = lang === 'mr' ? d.labelMr : (lang === 'hi' ? d.labelHi : d.label);
+    const tag = d.isMeasured ? I18N_DICTIONARY.hub.rushMeasured[lang] : I18N_DICTIONARY.hub.rushReference[lang];
+    const tagBg = d.isMeasured ? '#dcfce7' : '#e0e7ff';
+    const tagFg = d.isMeasured ? '#166534' : '#3730a3';
+    const pct = Math.round(d.contribution * 100);
+    return `
+      <li style="margin-bottom:7px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <strong style="font-size:0.72rem;color:#3f3221;">${escapeHtml(label)}</strong>
+          <span style="font-size:0.55rem;font-weight:800;padding:1px 6px;border-radius:99px;background:${tagBg};color:${tagFg};text-transform:uppercase;">${tag}</span>
+          <span style="font-size:0.62rem;color:#8a7355;">${pct}%</span>
+        </div>
+        <div style="font-size:0.66rem;color:#6b5a44;line-height:1.45;">${escapeHtml(d.evidence)}</div>
+      </li>`;
+  }).join('');
+
+  return `
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer;font-size:0.68rem;font-weight:800;color:#73512B;text-transform:uppercase;letter-spacing:0.04em;">
+        ${I18N_DICTIONARY.hub.rushWhyTitle[lang]}
+      </summary>
+      <ul style="list-style:none;padding:8px 0 0 0;margin:0;">${rows}</ul>
+    </details>`;
+}
+
+function escapeHtml(v: string): string {
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeAttr(v: string): string {
+  return escapeHtml(v).replace(/"/g, '&quot;');
+}
+
+/**
+ * Turns the measured absorption index into a farmer-facing buyer-demand word.
+ * The index is the yard's percentile of trading breadth in today's Agmarknet feed, so this label
+ * is a reading of real data rather than a hand-assigned tier.
+ */
+function formatAbsorption(bhed: any, lang: Language): string {
+  const idx = bhed?.winnerRushForecast?.absorptionIndex;
+  if (typeof idx !== 'number') {
+    return lang === 'mr' ? 'माहिती नाही' : (lang === 'hi' ? 'जानकारी नहीं' : 'Not measured');
+  }
+  if (idx >= 0.7) return lang === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (lang === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High (Active)');
+  if (idx >= 0.4) return lang === 'mr' ? 'मध्यम' : (lang === 'hi' ? 'मध्यम' : 'Moderate');
+  return lang === 'mr' ? 'मर्यादित' : (lang === 'hi' ? 'सीमित' : 'Limited');
+}
+
 function formatBhedAlert(bhed: any, rec: any, lang: Language): string {
   if (!bhed) {
     if (lang === 'mr') return `बाजारात वाहनांची गर्दी होण्याची शक्यता! हुशार सल्ला: ${translateMandiName(rec?.market?.name || 'नाशिक', lang)} येथे विक्री केल्यास गर्दी टाळून नफा सुरक्षित राहील.`;
@@ -77,12 +188,18 @@ function formatBhedAlert(bhed: any, rec: any, lang: Language): string {
   const origMandi = translateMandiName(origName, lang);
   const adjMandi = translateMandiName(adjName, lang);
   const adjDay = formatNumber(bhed.adjustedWinner?.day ?? rec?.dayOffset ?? 0, lang);
-  const impactPerQtl = formatCurrency(bhed.congestionImpactPerQtl || 298.8, lang, true);
+  const impactPerQtl = formatCurrency(bhed.congestionImpactPerQtl ?? 0, lang, true);
   const qty = store.getState().harvestQuantityQuintals || 25;
   const rawDiff = bhed.adjustedWinner && bhed.originalWinner
     ? Math.round((bhed.adjustedWinner.adjustedNrv - bhed.originalWinner.adjustedNrv) * qty)
-    : 3850;
-  const pocketSaved = formatCurrency(Math.abs(rawDiff) || 3850, lang);
+    : 0;
+  const pocketSaved = formatCurrency(Math.abs(rawDiff), lang);
+
+  // A predicted (non-override) evaluation already carries a fully-worded, evidence-backed message
+  // from the engine; only the manual what-if path needs the templated narrative below.
+  if (bhed.supplyPressureBasis === 'FORECAST' && lang === 'en' && bhed.alertMessage) {
+    return bhed.alertMessage;
+  }
 
   if (bhed.status === 'HIGH_RISK' || bhed.supplyPressure === 'HIGH') {
     if (lang === 'mr') {
@@ -94,11 +211,7 @@ function formatBhedAlert(bhed: any, rec: any, lang: Language): string {
     return `Under HIGH supply pressure, ${origName} faces heavy arrival congestion (-${impactPerQtl}/q). Diverting to ${adjName} (Day +${adjDay}) protects your profit by +${pocketSaved}!`;
   }
 
-  const cap = bhed.absorptionCapacity === 'HIGH'
-    ? (lang === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (lang === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High'))
-    : (bhed.absorptionCapacity === 'MODERATE'
-      ? (lang === 'mr' ? 'मध्यम' : (lang === 'hi' ? 'मध्यम' : 'Moderate'))
-      : (lang === 'mr' ? 'मर्यादित' : (lang === 'hi' ? 'सीमित' : 'Limited')));
+  const cap = formatAbsorption(bhed, lang);
 
   if (lang === 'mr') {
     return `${origMandi} मध्ये खरेदीदारांची क्षमता मोठी आहे (${cap}). बाजारातील गर्दीच्या परिस्थितीतही हाच सल्ला सर्वात फायदेशीर राहतो.`;
@@ -810,7 +923,7 @@ function renderAsliDaamTab(
                        : (bhed.supplyPressure === 'MEDIUM'
                        ? (currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'MODERATE RUSH'))
                        : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा' : (currentLanguage === 'hi' ? 'भारी भीड़ चेतावनी' : 'HEAVY JAM ALERT'))))
-                   : (currentLanguage === 'mr' ? 'थेट गर्दी निरीक्षण' : (currentLanguage === 'hi' ? 'सीधा भीड़ निरीक्षण' : 'LIVE CROWD MONITOR'))}
+                   : (currentLanguage === 'mr' ? 'गर्दी अंदाज सुरू आहे…' : (currentLanguage === 'hi' ? 'भीड़ अनुमान जारी…' : 'FORECASTING CROWD…'))}
               </span>
             </div>
 
@@ -822,33 +935,40 @@ function renderAsliDaamTab(
                   : 'If too many tractor-trolleys arrive at the same mandi, auction rates drop. We alert you before you get stuck in a queue.')}
             </p>
 
-            <label class="shield-slider-label">
-              ${currentLanguage === 'mr' ? 'आज बाजारात गर्दी किती असेल निवडा:' : (currentLanguage === 'hi' ? 'आज मंडी में संभावित भीड़ चुनें:' : 'Select expected mandi crowd today:')}
+            <!-- PREDICTED arrival pressure. MandiMitra forecasts the crowd; the farmer no longer guesses. -->
+            <div id="bhed-basis-tag" style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:${bhed?.supplyPressureBasis === 'USER_OVERRIDE' ? '#3730a3' : '#166534'};margin:4px 0 2px 0;">
+              ${bhed?.supplyPressureBasis === 'USER_OVERRIDE'
+                ? I18N_DICTIONARY.hub.rushOverrideTag[currentLanguage]
+                : I18N_DICTIONARY.hub.rushForecastTag[currentLanguage]}${bhed?.confidence ? ` · ${I18N_DICTIONARY.hub.rushConfidence[currentLanguage]} ${bhed.confidence}` : ''}
+            </div>
+
+            <div id="bhed-forecast-strip">
+              ${renderRushOutlook(bhed, currentLanguage)}
+              ${renderRushDrivers(bhed, currentLanguage)}
+            </div>
+
+            <label class="shield-slider-label" style="margin-top: 12px;">
+              ${I18N_DICTIONARY.hub.rushWhatIfLabel[currentLanguage]}
             </label>
             <div class="bhed-scenario-grid">
-              <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressure === 'LOW' ? 'active-low' : ''}" data-level="LOW">
+              <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressureBasis === 'USER_OVERRIDE' && bhed?.supplyPressure === 'LOW' ? 'active-low' : ''}" data-level="LOW">
                 ${currentLanguage === 'mr' ? 'सुरळीत' : (currentLanguage === 'hi' ? 'सुचारू' : 'Normal Crowd')}<span>(${currentLanguage === 'mr' ? 'कमी गर्दी' : (currentLanguage === 'hi' ? 'कम भीड़' : 'Normal')})</span>
               </button>
-              <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressure === 'MEDIUM' ? 'active-med' : ''}" data-level="MEDIUM">
+              <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressureBasis === 'USER_OVERRIDE' && bhed?.supplyPressure === 'MEDIUM' ? 'active-med' : ''}" data-level="MEDIUM">
                 ${currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'Medium Rush')}<span>(${currentLanguage === 'mr' ? 'नेहमीची आवक' : (currentLanguage === 'hi' ? 'सामान्य आवक' : 'Moderate')})</span>
               </button>
-              <button class="bhed-scenario-btn btn-bhed-scenario ${!bhed || bhed?.supplyPressure === 'HIGH' ? 'active-high' : ''}" data-level="HIGH">
+              <button class="bhed-scenario-btn btn-bhed-scenario ${bhed?.supplyPressureBasis === 'USER_OVERRIDE' && bhed?.supplyPressure === 'HIGH' ? 'active-high' : ''}" data-level="HIGH">
                 ${currentLanguage === 'mr' ? 'मोठी गर्दी' : (currentLanguage === 'hi' ? 'भारी भीड़' : 'Heavy Jam')}<span>(${currentLanguage === 'mr' ? 'लांबच लांब रांग' : (currentLanguage === 'hi' ? 'लंबी कतार' : 'Heavy Queue')})</span>
               </button>
             </div>
+            <button id="btn-bhed-reset" type="button" style="margin-top:6px;display:${bhed?.supplyPressureBasis === 'USER_OVERRIDE' ? 'inline-block' : 'none'};font-size:0.66rem;padding:3px 10px;border:1px solid var(--color-border);background:#fff;border-radius:99px;cursor:pointer;">
+              ↺ ${I18N_DICTIONARY.hub.rushBackToForecast[currentLanguage]}
+            </button>
 
             <div id="bhed-feedback-box" class="bhed-feedback-box">
               <div class="bhed-feedback-top">
-                <span>${I18N_DICTIONARY.hub.rushDrop[currentLanguage]} <strong id="bhed-impact-text" style="color: #DC2626; font-family: var(--font-family-heading); font-size: 0.95rem;">${bhed ? `−${rs1(bhed.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}` : `−₹२६० / ${formatUnit(1, 'qtl', currentLanguage)}`}</strong></span>
-                <span id="bhed-capacity-text" style="color: #73512B;">${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${
-                  bhed
-                    ? (bhed.absorptionCapacity === 'HIGH'
-                        ? (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High (Active)'))
-                        : (bhed.absorptionCapacity === 'MODERATE'
-                        ? (currentLanguage === 'mr' ? 'मध्यम' : (currentLanguage === 'hi' ? 'मध्यम' : 'Moderate'))
-                        : (currentLanguage === 'mr' ? 'मर्यादित' : (currentLanguage === 'hi' ? 'सीमित' : 'Limited'))))
-                    : (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'Active'))
-                }</strong></span>
+                <span>${I18N_DICTIONARY.hub.rushDrop[currentLanguage]} <strong id="bhed-impact-text" style="color: #DC2626; font-family: var(--font-family-heading); font-size: 0.95rem;">${bhed ? `−${rs1(bhed.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}` : '—'}</strong></span>
+                <span id="bhed-capacity-text" style="color: #73512B;">${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${formatAbsorption(bhed, currentLanguage)}</strong></span>
               </div>
               <div id="bhed-alert-text" class="bhed-alert-msg">
                 ${formatBhedAlert(bhed, rec, currentLanguage)}
@@ -1125,76 +1245,90 @@ function renderAsliDaamTab(
     });
   }
 
-  // ---- Bhed Vivek live scenario buttons ----
+  // ---- Bhed Vivek: predicted crowd by default, manual what-if on demand ----
   const bhedButtons = panel.querySelectorAll('.btn-bhed-scenario');
   const bhedBadge = panel.querySelector('#bhed-badge') as HTMLElement | null;
   const bhedImpactText = panel.querySelector('#bhed-impact-text') as HTMLElement | null;
   const bhedCapacityText = panel.querySelector('#bhed-capacity-text') as HTMLElement | null;
   const bhedAlertText = panel.querySelector('#bhed-alert-text') as HTMLElement | null;
+  const bhedBasisTag = panel.querySelector('#bhed-basis-tag') as HTMLElement | null;
+  const bhedResetBtn = panel.querySelector('#btn-bhed-reset') as HTMLElement | null;
+  const bhedStrip = panel.querySelector('#bhed-forecast-strip') as HTMLElement | null;
+
+  /** Repaints the card from a Bhed Vivek payload, whichever basis produced it. */
+  const paintBhed = (res: any) => {
+    const level = res.supplyPressure as 'LOW' | 'MEDIUM' | 'HIGH';
+    const isOverride = res.supplyPressureBasis === 'USER_OVERRIDE';
+
+    if (bhedBadge) {
+      bhedBadge.textContent = level === 'LOW'
+        ? (currentLanguage === 'mr' ? 'सुरळीत आवक' : (currentLanguage === 'hi' ? 'सुचारू आवक' : 'SMOOTH ARRIVAL'))
+        : (level === 'MEDIUM'
+            ? (currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'MODERATE RUSH'))
+            : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा' : (currentLanguage === 'hi' ? 'भारी भीड़ चेतावनी' : 'HEAVY JAM ALERT')));
+      const c = rushLevelColors(level);
+      bhedBadge.style.background = c.bg;
+      bhedBadge.style.color = c.fg;
+      bhedBadge.style.border = `1px solid ${c.border}`;
+    }
+    if (bhedBasisTag) {
+      bhedBasisTag.textContent = (isOverride
+        ? I18N_DICTIONARY.hub.rushOverrideTag[currentLanguage]
+        : I18N_DICTIONARY.hub.rushForecastTag[currentLanguage]) + (res.confidence ? ` · ${I18N_DICTIONARY.hub.rushConfidence[currentLanguage]} ${res.confidence}` : '');
+      bhedBasisTag.style.color = isOverride ? '#3730a3' : '#166534';
+    }
+    if (bhedResetBtn) bhedResetBtn.style.display = isOverride ? 'inline-block' : 'none';
+    if (bhedStrip) bhedStrip.innerHTML = renderRushOutlook(res, currentLanguage) + renderRushDrivers(res, currentLanguage);
+    if (bhedImpactText) bhedImpactText.textContent = `−${rs1(res.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}`;
+    if (bhedCapacityText) {
+      bhedCapacityText.innerHTML = `${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${formatAbsorption(res, currentLanguage)}</strong>`;
+    }
+    if (bhedAlertText) {
+      const c = rushLevelColors(level);
+      bhedAlertText.style.color = c.fg;
+      bhedAlertText.textContent = formatBhedAlert(res, rec, currentLanguage);
+    }
+  };
+
+  /** Re-queries Bhed Vivek; omit `level` to return to MandiMitra's own forecast. */
+  const refreshBhed = async (level: 'LOW' | 'MEDIUM' | 'HIGH' | null) => {
+    if (bhedAlertText) {
+      bhedAlertText.textContent = currentLanguage === 'mr'
+        ? 'गर्दीच्या परिणामाची पुनर्गणना सुरू आहे…'
+        : (currentLanguage === 'hi' ? 'भीड़ के प्रभाव की पुनर्गणना जारी…' : 'Recomputing congestion impact…');
+    }
+    try {
+      const cState = store.getState();
+      const res = await apiClient.analyzeBhedVivek({
+        commodity: cState.selectedCrop || crop,
+        latitude: cState.userLocation?.lat || 19.9975,
+        longitude: cState.userLocation?.lon || 73.7898,
+        quantityQuintals: cState.harvestQuantityQuintals || qty,
+        ...(level ? { supplyPressure: level } : {}),
+        transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
+        storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
+        radiusKm: cState.costConfig.searchRadiusKm
+      });
+      paintBhed(res);
+    } catch (err) {
+      if (bhedAlertText) {
+        bhedAlertText.style.color = 'var(--color-status-abstain)';
+        bhedAlertText.textContent = `${err instanceof Error ? err.message : String(err)}`;
+      }
+    }
+  };
+
+  bhedResetBtn?.addEventListener('click', () => {
+    bhedButtons.forEach(b => b.classList.remove('active-low', 'active-med', 'active-high'));
+    void refreshBhed(null);
+  });
 
   bhedButtons.forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const level = btn.getAttribute('data-level') as 'LOW' | 'MEDIUM' | 'HIGH';
-
-      bhedButtons.forEach(b => {
-        b.classList.remove('active-low', 'active-med', 'active-high');
-      });
-      if (level === 'LOW') btn.classList.add('active-low');
-      else if (level === 'MEDIUM') btn.classList.add('active-med');
-      else btn.classList.add('active-high');
-
-      if (bhedAlertText) {
-        bhedAlertText.textContent = currentLanguage === 'mr'
-          ? 'गर्दीच्या परिणामाची पुनर्गणना सुरू आहे…'
-          : (currentLanguage === 'hi' ? 'भीड़ के प्रभाव की पुनर्गणना जारी…' : 'Recomputing congestion impact…');
-      }
-
-      try {
-        const cState = store.getState();
-        const res = await apiClient.analyzeBhedVivek({
-          commodity: cState.selectedCrop || crop,
-          latitude: cState.userLocation?.lat || 19.9975,
-          longitude: cState.userLocation?.lon || 73.7898,
-          quantityQuintals: cState.harvestQuantityQuintals || qty,
-          supplyPressure: level,
-          transportCostPerKmPerQtl: cState.costConfig.transportCostPerKmPerQtl,
-          storageCostPerDayPerQtl: cState.costConfig.storageCostPerDayPerQtl,
-          radiusKm: cState.costConfig.searchRadiusKm
-        });
-
-        if (bhedBadge) {
-          bhedBadge.textContent = level === 'LOW'
-            ? (currentLanguage === 'mr' ? 'सुरळीत आवक' : (currentLanguage === 'hi' ? 'सुचारू आवक' : 'SMOOTH ARRIVAL'))
-            : (level === 'MEDIUM' 
-                ? (currentLanguage === 'mr' ? 'मध्यम गर्दी' : (currentLanguage === 'hi' ? 'मध्यम भीड़' : 'MODERATE RUSH'))
-                : (currentLanguage === 'mr' ? 'मोठी गर्दी इशारा' : (currentLanguage === 'hi' ? 'भारी भीड़ चेतावनी' : 'HEAVY JAM ALERT')));
-          bhedBadge.style.background = level === 'LOW' ? '#dcfce7' : (level === 'MEDIUM' ? '#fef3c7' : '#fee2e2');
-          bhedBadge.style.color = level === 'LOW' ? '#166534' : (level === 'MEDIUM' ? '#92400e' : '#991b1b');
-          bhedBadge.style.border = `1px solid ${level === 'LOW' ? '#86efac' : (level === 'MEDIUM' ? '#fde68a' : '#fca5a5')}`;
-        }
-        if (bhedImpactText) bhedImpactText.textContent = `−${rs1(res.congestionImpactPerQtl)} / ${formatUnit(1, 'qtl', currentLanguage)}`;
-        if (bhedCapacityText) {
-          const capLabel = res.absorptionCapacity === 'HIGH'
-            ? (currentLanguage === 'mr' ? 'सक्रिय (खरेदीदार हजर)' : (currentLanguage === 'hi' ? 'सक्रिय (खरीदार उपस्थित)' : 'High (Active)'))
-            : (res.absorptionCapacity === 'MODERATE'
-              ? (currentLanguage === 'mr' ? 'मध्यम' : (currentLanguage === 'hi' ? 'मध्यम' : 'Moderate'))
-              : (currentLanguage === 'mr' ? 'मर्यादित' : (currentLanguage === 'hi' ? 'सीमित' : 'Limited')));
-          bhedCapacityText.innerHTML = `${I18N_DICTIONARY.hub.buyerDemand[currentLanguage]} <strong>${capLabel}</strong>`;
-        }
-        if (bhedAlertText) {
-          bhedAlertText.style.color = level === 'LOW' ? '#166534' : (level === 'MEDIUM' ? '#92400e' : '#991b1b');
-          bhedAlertText.textContent = formatBhedAlert(res, rec, currentLanguage);
-        }
-      } catch (err) {
-        if (bhedAlertText) {
-          bhedAlertText.style.color = 'var(--color-status-abstain)';
-          bhedAlertText.textContent = currentLanguage === 'mr'
-            ? `गर्दी विश्लेषण उपलब्ध नाही: ${err instanceof Error ? err.message : String(err)}`
-            : (currentLanguage === 'hi'
-            ? `भीड़ विश्लेषण अनुपलब्ध: ${err instanceof Error ? err.message : String(err)}`
-            : `Congestion analysis unavailable: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      }
+      bhedButtons.forEach(b => b.classList.remove('active-low', 'active-med', 'active-high'));
+      btn.classList.add(level === 'LOW' ? 'active-low' : (level === 'MEDIUM' ? 'active-med' : 'active-high'));
+      void refreshBhed(level);
     });
   });
 

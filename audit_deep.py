@@ -412,6 +412,13 @@ storage_rate = params.get("storageCostPerDayPerQtl", 0)
 audit("D3  Response echoes the transport rate actually used", transport_rate > 0, f"Rs{transport_rate}/km/q")
 audit("D4  Response echoes the storage rate actually used", storage_rate > 0, f"Rs{storage_rate}/day/q")
 
+# Independently read the Onion decay profile straight out of the engine source, so the audit
+# re-derives holding cost from the same published constants the engine claims to use.
+_onion_block = re.search(r"'Onion':\s*\{(.*?)\}", read_text("src/core/asli-daam.ts"), re.S).group(1)
+decay_rate = float(re.search(r"dailyDecayRatePct:\s*([0-9.]+)", _onion_block).group(1))
+rent_rs = float(re.search(r"dailyStorageRentRs:\s*([0-9.]+)", _onion_block).group(1))
+fresh_rate = float(re.search(r"dailyFreshnessDiscountPct:\s*([0-9.]+)", _onion_block).group(1))
+
 nrv_errors = []
 transport_errors = []
 waiting_errors = []
@@ -425,8 +432,16 @@ for e in ev.get("evaluations", []):
         expected_transport = round(dist_km * transport_rate, 1)
         if not close(n["transportCostPerQtl"], expected_transport, 0.11):
             transport_errors.append(f"{e['market']['name']} d{n['day']}: {n['transportCostPerQtl']} != {expected_transport}")
-        expected_wait = round(n["day"] * storage_rate, 1)
-        if not close(n["waitingCostPerQtl"], expected_wait):
+        # Waiting cost is the FULL holding cost: storage rent + physical decay + the commercial
+        # freshness discount, all scaled by the day offset. Re-derive it from the crop profile.
+        if n["day"] == 0:
+            expected_wait = 0.0
+        else:
+            decay = n["expectedPrice"] * decay_rate * n["day"]
+            fresh = n["expectedPrice"] * fresh_rate * n["day"]
+            rent = rent_rs * n["day"]
+            expected_wait = round(decay + fresh + rent, 1)
+        if not close(n["waitingCostPerQtl"], expected_wait, 0.15):
             waiting_errors.append(f"{e['market']['name']} d{n['day']}: {n['waitingCostPerQtl']} != {expected_wait}")
         expected_nrv = round(n["expectedPrice"] - n["transportCostPerQtl"] - n["waitingCostPerQtl"], 1)
         if not close(n["netRealisation"], expected_nrv):
@@ -435,7 +450,7 @@ for e in ev.get("evaluations", []):
 audit("D5  Every mandi is evaluated across days 0,1,2,3", len(day_errors) == 0, str(day_errors[:2]))
 audit("D6  transportCostPerQtl == roadDistanceKm x ratePerKmPerQtl",
       len(transport_errors) == 0, str(transport_errors[:2]))
-audit("D7  waitingCostPerQtl == day x storageCostPerDay",
+audit("D7  waitingCostPerQtl == storage rent + physical decay + freshness discount, x day",
       len(waiting_errors) == 0, str(waiting_errors[:2]))
 audit("D8  netRealisation == expectedPrice - transport - waiting",
       len(nrv_errors) == 0, str(nrv_errors[:2]))
@@ -535,8 +550,9 @@ section("SECTION F — NIRNAY KAWACH: ALGEBRAIC BREAKEVEN & MONTE CARLO")
 kawach_src = read_text("src/core/nirnay-kawach.ts")
 audit("F1  Breakeven is solved algebraically, not searched",
       "calculateAlgebraicBreakeven" in kawach_src)
-audit("F2  Breakeven implements T* = ((P1-P2) - S(d1-d2)) / (D1-D2)",
-      "priceDiff - storageDiff" in kawach_src and "distDiff" in kawach_src)
+audit("F2  Breakeven implements T* = ((P1-P2) - (W1-W2)) / (D1-D2)",
+      "priceDiff - waitingDiff" in kawach_src and "distDiff" in kawach_src,
+      "generalised from S(d1-d2) to the full waiting-cost difference, since holding cost is no longer linear in day")
 audit("F3  Monte Carlo uses a seeded PRNG for reproducibility",
       "createSeededRandom" in kawach_src and "Mulberry32" in kawach_src)
 audit("F4  Gaussian shocks use Box-Muller", "sampleGaussian" in kawach_src and "Box-Muller" in kawach_src)
@@ -570,12 +586,13 @@ if server_up:
                     if e["market"]["id"] == mid:
                         for n in e["netRealisationByDay"]:
                             if n["day"] == day:
-                                return e["market"]["estimatedRoadDistanceKm"], n["expectedPrice"]
-                return None, None
-            d1, p1 = find_option(k["winningMarket"]["id"], k["winningMarket"]["day"])
-            d2, p2 = find_option(alt["id"], alt["day"])
-            if None not in (d1, p1, d2, p2) and abs(d1 - d2) >= 1.0:
-                manual = ((p1 - p2) - storage_rate * (k["winningMarket"]["day"] - alt["day"])) / (d1 - d2)
+                                return (e["market"]["estimatedRoadDistanceKm"],
+                                        n["expectedPrice"], n["waitingCostPerQtl"])
+                return None, None, None
+            d1, p1, w1 = find_option(k["winningMarket"]["id"], k["winningMarket"]["day"])
+            d2, p2, w2 = find_option(alt["id"], alt["day"])
+            if None not in (d1, p1, w1, d2, p2, w2) and abs(d1 - d2) >= 1.0:
+                manual = ((p1 - p2) - (w1 - w2)) / (d1 - d2)
                 audit("F15 Reported breakeven re-solves by hand from T* = ((P1-P2)-S(d1-d2))/(D1-D2)",
                       manual > 0, f"hand-solved Rs{manual:.2f}/km vs reported Rs{k['breakevenTransportRate']}/km")
             else:
@@ -633,31 +650,38 @@ section("SECTION G — BHED VIVEK CONGESTION MONOTONICITY")
 # ===========================================================================
 
 bhed_src = read_text("src/core/bhed-vivek.ts")
+rush_src = read_text("src/core/mandi-rush.ts")
 audit("G1  Congestion impact follows dP = Price x PCS x theta x tau",
-      "pcs * pressureNumeric * timingFactor" in bhed_src)
-audit("G2  Supply pressure levels are 0.20 / 0.50 / 0.85",
-      "'LOW': 0.20" in bhed_src and "'MEDIUM': 0.50" in bhed_src and "'HIGH': 0.85" in bhed_src)
+      "pcs * theta * timingFactor" in bhed_src)
+audit("G2  Arrival pressure (theta) is PREDICTED per mandi per day, not selected by the farmer",
+      "dayOutlook.pressureScore" in bhed_src and "rushForecasts" in bhed_src)
 audit("G3  Timing factors are declared for all four day offsets",
       all(f"{d}:" in bhed_src for d in range(4)))
-audit("G4  Terminal APMCs carry deeper liquidity (lower PCS) than sub-market yards",
-      bhed_src.index("'lasalgaon'") < bhed_src.index("'manmad'"))
+audit("G4  The hardcoded 19-entry PCS table is gone",
+      "MANDI_PCS_REGISTRY" not in bhed_src and "'lasalgaon':" not in bhed_src)
 audit("G5  Ineligible mandis are excluded from the congestion model",
       "eligibleCandidates" in bhed_src)
+audit("G5b A manual what-if is recorded separately from a prediction",
+      "USER_OVERRIDE" in bhed_src and "supplyPressureBasis" in bhed_src)
 
 if server_up:
     impacts = {}
     for level in ("LOW", "MEDIUM", "HIGH"):
+        # Explicit override: the default path is now a forecast, so monotonicity is checked
+        # against the manual what-if scenarios.
         r = post("/api/bhed-vivek/analyze",
                  {"commodity": "Onion", "latitude": 19.9975, "longitude": 73.7898,
                   "quantityQuintals": 25, "supplyPressure": level})
+        assert r["supplyPressureBasis"] == "USER_OVERRIDE", "override not honoured"
         impacts[level] = r
     audit("G6  Congestion impact rises monotonically LOW < MED < HIGH",
           impacts["LOW"]["congestionImpactPerQtl"] < impacts["MEDIUM"]["congestionImpactPerQtl"]
           < impacts["HIGH"]["congestionImpactPerQtl"],
           f"{impacts['LOW']['congestionImpactPerQtl']} < {impacts['MEDIUM']['congestionImpactPerQtl']} < {impacts['HIGH']['congestionImpactPerQtl']}")
     ratio = impacts["HIGH"]["congestionImpactPerQtl"] / max(impacts["LOW"]["congestionImpactPerQtl"], 1e-9)
-    audit("G7  HIGH/LOW impact ratio equals the pressure ratio 0.85/0.20 = 4.25",
-          close(ratio, 4.25, 0.05), f"{ratio:.3f}")
+    theta_ratio = impacts["HIGH"]["supplyPressureNumeric"] / max(impacts["LOW"]["supplyPressureNumeric"], 1e-9)
+    audit("G7  Impact ratio equals the theta ratio exactly (impact is linear in arrival pressure)",
+          close(ratio, theta_ratio, 0.02), f"impact ratio {ratio:.3f} vs theta ratio {theta_ratio:.3f}")
     audit("G8  Total pocket impact == per-quintal impact x quantity",
           close(impacts["HIGH"]["totalPocketImpact"],
                 round(impacts["HIGH"]["congestionImpactPerQtl"] * 25), 1.0))
@@ -913,6 +937,179 @@ if server_up:
     except urllib.error.HTTPError as exc:
         audit("K9  An unbacktested commodity is refused rather than faked", exc.code == 503, f"HTTP {exc.code}")
 
+
+
+# ===========================================================================
+section("SECTION L - MANDI RUSH FORECAST (PREDICTED ARRIVAL PRESSURE)")
+# ===========================================================================
+
+rush_src = read_text("src/core/mandi-rush.ts")
+rush_svc = read_text("src/backend/rush-service.ts")
+weather_src = read_text("src/backend/weather-client.ts")
+seasonality = read_json("data/mandi_arrival_seasonality.json")
+
+audit("L1  Seasonality reference cites its published sources",
+      len(seasonality.get("sources", [])) >= 3, f"{len(seasonality.get('sources', []))} sources")
+audit("L2  Reference file states it holds no prices or arrival tonnages",
+      "no prices" in seasonality["description"] and "arrival tonnages" in seasonality["description"])
+audit("L3  Weekly yard rhythm is flagged as an institutional assumption, not a measurement",
+      seasonality["weekly_yard_rhythm"]["is_institutional_assumption"] is True)
+audit("L4  Weekly rhythm names its source",
+      len(seasonality["weekly_yard_rhythm"]["source"]) > 30)
+audit("L5  A closed weekday is declared",
+      isinstance(seasonality["weekly_yard_rhythm"]["closed_weekday"], int))
+audit("L6  Every weekday carries an arrival index in 0..1",
+      all(0.0 <= float(v["index"]) <= 1.0
+          for v in seasonality["weekly_yard_rhythm"]["weekday_arrival_index"].values()))
+audit("L7  Monday is the heaviest weekday (two-day backlog clears)",
+      max(seasonality["weekly_yard_rhythm"]["weekday_arrival_index"].items(),
+          key=lambda kv: float(kv[1]["index"]))[0] == "1")
+audit("L8  Component weights sum to exactly 1.0",
+      close(sum(float(v) for k, v in seasonality["component_weights"].items() if k != "description"), 1.0, 1e-9))
+audit("L9  Pressure bands partition 0..1 in order",
+      0 < seasonality["pressure_bands"]["low_max"] < seasonality["pressure_bands"]["medium_max"] < 1)
+audit("L10 Every calendar entry uses valid month numbers",
+      all(all(1 <= m <= 12 for m in e["peakMonths"] + e["shoulderMonths"])
+          for e in seasonality["arrival_season_calendar"]["commodities"].values()))
+audit("L11 No commodity marks a month as both peak and shoulder",
+      all(not (set(e["peakMonths"]) & set(e["shoulderMonths"]))
+          for e in seasonality["arrival_season_calendar"]["commodities"].values()))
+audit("L12 Category fallbacks exist for all three decay classes",
+      set(seasonality["arrival_season_calendar"]["category_fallback"].keys())
+      >= {"PERISHABLE", "SEMI_PERISHABLE", "DRY_GRAIN"})
+audit("L13 Every calendar commodity exists in the 99-crop catalogue",
+      set(seasonality["arrival_season_calendar"]["commodities"].keys()) <= set(crop_ids),
+      str(sorted(set(seasonality["arrival_season_calendar"]["commodities"].keys()) - set(crop_ids))))
+
+audit("L14 The engine documents why price dispersion was rejected as a proxy",
+      "reporting granularity" in rush_src and "+0.29" in rush_src)
+audit("L15 The engine states plainly that Agmarknet carries no arrivals field",
+      "no arrivals field" in rush_src)
+audit("L16 Each driver is tagged measured vs reference in code",
+      "isMeasured" in rush_src)
+audit("L17 Absorption is a percentile of measured trading breadth",
+      "percentileRank" in rush_src and "breadthDistribution" in rush_src)
+audit("L18 Yard breadth is counted from the live feed, not assigned",
+      "commoditiesByYard" in rush_svc and "uni.records" in rush_svc)
+audit("L19 Rainfall client prefers a live forecast and labels its fallback",
+      "open-meteo-forecast" in weather_src and "era5-climatology" in weather_src)
+audit("L20 Rainfall fallback is a real historical mean, not a constant",
+      "climatology" in weather_src and "byDoy" in weather_src)
+audit("L21 Weather cells are fetched sequentially to avoid silent degradation",
+      "SEQUENTIALLY" in rush_svc)
+audit("L22 Bundle provenance cannot claim live while quoting a fallback note",
+      "Mixed rainfall provenance" in rush_svc)
+
+if server_up:
+    rush = get("/api/mandi-rush?commodity=Onion&latitude=19.9975&longitude=73.7898&radiusKm=120&horizonDays=5")
+    fcs = rush["forecasts"]
+    audit("L23 Endpoint returns a forecast for every candidate yard", len(fcs) > 0, f"{len(fcs)} yards")
+
+    ev_rush = post("/api/evaluate", {"commodity": "Onion", "latitude": 19.9975,
+                                     "longitude": 73.7898, "radiusKm": 120})
+    audit("L24 Coverage matches the candidate set exactly",
+          {f["marketId"] for f in fcs} >= {e["market"]["id"] for e in ev_rush["evaluations"]})
+
+    audit("L25 Congestion sensitivity varies across yards (not one default constant)",
+          len({f["congestionSensitivity"] for f in fcs}) > 1,
+          f"{len({f['congestionSensitivity'] for f in fcs})} distinct values")
+    audit("L26 Every sensitivity sits inside the documented band",
+          all(0.05 <= f["congestionSensitivity"] <= 0.30 for f in fcs))
+
+    broadest = max(fcs, key=lambda f: f["yardBreadth"])
+    thinnest = min(fcs, key=lambda f: f["yardBreadth"])
+    audit("L27 A broader yard is never MORE congestion-sensitive than a thinner one",
+          broadest["congestionSensitivity"] <= thinnest["congestionSensitivity"],
+          f"breadth {broadest['yardBreadth']} -> {broadest['congestionSensitivity']}, "
+          f"breadth {thinnest['yardBreadth']} -> {thinnest['congestionSensitivity']}")
+
+    worst = 0.0
+    for f in fcs:
+        blended = sum(d["contribution"] * d["weight"] for d in f["drivers"])
+        worst = max(worst, abs(blended - f["pressureScore"]))
+    audit("L28 Published score recomposes from its published drivers",
+          worst <= 0.002, f"max deviation {worst:.5f}")
+
+    audit("L29 Driver weights sum to 1.0 on every forecast",
+          all(abs(sum(d["weight"] for d in f["drivers"]) - 1.0) < 1e-6 for f in fcs))
+    audit("L30 The harvest-calendar driver is labelled reference, not measured",
+          all(next(d for d in f["drivers"] if d["id"] == "harvest_season")["isMeasured"] is False for f in fcs))
+    audit("L31 Outlet scarcity and absorption are labelled measured",
+          all(next(d for d in f["drivers"] if d["id"] == "outlet_scarcity")["isMeasured"] is True
+              and next(d for d in f["drivers"] if d["id"] == "yard_absorption")["isMeasured"] is True
+              for f in fcs))
+    audit("L32 Every driver states concrete evidence",
+          all(len(d["evidence"]) > 20 for f in fcs for d in f["drivers"]))
+
+    import datetime as _dt
+    today = _dt.date.today().isoformat()
+    audit("L33 Outlook is anchored on today, not the price feed date",
+          all(f["byDay"][0]["date"] == today for f in fcs), f"today={today}")
+    audit("L34 Outlook days are chronological",
+          all([d["date"] for d in f["byDay"]] == sorted(d["date"] for d in f["byDay"]) for f in fcs))
+    audit("L35 Every day carries a legal level and a bounded score",
+          all(d["level"] in {"LOW", "MEDIUM", "HIGH"} and 0.0 <= d["pressureScore"] <= 1.0
+              for f in fcs for d in f["byDay"]))
+
+    closed_slots = [d for f in fcs for d in f["byDay"] if d["isYardClosed"]]
+    audit("L36 Closed yard days are flagged", len(closed_slots) > 0, f"{len(closed_slots)} closed slots")
+    audit("L37 A closed day is never offered as the quietest trading day",
+          all(("closed" in f["farmerAdvice"]["en"].lower())
+              for f in fcs if any(d["isYardClosed"] for d in f["byDay"])))
+    audit("L38 Closed-day notes tell the farmer not to travel",
+          all("do not travel" in d["note"].lower() for d in closed_slots))
+
+    audit("L39 Weather provenance label and note never contradict",
+          (rush["weatherSource"] != "open-meteo-forecast")
+          or ("climatology" not in rush["weatherSourceNote"].lower()
+              and "unavailable" not in rush["weatherSourceNote"].lower()))
+    audit("L40 isWeatherLive is only true when every cell is live",
+          (rush["weatherSource"] == "open-meteo-forecast") == bool(rush["isWeatherLive"]))
+    audit("L41 Methodology discloses the missing-arrivals limitation",
+          any("tonnage" in m.lower() for m in rush["methodology"]))
+    audit("L42 Forecasts are sorted quietest-yard first",
+          [f["pressureScore"] for f in fcs] == sorted(f["pressureScore"] for f in fcs))
+    audit("L43 Farmer advice is provided in all three languages",
+          all(f["farmerAdvice"].get("en") and f["farmerAdvice"].get("mr") and f["farmerAdvice"].get("hi")
+              for f in fcs))
+
+    # --- Bhed Vivek now consumes the forecast ---
+    bv_pred = post("/api/bhed-vivek/analyze",
+                   {"commodity": "Onion", "latitude": 19.9975, "longitude": 73.7898, "quantityQuintals": 25})
+    audit("L44 Bhed Vivek predicts arrival pressure without any farmer input",
+          bv_pred["supplyPressureBasis"] == "FORECAST", bv_pred["supplyPressureBasis"])
+    audit("L45 The winning mandi carries its own rush forecast",
+          bool(bv_pred.get("winnerRushForecast")))
+    audit("L46 Bhed Vivek theta equals the forecast score for that mandi and day",
+          any(abs(d["pressureScore"] - bv_pred["supplyPressureNumeric"]) < 1e-9
+              for d in (bv_pred.get("winnerRushForecast") or {}).get("byDay", [])),
+          f"theta={bv_pred['supplyPressureNumeric']}")
+    winner_fc = next((f for f in bv_pred["rushForecasts"]
+                      if f["marketId"] == bv_pred["originalWinner"]["marketId"]), None)
+    audit("L47 Bhed Vivek PCS equals the measured sensitivity for that mandi",
+          winner_fc is not None and abs(winner_fc["congestionSensitivity"] - bv_pred["pcs"]) < 1e-9)
+
+    tau_map = {0: 0.35, 1: 0.90, 2: 1.00, 3: 0.75}
+    w = bv_pred["originalWinner"]
+    hand = round(w["grossPrice"] * bv_pred["pcs"] * bv_pred["supplyPressureNumeric"] * tau_map[w["day"]], 1)
+    audit("L48 Congestion impact re-derives by hand from the published factors",
+          close(hand, bv_pred["congestionImpactPerQtl"], 0.15),
+          f"hand {hand} vs reported {bv_pred['congestionImpactPerQtl']}")
+
+    bv_over = post("/api/bhed-vivek/analyze",
+                   {"commodity": "Onion", "latitude": 19.9975, "longitude": 73.7898,
+                    "quantityQuintals": 25, "supplyPressure": "HIGH"})
+    audit("L49 A manual what-if is recorded as USER_OVERRIDE, never as a prediction",
+          bv_over["supplyPressureBasis"] == "USER_OVERRIDE")
+    audit("L50 /api/evaluate carries the rush forecast inline",
+          bool(ev_rush.get("mandiRush"))
+          and len(ev_rush["mandiRush"]["forecasts"]) == len(ev_rush["evaluations"]))
+
+    tomato_rush = get("/api/mandi-rush?commodity=Tomato&latitude=19.9975&longitude=73.7898&radiusKm=120")
+    o_season = next(d for d in fcs[0]["drivers"] if d["id"] == "harvest_season")["contribution"]
+    t_season = next(d for d in tomato_rush["forecasts"][0]["drivers"] if d["id"] == "harvest_season")["contribution"]
+    audit("L51 Seasonality actually differentiates crops with different calendars",
+          o_season != t_season, f"Onion {o_season} vs Tomato {t_season}")
 
 # ===========================================================================
 print()

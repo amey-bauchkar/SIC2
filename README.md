@@ -27,6 +27,7 @@ docs/
 ├── judge-qa.md                   # 18 anticipated judge questions with answers
 ├── risks-and-mitigations.md      # Red team analysis & mitigation strategies
 ├── known-limitations.md          # Honest limitations to disclose
+├── mandi-rush-forecast.md        # Bhed Vivek: predicted mandi crowd (replaces the guess + hardcoded PCS table)
 ├── pre-hackathon-checklist.md    # Pre-event preparation tasks
 research/
 ├── FSD2_vs_SIC2_Head_to_Head.md  # Original comparison analysis
@@ -44,3 +45,7 @@ research/
 3. **Calibrated abstention** — refuses to advise when data is too sparse
 4. **Direction with confidence** — not point prediction
 5. **A backtested rupee number** — verifiable, on real held-out data
+6. **A predicted mandi crowd** — per-mandi, per-day arrival-pressure forecast from live outlet
+   scarcity, measured yard absorption, the published harvest calendar and a live rainfall forecast,
+   so the farmer knows whether to expect a queue *before* loading the trolley
+   (see [docs/mandi-rush-forecast.md](docs/mandi-rush-forecast.md))

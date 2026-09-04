@@ -14,7 +14,8 @@ import {
   evaluateController, 
   getBacktestController,
   stressTestController,
-  bhedVivekAnalyzeController
+  bhedVivekAnalyzeController,
+  mandiRushController
 } from './controllers';
 import {
   sajhaBazaarEvaluateController,
@@ -45,6 +46,10 @@ app.get('/api/prices/live', getLivePriceController);
 app.post('/api/evaluate', evaluateController);
 app.post('/api/evaluate/stress-test', stressTestController);
 app.post('/api/bhed-vivek/analyze', bhedVivekAnalyzeController);
+
+// Mandi Rush Forecast (predicted arrival pressure per mandi per day)
+app.get('/api/mandi-rush', mandiRushController);
+app.post('/api/mandi-rush', mandiRushController);
 app.get('/api/backtest', getBacktestController);
 
 // SajhaBazaar (साझा बाज़ार) — Shared Freight & Market Access Engine

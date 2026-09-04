@@ -211,11 +211,24 @@ export interface NirnayKawachResult {
 export type SupplyPressureLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 export type CongestionRiskStatus = 'LOW_RISK' | 'HIGH_RISK' | 'UNKNOWN';
 
+/**
+ * Where the arrival-pressure figure driving a congestion evaluation came from.
+ * `FORECAST` is MandiMitra's own per-mandi prediction; `USER_OVERRIDE` is a what-if the farmer
+ * selected manually. The two must never be confused when the result is shown.
+ */
+export type SupplyPressureBasis = 'FORECAST' | 'USER_OVERRIDE';
+
 export interface BhedVivekEvaluation {
   status: CongestionRiskStatus;
   statusLabel: string;
   supplyPressure: SupplyPressureLevel;
-  supplyPressureNumeric: number; // 0.20 (Low), 0.50 (Med), 0.85 (High)
+  supplyPressureNumeric: number; // Predicted arrival-pressure score in 0..1
+  /** Whether supplyPressure was predicted by the rush forecast or overridden by the farmer. */
+  supplyPressureBasis: SupplyPressureBasis;
+  /** Per-mandi rush forecasts backing this evaluation (empty when overridden without forecasts). */
+  rushForecasts?: import('../core/mandi-rush').MandiRushForecast[];
+  /** The rush forecast for the mandi actually recommended. */
+  winnerRushForecast?: import('../core/mandi-rush').MandiRushForecast | null;
   originalWinner: {
     marketId: string;
     marketName: string;

@@ -204,24 +204,48 @@ def test_evaluate_empty_body():
 
 test("Evaluate with empty body (defaults)", test_evaluate_empty_body)
 
-def test_evaluate_abstention():
-    """Manmad should have ABSTAIN/POOR data quality due to 9-day gap"""
-    d = post("/api/evaluate", {"commodity": "Onion", "latitude": 19.9975, "longitude": 73.7898, "radiusKm": 120})
-    manmad_found = False
-    for ev in d["evaluations"]:
-        mname = ev["market"]["name"].lower()
-        if "manmad" in mname:
-            manmad_found = True
-            dq = ev["dataQuality"]
-            if dq.get("tier") in ["ABSTAIN", "POOR"] or dq.get("status") in ["ABSTAIN", "POOR"] or not dq.get("isEligibleForRecommendation", True):
-                return ("PASS", f"Manmad data quality correctly flagged: Tier={dq.get('tier')}, DaysSince={dq.get('daysSinceLastReport')}, Eligible={dq.get('isEligibleForRecommendation')}")
-            else:
-                return ("WARN", f"Manmad not flagged as stale/abstain: {dq}")
-    if not manmad_found:
-        return ("WARN", "Manmad APMC not found in evaluations (may be outside radius)")
-    return ("PASS", "Manmad abstention checked")
+def test_data_quality_gate_is_honest():
+    """The abstention rule must follow the DATA, not a hardcoded mandi name.
 
-test("Manmad APMC Abstention (9-day stale gap)", test_evaluate_abstention)
+    Manmad used to be hardcoded as a stale demo market. It now reports in the live Agmarknet
+    feed, so flagging it stale would itself be a fabrication. What must hold is the rule:
+    a market is ineligible if and only if its assessed tier is POOR, and every eligible market
+    must carry a recognised price provenance and a recency consistent with its tier.
+    """
+    d = post("/api/evaluate", {"commodity": "Onion", "latitude": 19.9975, "longitude": 73.7898, "radiusKm": 120})
+    evs = d["evaluations"]
+    assert evs, "no evaluations returned"
+
+    violations = []
+    for ev in evs:
+        dq = ev["dataQuality"]
+        name = ev["market"]["name"]
+        tier = dq.get("tier")
+        eligible = dq.get("isEligibleForRecommendation")
+
+        # Rule 1: eligibility is exactly "tier is not POOR".
+        if (tier == "POOR") == bool(eligible):
+            violations.append(f"{name}: tier={tier} but eligible={eligible}")
+
+        # Rule 2: a GOOD tier requires a directly observed price, never a peer-calibrated one.
+        prov = dq.get("priceProvenance", "")
+        if tier == "GOOD" and "CALIBRATED" in prov:
+            violations.append(f"{name}: GOOD tier on calibrated provenance {prov}")
+
+        # Rule 3: a GOOD tier requires genuinely recent reporting.
+        if tier == "GOOD" and dq.get("daysSinceLastReport", 99) > 2:
+            violations.append(f"{name}: GOOD tier but {dq.get('daysSinceLastReport')} days stale")
+
+    if violations:
+        return ("FAIL", "; ".join(violations[:3]))
+
+    tiers = {}
+    for ev in evs:
+        t = ev["dataQuality"]["tier"]
+        tiers[t] = tiers.get(t, 0) + 1
+    return ("PASS", f"{len(evs)} markets, eligibility follows the tier rule exactly ({tiers})")
+
+test("Data-quality gate follows the data, not hardcoded mandi names", test_data_quality_gate_is_honest)
 
 def test_evaluate_nirnay_kawach_fields():
     d = post("/api/evaluate", {"commodity": "Onion"})

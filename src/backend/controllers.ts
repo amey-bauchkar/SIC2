@@ -16,7 +16,9 @@ import {
   BacktestResponse,
   StressTestRequestBody,
   StressTestResponse,
-  BhedVivekRequestBody
+  BhedVivekRequestBody,
+  MandiRushRequestBody,
+  MandiRushResponse
 } from '../contracts/api';
 import { Market, MarketEvaluation, BacktestResult, HistorySource, Forecast } from '../contracts/domain';
 import { getAllMarkets } from '../data-pipeline/registry';
@@ -28,6 +30,7 @@ import { evaluateDecisionPolicy } from '../core/decision';
 import { formatExplanationSummary } from '../core/explain';
 import { evaluateNirnayKawach } from '../core/nirnay-kawach';
 import { evaluateBhedVivek } from '../core/bhed-vivek';
+import { buildRushForecastsForEvaluations } from './rush-service';
 import { fetchLiveMandiPrice } from './agmarknet-client';
 import {
   getCommodityPriceContext,
@@ -339,11 +342,15 @@ export async function evaluateController(req: Request, res: Response): Promise<v
   );
 
   // 5. Bhed Vivek (Market Congestion Intelligence)
+  // Arrival pressure is PREDICTED per mandi per day rather than assumed to be a fixed scenario.
+  // allowNetwork=false: the sell/wait decision must never wait on the weather API. The rush
+  // forecast answers from cache or climatology here and warms the cache for the next request.
+  const rushBundle = await buildRushForecastsForEvaluations(commodity, evaluations, new Date(), 4, false);
   const bhedVivek = evaluateBhedVivek(
     evaluations,
     commodity,
-    25,
-    'HIGH'
+    body.quantityQuintals ?? 25,
+    { rushForecasts: rushBundle.byMarketId }
   );
 
   const response: EvaluateResponse = {
@@ -358,7 +365,13 @@ export async function evaluateController(req: Request, res: Response): Promise<v
       radiusKm: searchRadius
     },
     nirnayKawach,
-    bhedVivek
+    bhedVivek,
+    mandiRush: {
+      forecasts: rushBundle.forecasts,
+      weatherSource: rushBundle.weatherSource,
+      weatherSourceNote: rushBundle.weatherSourceNote,
+      isWeatherLive: rushBundle.isWeatherLive
+    }
   };
 
   res.json(response);
@@ -454,7 +467,8 @@ export async function bhedVivekAnalyzeController(req: Request, res: Response): P
   const userLat = body.latitude || 19.9975;
   const userLon = body.longitude || 73.7898;
   const quantity = body.quantityQuintals || 25;
-  const supplyPressure = body.supplyPressure || 'HIGH';
+  // A supplyPressure in the body is an explicit farmer what-if; absent it, we forecast.
+  const supplyPressureOverride = body.supplyPressure || null;
   const transportCost = body.transportCostPerKmPerQtl ?? config.defaultTransportCostPerKmPerQtl;
   const storageCost = body.storageCostPerDayPerQtl ?? config.defaultStorageCostPerDayPerQtl;
   const searchRadius = body.radiusKm ?? config.maxSearchRadiusKm;
@@ -469,7 +483,11 @@ export async function bhedVivekAnalyzeController(req: Request, res: Response): P
     searchRadiusKm: searchRadius
   });
 
-  const result = evaluateBhedVivek(evaluations, commodity, quantity, supplyPressure);
+  const rushBundle = await buildRushForecastsForEvaluations(commodity, evaluations, new Date());
+  const result = evaluateBhedVivek(evaluations, commodity, quantity, {
+    rushForecasts: rushBundle.byMarketId,
+    supplyPressureOverride
+  });
   res.json(result);
 }
 
@@ -606,4 +624,70 @@ export async function getBacktestController(req: Request, res: Response): Promis
   };
 
   res.json(response);
+}
+
+
+/**
+ * GET/POST /api/mandi-rush
+ * Predicted arrival pressure ("will this mandi be crowded?") for every candidate yard in range,
+ * with a day-by-day outlook so a farmer can pick a quieter day before loading the tractor.
+ */
+export async function mandiRushController(req: Request, res: Response): Promise<void> {
+  try {
+    const src = (req.method === 'GET' ? req.query : req.body) as Record<string, unknown>;
+    const body: MandiRushRequestBody = {
+      commodity: String(src.commodity || 'Onion'),
+      latitude: src.latitude !== undefined ? Number(src.latitude) : undefined,
+      longitude: src.longitude !== undefined ? Number(src.longitude) : undefined,
+      radiusKm: src.radiusKm !== undefined ? Number(src.radiusKm) : undefined,
+      horizonDays: src.horizonDays !== undefined ? Number(src.horizonDays) : undefined
+    };
+
+    const commodity = body.commodity;
+    const userLat = Number.isFinite(body.latitude) ? (body.latitude as number) : 19.9975;
+    const userLon = Number.isFinite(body.longitude) ? (body.longitude as number) : 73.7898;
+    const searchRadius = Number.isFinite(body.radiusKm) ? (body.radiusKm as number) : config.maxSearchRadiusKm;
+    const horizonDays = Number.isFinite(body.horizonDays)
+      ? Math.min(7, Math.max(1, body.horizonDays as number))
+      : 4;
+
+    const { evaluations } = resolveEvaluationContext({
+      commodity,
+      latitude: userLat,
+      longitude: userLon,
+      transportCost: config.defaultTransportCostPerKmPerQtl,
+      storageCost: config.defaultStorageCostPerDayPerQtl,
+      searchRadiusKm: searchRadius
+    });
+
+    const bundle = await buildRushForecastsForEvaluations(
+      commodity, evaluations, new Date(), horizonDays
+    );
+
+    // Quietest yard first: this list is meant to be read as "where should I go to avoid the queue".
+    const forecasts = [...bundle.forecasts].sort((a, b) => a.pressureScore - b.pressureScore);
+
+    const response: MandiRushResponse = {
+      commodity,
+      evaluatedAt: new Date().toISOString(),
+      weatherSource: bundle.weatherSource,
+      weatherSourceNote: bundle.weatherSourceNote,
+      isWeatherLive: bundle.isWeatherLive,
+      forecasts,
+      methodology: [
+        'Outlet scarcity: counted from the live Agmarknet feed for today — how many yards in range actually trade this commodity.',
+        'Yard absorption: distinct commodities and lots each yard reported today, percentile-ranked against every reporting Maharashtra yard.',
+        'Harvest season: published DMI / NHB / ICAR-DOGR marketing calendars.',
+        'Rainfall: live Open-Meteo daily forecast for the destination district; rain suppresses arrivals, and the first dry day afterwards clears the backlog.',
+        'Weekly yard rhythm: documented MSAMB yard practice, flagged as an institutional assumption rather than a measurement.',
+        'Agmarknet publishes no arrival tonnage for these markets, so this forecasts arrival PRESSURE from observable structure — it is not a tonnage prediction.'
+      ]
+    };
+
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({
+      error: { code: 'INTERNAL_ERROR', message: `Mandi rush forecast failed: ${String(err)}` }
+    });
+  }
 }

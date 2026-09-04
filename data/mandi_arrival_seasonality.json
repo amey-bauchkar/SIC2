@@ -1,0 +1,336 @@
+{
+  "dataset": "Maharashtra Mandi Arrival Seasonality & Yard Rhythm Reference",
+  "description": "Reference data used by the Bhed Vivek mandi-rush forecast. This file contains AGRONOMIC CALENDAR data and INSTITUTIONAL YARD PRACTICE only. It contains no prices, no arrival tonnages and no invented measurements. Every quantitative signal in the rush forecast that claims to be measured is computed at request time from the live Agmarknet feed or the live Open-Meteo forecast; this file supplies only the published crop-marketing calendar and the documented weekly yard rhythm.",
+  "sources": [
+    "Directorate of Marketing & Inspection (DMI), Ministry of Agriculture & Farmers Welfare — Agmarknet commodity marketing-season profiles",
+    "National Horticulture Board (NHB), Horticultural Statistics at a Glance — Maharashtra harvest and arrival calendars",
+    "ICAR-DOGR (Directorate of Onion and Garlic Research), Rajgurunagar — Maharashtra onion crop-season structure (Kharif / Late Kharif / Rabi)",
+    "Maharashtra State Agricultural Marketing Board (MSAMB) — APMC yard operating practice"
+  ],
+  "compiled_for": "MandiMitra / Bhed Vivek (भीड़ विवेक) Mandi Rush Forecast",
+  "compiled_at": "2026-09-04",
+  "arrival_season_calendar": {
+    "description": "Months (1=January) in which each commodity's mandi arrivals in Maharashtra are at their seasonal peak or shoulder. Peak months are when the largest share of the state's marketed surplus reaches the yards, which is when arrival congestion is structurally most likely.",
+    "notes": "A commodity absent from this table falls back to its crop-category profile below. Season structure is a published agronomic fact, not an estimate of any particular day's tonnage.",
+    "commodities": {
+      "Onion": {
+        "peakMonths": [
+          3,
+          4,
+          5,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          1,
+          2,
+          10
+        ],
+        "note": "Rabi/Summer (Garwa) harvest floods yards Mar-May; Kharif harvest arrives Nov-Dec. Jun-Sep is stored-rabi release, structurally the thinnest arrival window."
+      },
+      "Tomato": {
+        "peakMonths": [
+          9,
+          10,
+          11
+        ],
+        "shoulderMonths": [
+          3,
+          4,
+          5,
+          6,
+          8,
+          12
+        ],
+        "note": "Kharif crop peaks Sep-Nov in the Nashik-Pune belt; a lighter summer crop arrives Mar-Jun."
+      },
+      "Soyabean": {
+        "peakMonths": [
+          10,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          9,
+          1
+        ],
+        "note": "Single Kharif crop harvested late Sep-Oct; the Latur-Marathwada belt peaks Oct-Dec."
+      },
+      "Wheat": {
+        "peakMonths": [
+          3,
+          4,
+          5
+        ],
+        "shoulderMonths": [
+          2,
+          6
+        ],
+        "note": "Rabi harvest Mar-Apr; arrivals taper through May-Jun as stocks move to storage."
+      },
+      "Bengal Gram(Gram)(Whole)": {
+        "peakMonths": [
+          2,
+          3,
+          4
+        ],
+        "shoulderMonths": [
+          1,
+          5
+        ],
+        "note": "Rabi pulse harvested Feb-Mar."
+      },
+      "Red gram/Arhar/Tur(whole)": {
+        "peakMonths": [
+          12,
+          1,
+          2
+        ],
+        "shoulderMonths": [
+          3,
+          11
+        ],
+        "note": "Long-duration Kharif pulse harvested Dec-Feb."
+      },
+      "Jowar(Sorghum)": {
+        "peakMonths": [
+          3,
+          4
+        ],
+        "shoulderMonths": [
+          2,
+          10,
+          11
+        ],
+        "note": "Rabi jowar dominates Maharashtra marketed surplus, harvested Feb-Apr."
+      },
+      "Maize": {
+        "peakMonths": [
+          10,
+          11
+        ],
+        "shoulderMonths": [
+          4,
+          5,
+          12
+        ],
+        "note": "Kharif maize arrives Oct-Nov; a Rabi crop follows in Apr-May."
+      },
+      "Potato": {
+        "peakMonths": [
+          11,
+          12,
+          1,
+          2
+        ],
+        "shoulderMonths": [
+          3,
+          10
+        ],
+        "note": "Rabi crop; Maharashtra also draws heavily on UP/MP arrivals through winter."
+      },
+      "Grapes": {
+        "peakMonths": [
+          2,
+          3,
+          4
+        ],
+        "shoulderMonths": [
+          1,
+          5
+        ],
+        "note": "Nashik-Sangli table-grape harvest Feb-Apr."
+      },
+      "Pomegranate": {
+        "peakMonths": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "note": "Mrig bahar harvest Sep-Dec; Hasta bahar follows Feb-May."
+      },
+      "Banana": {
+        "peakMonths": [
+          3,
+          4,
+          5,
+          10,
+          11
+        ],
+        "shoulderMonths": [
+          1,
+          2,
+          6,
+          9,
+          12
+        ],
+        "note": "Jalgaon belt supplies year-round with Mar-May and Oct-Nov concentrations."
+      },
+      "Green Chilli": {
+        "peakMonths": [
+          10,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          1,
+          9
+        ],
+        "note": "Kharif crop arrives Oct-Dec."
+      },
+      "Cabbage": {
+        "peakMonths": [
+          11,
+          12,
+          1
+        ],
+        "shoulderMonths": [
+          2,
+          10
+        ],
+        "note": "Cool-season vegetable concentrated in winter."
+      },
+      "Cauliflower": {
+        "peakMonths": [
+          11,
+          12,
+          1
+        ],
+        "shoulderMonths": [
+          2,
+          10
+        ],
+        "note": "Cool-season vegetable concentrated in winter."
+      },
+      "Turmeric": {
+        "peakMonths": [
+          2,
+          3,
+          4
+        ],
+        "shoulderMonths": [
+          1,
+          5
+        ],
+        "note": "Sangli turmeric market peaks Feb-Apr after curing and polishing."
+      }
+    },
+    "category_fallback": {
+      "description": "Applied when a commodity has no explicit entry above. Keyed by the decayType assigned in src/config/crops.ts.",
+      "PERISHABLE": {
+        "peakMonths": [
+          10,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          1,
+          9
+        ],
+        "note": "Most Maharashtra vegetables and soft fruits concentrate their Kharif marketed surplus in Oct-Dec."
+      },
+      "SEMI_PERISHABLE": {
+        "peakMonths": [
+          3,
+          4,
+          11,
+          12
+        ],
+        "shoulderMonths": [
+          2,
+          5,
+          10
+        ],
+        "note": "Bulbs and tubers arrive after the Rabi harvest and again after the Kharif harvest."
+      },
+      "DRY_GRAIN": {
+        "peakMonths": [
+          3,
+          4,
+          10,
+          11
+        ],
+        "shoulderMonths": [
+          2,
+          5,
+          12
+        ],
+        "note": "Cereals, pulses and oilseeds arrive in the post-harvest windows following Rabi (Mar-Apr) and Kharif (Oct-Nov)."
+      }
+    }
+  },
+  "weekly_yard_rhythm": {
+    "is_institutional_assumption": true,
+    "description": "Standard Maharashtra APMC operating rhythm. This is DOCUMENTED YARD PRACTICE, not a measurement taken from any price feed, and the rush forecast labels its contribution as an assumption wherever it is surfaced to a farmer.",
+    "source": "Maharashtra State Agricultural Marketing Board (MSAMB) standard APMC yard practice; Maharashtra Agricultural Produce Marketing (Development & Regulation) Act, 1963 yard-operation rules.",
+    "closed_weekday": 0,
+    "closed_weekday_name": "Sunday",
+    "note": "Most regulated yards suspend auctions on Sunday. Monday therefore clears two days of accumulated produce and is the structurally busiest auction day; Saturday is the second busiest as sellers pre-empt the closure.",
+    "weekday_arrival_index": {
+      "0": {
+        "name": "Sunday",
+        "index": 0.1,
+        "note": "Yard closed or skeleton trading."
+      },
+      "1": {
+        "name": "Monday",
+        "index": 1.0,
+        "note": "Two-day backlog clears — structurally the heaviest arrival day."
+      },
+      "2": {
+        "name": "Tuesday",
+        "index": 0.62,
+        "note": "Backlog largely cleared."
+      },
+      "3": {
+        "name": "Wednesday",
+        "index": 0.55,
+        "note": "Mid-week trough."
+      },
+      "4": {
+        "name": "Thursday",
+        "index": 0.55,
+        "note": "Mid-week trough."
+      },
+      "5": {
+        "name": "Friday",
+        "index": 0.62,
+        "note": "Arrivals build ahead of the weekend."
+      },
+      "6": {
+        "name": "Saturday",
+        "index": 0.8,
+        "note": "Sellers pre-empt the Sunday closure."
+      }
+    }
+  },
+  "weather_arrival_response": {
+    "description": "How rainfall shifts mandi arrivals. Harvesting, drying and farm-to-yard transport all stall in heavy rain, so arrivals are suppressed on wet days and released as a backlog on the first workable day afterwards. Rainfall figures themselves are always taken live from the Open-Meteo forecast for the destination district — never from this file.",
+    "source": "ICAR-DOGR and NHB post-harvest handling guidance on rain-interrupted harvesting and yard drying; crop-specific rain sensitivity in data/crop_metadata.json.",
+    "heavy_rain_mm_threshold": 10.0,
+    "light_rain_mm_threshold": 2.5,
+    "wet_day_arrival_multiplier": 0.55,
+    "backlog_release_multiplier": 1.35,
+    "backlog_decay_per_day": 0.5,
+    "note": "wet_day_arrival_multiplier and backlog_release_multiplier are bounded response coefficients, not measurements. They are applied only to the weather component of the rush score and their contribution is capped and disclosed."
+  },
+  "pressure_bands": {
+    "description": "Thresholds converting the blended arrival-pressure score (0..1) into the LOW / MEDIUM / HIGH band a farmer sees. Chosen so that the three bands partition the score range evenly, keeping the mapping transparent and auditable.",
+    "low_max": 0.34,
+    "medium_max": 0.67
+  },
+  "component_weights": {
+    "description": "Blend weights for the four rush components. They sum to 1.0 and are held constant across all mandis and commodities so that no yard receives special treatment.",
+    "outlet_scarcity": 0.3,
+    "yard_absorption": 0.25,
+    "harvest_season": 0.25,
+    "weather_and_rhythm": 0.2
+  }
+}
