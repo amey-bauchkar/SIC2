@@ -34,12 +34,6 @@ export function renderAppShell(): HTMLElement {
           </ul>
         </div>
 
-        <div class="nav-mobile-lang" id="mobile-lang-switcher" aria-label="Language selector">
-          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'mr' ? 'active' : ''}" data-lang="mr">म</button>
-          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'hi' ? 'active' : ''}" data-lang="hi">हि</button>
-          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
-        </div>
-
         <div class="nav-spacer" aria-hidden="true"></div>
       </nav>
     </header>
@@ -130,17 +124,6 @@ export function renderAppShell(): HTMLElement {
     </nav>
   `;
 
-  // Mobile language toggle click handler
-  root.querySelectorAll('.nav-mobile-lang-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const target = e.currentTarget as HTMLButtonElement;
-      const lang = target.getAttribute('data-lang') as Language;
-      if (lang) {
-        store.setLanguage(lang);
-      }
-    });
-  });
-
   // Reactive subscription: update navbar labels, footer and mobile nav whenever language changes
   store.subscribe((state) => {
     const lang = state.language || 'mr';
@@ -168,15 +151,6 @@ export function renderAppShell(): HTMLElement {
     if (ctaBtn) {
       ctaBtn.textContent = dict.checkBestPrice[lang];
     }
-
-    // Update mobile header language toggle
-    root.querySelectorAll('.nav-mobile-lang-btn').forEach(btn => {
-      if (btn.getAttribute('data-lang') === lang) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
 
     // Mobile nav labels
     const mobRoutes: Record<string, string> = {

@@ -303,39 +303,6 @@ body {
     display: none;
   }
 
-  /* Mobile Top Bar Language Toggle */
-  .nav-mobile-lang {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(85, 65, 45, 0.18);
-    border-radius: 999px;
-    padding: 3px 6px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  }
-
-  .nav-mobile-lang-btn {
-    background: transparent;
-    border: none;
-    font-family: var(--font-family-heading);
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--color-text-muted);
-    padding: 4px 8px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .nav-mobile-lang-btn.active {
-    background: var(--color-brand-primary, #2E5B3E);
-    color: #ffffff;
-    box-shadow: 0 1px 4px rgba(46, 91, 62, 0.3);
-  }
-
   .footer-top {
     grid-template-columns: 1fr;
     gap: var(--space-6);
