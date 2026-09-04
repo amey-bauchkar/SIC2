@@ -39,19 +39,6 @@ export function renderAppShell(): HTMLElement {
         </div>
 
         <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
-          <!-- Global Language Selector -->
-          <div class="global-lang-picker" style="display: inline-flex; gap: 3px; background: rgba(30, 86, 49, 0.08); padding: 3px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
-            <button type="button" class="lang-switch-btn ${initialLang === 'mr' ? 'is-active' : ''}" data-lang="mr" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'mr' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
-              मराठी
-            </button>
-            <button type="button" class="lang-switch-btn ${initialLang === 'hi' ? 'is-active' : ''}" data-lang="hi" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'hi' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
-              हिंदी
-            </button>
-            <button type="button" class="lang-switch-btn ${initialLang === 'en' ? 'is-active' : ''}" data-lang="en" style="padding: 4px 10px; font-size: 0.76rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 800; transition: all 0.2s ease; ${initialLang === 'en' ? 'background: var(--color-brand-primary); color: #fff;' : 'background: transparent; color: var(--color-text-main);'}">
-              English
-            </button>
-          </div>
-
           <a href="#/hub" id="nav-cta-btn" class="btn btn-sm btn-primary" style="font-weight: 800;">
             ${navLabels.checkBestPrice[initialLang]}
           </a>
@@ -153,17 +140,6 @@ export function renderAppShell(): HTMLElement {
     </nav>
   `;
 
-  // Wire up Global Language Switcher Buttons
-  root.querySelectorAll('.lang-switch-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetLang = (btn as HTMLElement).dataset.lang as Language;
-      if (targetLang) {
-        store.setLanguage(targetLang);
-      }
-    });
-  });
-
   // Reactive subscription: update navbar labels, footer and mobile nav whenever language changes
   store.subscribe((state) => {
     const lang = state.language || 'mr';
@@ -250,15 +226,6 @@ export function renderAppShell(): HTMLElement {
     if (ftFeeds) ftFeeds.textContent = sDict.trustFeeds[lang];
     const ftRouting = root.querySelector('#footer-trust-routing');
     if (ftRouting) ftRouting.textContent = sDict.trustRouting[lang];
-
-    root.querySelectorAll('.lang-switch-btn').forEach(b => {
-      const bLang = (b as HTMLElement).dataset.lang;
-      const isActive = bLang === lang;
-      (b as HTMLElement).style.background = isActive ? 'var(--color-brand-primary)' : 'transparent';
-      (b as HTMLElement).style.color = isActive ? '#ffffff' : 'var(--color-text-main)';
-      if (isActive) b.classList.add('is-active');
-      else b.classList.remove('is-active');
-    });
   });
 
   return root;
