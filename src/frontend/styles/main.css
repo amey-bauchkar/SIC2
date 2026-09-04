@@ -48,15 +48,17 @@ body {
 
 /* Header & VerdaAgro Style Navigation */
 .app-header {
-  background-color: var(--color-bg-surface);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-4) var(--space-8);
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: none !important;
+  padding: 10px var(--space-8);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: var(--shadow-xs);
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .nav-bar {
@@ -73,42 +75,20 @@ body {
   align-items: center;
   gap: var(--space-3);
   text-decoration: none;
+  background: transparent;
 }
 
-.brand-logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background-color: var(--color-brand-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 1.25rem;
-  box-shadow: var(--shadow-sm);
+.brand-logo-img {
+  height: 68px;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
 }
 
-.brand-title {
-  font-family: var(--font-family-heading);
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--color-text-main);
-  letter-spacing: -0.03em;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.brand-title .brand-accent-tag {
-  font-size: 0.65rem;
-  background: var(--color-brand-accent);
-  color: var(--color-brand-accent-text);
-  border: 1px solid var(--color-brand-accent-border);
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.brand-logo-img:hover {
+  transform: scale(1.04);
 }
 
 .nav-center {
@@ -124,32 +104,43 @@ body {
 }
 
 .nav-link {
-  color: var(--color-text-muted);
+  color: #2F3E35;
   text-decoration: none;
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-sm);
+  font-family: var(--font-family-heading);
+  font-size: 0.92rem;
   font-weight: 600;
-  padding: 0.5rem 1rem;
+  letter-spacing: -0.01em;
+  padding: 0.45rem 0.9rem;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
   position: relative;
+  background: transparent;
 }
 
 .nav-link:hover {
-  color: var(--color-text-main);
-  background-color: var(--color-bg-muted);
+  color: #112A1B;
+  background-color: rgba(44, 76, 56, 0.06);
 }
 
 .nav-link.active {
-  color: var(--color-text-main);
-  font-weight: 700;
-  background-color: var(--color-brand-primary-light);
+  color: #112A1B;
+  font-weight: 800;
+  background-color: transparent;
+  border-bottom: 2.5px solid #C05621;
+  border-radius: 0;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.nav-actions .btn {
+  font-family: var(--font-family-heading);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 8px rgba(27, 59, 43, 0.2);
 }
 
 /* VerdaAgro Editorial Rich Footer */
@@ -232,41 +223,44 @@ body {
 /* Cockpit Tab Navigation Bar */
 .hub-tabs-nav {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-6);
+  gap: 4px;
+  margin-top: 10px;
+  margin-bottom: var(--space-3);
   overflow-x: auto;
-  padding-bottom: var(--space-1);
-  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 2px;
+  border-bottom: 1.5px solid rgba(85, 65, 45, 0.12);
   -webkit-overflow-scrolling: touch;
 }
 
 .hub-tab-btn {
   background: transparent;
   border: none;
-  border-bottom: 3px solid transparent;
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--color-text-muted);
+  border-bottom: 2.5px solid transparent;
+  padding: 8px 14px;
+  font-family: var(--font-family-heading);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #4A5B50;
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
   margin-bottom: -2px;
+  border-radius: 4px 4px 0 0;
 }
 
 .hub-tab-btn:hover {
-  color: var(--color-text-main);
-  background-color: var(--color-brand-primary-subtle);
+  color: #112A1B;
+  background-color: rgba(27, 59, 43, 0.04);
 }
 
 .hub-tab-btn.active {
-  color: var(--color-text-main);
-  border-bottom-color: var(--color-brand-primary);
-  background-color: var(--color-bg-surface);
+  color: #112A1B;
+  font-weight: 800;
+  border-bottom-color: #C05621;
+  background-color: rgba(255, 255, 255, 0.7);
 }
 
 /* Mobile Responsiveness */

@@ -184,13 +184,13 @@ export function evaluateBhedVivek(
 
   if (isFlipped) {
     status = 'HIGH_RISK';
-    statusLabel = '⚠️ BHED VIVEK ALERT: CONGESTION DIVERSION';
+    statusLabel = 'BHED VIVEK ALERT: CONGESTION DIVERSION';
     const pocketSaved = Math.round((adjustedWinner.adjustedNrv - normalWinner.adjustedNrv) * quantityQuintals);
     alertMessage = `Under ${supplyPressure} supply pressure, ${normalWinner.marketName} faces heavy arrival congestion (-₹${congestionImpactPerQtl}/q). Diverting to ${adjustedWinner.marketName} (Day +${adjustedWinner.day}) protects your profit by +₹${pocketSaved.toLocaleString('en-IN')}!`;
     diversionAdvice = `Divert selling to ${adjustedWinner.marketName} (+${adjustedWinner.day}d). Expected pocket cash: ₹${Math.round(adjustedWinner.adjustedNrv * quantityQuintals).toLocaleString('en-IN')}`;
   } else {
     status = 'LOW_RISK';
-    statusLabel = '🟢 LOW CONGESTION RISK';
+    statusLabel = 'LOW CONGESTION RISK';
     alertMessage = `${normalWinner.marketName} has high trading absorption capacity (${normalWinner.capacity}). The recommendation remains optimal even under ${supplyPressure.toLowerCase()} market congestion.`;
     diversionAdvice = `Proceed with ${normalWinner.marketName} (+${normalWinner.day}d) as planned.`;
   }

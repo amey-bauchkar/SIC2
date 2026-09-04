@@ -46,6 +46,7 @@ export interface SajhaBazaarRequestBody {
   storageCostPerDayPerQtl?: number;
   requesterName?: string;
   requesterVillage?: string;
+  allowSyntheticFallback?: boolean;
 }
 
 /** Latest arrival date in the price feed is the natural "today" for the demo dataset. */
@@ -106,7 +107,8 @@ export async function sajhaBazaarEvaluateController(req: Request, res: Response)
         requesterVillage: body.requesterVillage,
         matchRadiusKm: body.matchRadiusKm ?? DEFAULT_MATCH_RADIUS_KM,
         sellWindowToleranceDays: body.sellWindowToleranceDays ?? DEFAULT_SELL_WINDOW_TOLERANCE_DAYS,
-        materialityThresholdPerQtl: body.materialityThresholdPerQtl ?? DEFAULT_MATERIALITY_THRESHOLD_PER_QTL
+        materialityThresholdPerQtl: body.materialityThresholdPerQtl ?? DEFAULT_MATERIALITY_THRESHOLD_PER_QTL,
+        allowSyntheticFallback: Boolean(body.allowSyntheticFallback)
       },
       evaluations
     );

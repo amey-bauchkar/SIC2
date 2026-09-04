@@ -22,12 +22,8 @@ export function renderAppShell(): HTMLElement {
     <!-- Top Navigation Bar -->
     <header class="app-header">
       <nav class="nav-bar">
-        <a href="#/hub" class="brand-wrapper">
-          <div class="brand-logo-icon">🌾</div>
-          <div class="brand-title">
-            <span>MandiMitra</span>
-            <span class="brand-accent-tag">AsliDaam™</span>
-          </div>
+        <a href="#/hub" class="brand-wrapper" title="MandiMitra — Smart Crop Decision Cockpit">
+          <img src="/mandimitra_logo.svg" alt="MandiMitra Logo" class="brand-logo-img" style="height: 68px; max-width: 220px; width: auto; object-fit: contain; display: block;" />
         </a>
 
         <div class="nav-center">

@@ -24,7 +24,7 @@
   --color-brand-accent-border: #E8DD8C;
 
   /* Neutrals & Clean Content Surfaces */
-  --color-bg-canvas: #F8F8F5;               /* Natural warm organic canvas */
+  --color-bg-canvas: #F9F1E6;               /* Natural warm organic canvas matching hero painting */
   --color-bg-surface: #FFFFFF;              /* Crisp pure white */
   --color-bg-surface-elevated: #FFFFFF;
   --color-bg-muted: #F0F1EA;                /* Soft stone neutral */
@@ -59,9 +59,9 @@
   --color-status-abstain-border: #F7CAC4;
 
   /* Typography System */
-  --font-family-heading: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-numbers: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-heading: 'Outfit', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-body: 'Plus Jakarta Sans', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-numbers: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Typography Scale */
   --font-size-2xs: 0.6875rem; /* 11px */

@@ -624,6 +624,7 @@ export interface SajhaBazaarRequest {
   matchRadiusKm?: number;
   sellWindowToleranceDays?: number;
   materialityThresholdPerQtl?: number;
+  allowSyntheticFallback?: boolean;
 }
 
 export const DEFAULT_MATCH_RADIUS_KM = 10.0;
@@ -709,8 +710,8 @@ export function evaluateSajhaBazaar(
     .filter(x => isSellWindowCompatible(x.profile, request.targetDate, toleranceDays))
     .sort((a, b) => a.distanceKm - b.distanceKm);
 
-  // Universal Fallback: If no static cluster in roster, synthesize realistic local smallholders for ANY crop!
-  if (matched.length === 0) {
+  // Universal Fallback: If explicitly requested and no static cluster in roster, synthesize realistic local smallholders
+  if (matched.length === 0 && request.allowSyntheticFallback) {
     const dynamicRoster = synthesizeDynamicSmallholders(
       commodity, request.district, request.latitude, request.longitude, request.targetDate
     );
@@ -718,6 +719,17 @@ export function evaluateSajhaBazaar(
       profile: f,
       distanceKm: Math.round(haversineDistanceKm(request.latitude, request.longitude, f.latitude, f.longitude) * 10) / 10
     })).sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+
+  if (matched.length === 0) {
+    const cropMatches = roster.filter(f => isSameCrop(f.crop, commodity)).length;
+    reasons.push(
+      cropMatches === 0
+        ? `No farmer on the SajhaBazaar roster is currently holding ${commodity}.`
+        : `${cropMatches} ${commodity} farmer(s) are on the roster, but none are within ${matchRadiusKm} km of you with a compatible sell window (±${toleranceDays} day).`
+    );
+    reasons.push('SajhaBazaar does not invent a pool. Without genuinely compatible neighbours, sell individually as AsliDaam advises.');
+    return baseResult('NO_POOL', 'NO COMPATIBLE NEIGHBOURS', reasons);
   }
 
 
