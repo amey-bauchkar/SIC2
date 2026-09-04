@@ -1723,11 +1723,14 @@ body, p, span, label, input, select, button,
   .decision-hub-landing-hero,
   .panoramic-tractor-hero {
     grid-template-columns: 1fr !important;
+    align-items: flex-start !important;
+    align-content: flex-start !important;
     background-position: right top !important;
     background-size: cover !important;
     background-repeat: no-repeat !important;
     background-image: linear-gradient(180deg, rgba(249, 241, 230, 0.96) 0%, rgba(249, 241, 230, 0.92) 55%, rgba(249, 241, 230, 0.98) 100%), url('/decision_hub_hero.png') !important;
-    padding: var(--space-4) var(--space-3) var(--space-5) !important;
+    padding: var(--space-2) var(--space-3) var(--space-4) !important;
+    height: auto !important;
     min-height: auto !important;
     margin-top: 0 !important;
     width: 100% !important;
@@ -1746,6 +1749,11 @@ body, p, span, label, input, select, button,
   .panoramic-hero-content {
     max-width: 100% !important;
     padding: 0 !important;
+  }
+
+  .hero-top-eyebrow {
+    gap: 6px !important;
+    margin-bottom: 8px !important;
   }
 
   .hero-editorial-title,

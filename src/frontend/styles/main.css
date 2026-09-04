@@ -276,11 +276,11 @@ body {
 
 @media (max-width: 768px) {
   .app-header {
-    padding: var(--space-2) var(--space-3);
+    padding: 6px var(--space-3) 2px !important;
   }
 
   .app-container {
-    padding: var(--space-3) var(--space-3);
+    padding: 0 var(--space-3) var(--space-4) !important;
   }
 
   .nav-bar {
@@ -291,8 +291,8 @@ body {
   }
 
   .brand-logo-img {
-    height: 42px !important;
-    max-width: 155px !important;
+    height: 38px !important;
+    max-width: 145px !important;
   }
 
   .nav-center {
