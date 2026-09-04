@@ -206,7 +206,7 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
 
       <!-- Farmer Controls Strip (No coordinates, clean and clear) -->
       <div class="sajha-card" style="padding: var(--space-4); margin-bottom: var(--space-4);">
-        <div class="farmer-input-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); align-items: end;">
+        <div class="farmer-input-strip sajha-farmer-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); align-items: end;">
           <div>
             <label class="input-label" style="font-weight: 700; margin-bottom: 4px; display: block; font-size: var(--font-size-xs);">${labels.cropLabel}</label>
             <select id="sajha-crop" class="select-field" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--color-border); font-size: var(--font-size-sm); font-weight: 600;">

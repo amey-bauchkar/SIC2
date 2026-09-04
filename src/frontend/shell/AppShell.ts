@@ -34,6 +34,12 @@ export function renderAppShell(): HTMLElement {
           </ul>
         </div>
 
+        <div class="nav-mobile-lang" id="mobile-lang-switcher" aria-label="Language selector">
+          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'mr' ? 'active' : ''}" data-lang="mr">म</button>
+          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'hi' ? 'active' : ''}" data-lang="hi">हि</button>
+          <button type="button" class="nav-mobile-lang-btn ${initialLang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
+        </div>
+
         <div class="nav-spacer" aria-hidden="true"></div>
       </nav>
     </header>
@@ -99,38 +105,41 @@ export function renderAppShell(): HTMLElement {
       </div>
     </footer>
 
-    <!-- Mobile Bottom Quick Navigation (For Farmers on Handhelds) -->
+    <!-- Mobile Bottom Quick Navigation (Ergonomic 5-Key Destinations for Farmers) -->
     <nav class="mobile-bottom-nav">
-      <a href="#/hub" class="mobile-nav-item active">
-        <span>●</span>
+      <a href="#/hub" class="mobile-nav-item active" title="${I18N_DICTIONARY.shell.mobile.hub[initialLang]}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span class="mob-label" data-route="/hub">${I18N_DICTIONARY.shell.mobile.hub[initialLang]}</span>
       </a>
-      <a href="#/entry" class="mobile-nav-item">
-        <span>●</span>
+      <a href="#/entry" class="mobile-nav-item" title="${I18N_DICTIONARY.shell.mobile.voice[initialLang]}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
         <span class="mob-label" data-route="/entry">${I18N_DICTIONARY.shell.mobile.voice[initialLang]}</span>
       </a>
-      <a href="#/sajha" class="mobile-nav-item">
-        <span>●</span>
+      <a href="#/sajha" class="mobile-nav-item" title="${I18N_DICTIONARY.shell.mobile.sajha[initialLang]}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18.5" r="2.5"/><circle cx="7" cy="18.5" r="2.5"/></svg>
         <span class="mob-label" data-route="/sajha">${I18N_DICTIONARY.shell.mobile.sajha[initialLang]}</span>
       </a>
-      <a href="#/markets" class="mobile-nav-item">
-        <span>●</span>
+      <a href="#/markets" class="mobile-nav-item" title="${I18N_DICTIONARY.shell.mobile.markets[initialLang]}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2 6.3-6.4 2 2-6.3z"/></svg>
         <span class="mob-label" data-route="/markets">${I18N_DICTIONARY.shell.mobile.markets[initialLang]}</span>
       </a>
-      <a href="#/evidence" class="mobile-nav-item">
-        <span>●</span>
-        <span class="mob-label" data-route="/evidence">${I18N_DICTIONARY.shell.mobile.evidence[initialLang]}</span>
-      </a>
-      <a href="#/backtest" class="mobile-nav-item">
-        <span>●</span>
-        <span class="mob-label" data-route="/backtest">${I18N_DICTIONARY.shell.mobile.backtest[initialLang]}</span>
-      </a>
-      <a href="#/settings" class="mobile-nav-item">
-        <span>●</span>
+      <a href="#/settings" class="mobile-nav-item" title="${I18N_DICTIONARY.shell.mobile.settings[initialLang]}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="3" y2="3"/><line x1="4" x2="20" y1="12" y2="12"/><circle cx="8" cy="12" r="3"/><circle cx="16" cy="3" r="3"/><circle cx="14" cy="21" r="3"/></svg>
         <span class="mob-label" data-route="/settings">${I18N_DICTIONARY.shell.mobile.settings[initialLang]}</span>
       </a>
     </nav>
   `;
+
+  // Mobile language toggle click handler
+  root.querySelectorAll('.nav-mobile-lang-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLButtonElement;
+      const lang = target.getAttribute('data-lang') as Language;
+      if (lang) {
+        store.setLanguage(lang);
+      }
+    });
+  });
 
   // Reactive subscription: update navbar labels, footer and mobile nav whenever language changes
   store.subscribe((state) => {
@@ -159,6 +168,15 @@ export function renderAppShell(): HTMLElement {
     if (ctaBtn) {
       ctaBtn.textContent = dict.checkBestPrice[lang];
     }
+
+    // Update mobile header language toggle
+    root.querySelectorAll('.nav-mobile-lang-btn').forEach(btn => {
+      if (btn.getAttribute('data-lang') === lang) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
 
     // Mobile nav labels
     const mobRoutes: Record<string, string> = {

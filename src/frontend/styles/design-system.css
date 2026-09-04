@@ -1576,5 +1576,222 @@ body, p, span, label, input, select, button,
   font-weight: 700;
 }
 
+/* ==========================================================================
+   Comprehensive Mobile Ergonomics System (<= 768px Handheld Devices)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Panoramic Tractor Hero: Scrim Backdrop & Scaled Typography */
+  .decision-hub-landing-hero,
+  .panoramic-tractor-hero {
+    grid-template-columns: 1fr !important;
+    background-position: right top !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-image: linear-gradient(180deg, rgba(249, 241, 230, 0.96) 0%, rgba(249, 241, 230, 0.92) 55%, rgba(249, 241, 230, 0.98) 100%), url('/decision_hub_hero.png') !important;
+    padding: var(--space-4) var(--space-3) var(--space-5) !important;
+    min-height: auto !important;
+    margin-top: 0 !important;
+    width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 
+  .decision-hub-hero-spacer,
+  .panoramic-hero-spacer {
+    display: none !important;
+  }
 
+  .decision-hub-hero-content,
+  .panoramic-hero-content {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .hero-editorial-title,
+  .decision-hub-hero-content .heading-display {
+    font-size: clamp(1.65rem, 6.8vw, 2.25rem) !important;
+    line-height: 1.2 !important;
+    margin-bottom: var(--space-2) !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .hero-lead-narrative,
+  .decision-hub-hero-content .text-farmer-lead {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: var(--space-3) !important;
+  }
+
+  .hero-specs-roster {
+    margin-bottom: var(--space-4) !important;
+    max-width: 100% !important;
+  }
+
+  .spec-row {
+    grid-template-columns: 28px 1fr !important;
+    gap: 8px !important;
+    padding: 8px 0 !important;
+  }
+
+  .spec-name {
+    font-size: 0.88rem !important;
+  }
+
+  .spec-summary {
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .hero-primary-cta {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+    font-size: 0.92rem !important;
+  }
+
+  /* 2. Cockpit Section Viewport Padding & Armour Section Gaps */
+  .cockpit-unified-section {
+    padding-top: var(--space-3) !important;
+    margin-top: 0 !important;
+    margin-bottom: var(--space-3) !important;
+  }
+
+  .cockpit-filter-panel {
+    padding: 16px 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .cockpit-filter-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .cockpit-armor-section {
+    margin-top: var(--space-5) !important;
+    padding-top: var(--space-3) !important;
+    margin-bottom: var(--space-5) !important;
+    scroll-margin-top: 20px !important;
+  }
+
+  /* 3. Shield Grid Horizontal Overflow Fix (Eliminating 420px blowout) */
+  .shield-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3) !important;
+    margin-top: 12px !important;
+  }
+
+  .shield-panel {
+    padding: 16px 14px !important;
+    border-radius: 10px !important;
+  }
+
+  .shield-title {
+    font-size: 1.05rem !important;
+  }
+
+  .shield-header-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  /* 4. Cockpit Horizontal Tab Bar Scroll Ergonomics */
+  .hub-tabs-nav {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 6px;
+    padding: 6px 2px 4px 2px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .hub-tabs-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .hub-tab-btn {
+    scroll-snap-align: start;
+    padding: 8px 12px !important;
+    font-size: 0.8rem !important;
+    min-height: 42px !important;
+  }
+
+  /* 5. Editorial Data Tables with Sticky First Column */
+  .editorial-table-container,
+  .table-responsive-wrapper {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative;
+  }
+
+  .editorial-table-container .editorial-table th,
+  .editorial-table th {
+    padding: 8px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .editorial-table-container .editorial-table td,
+  .editorial-table td {
+    padding: 8px 10px !important;
+    font-size: 0.76rem !important;
+  }
+
+  /* Sticky First Column for APMC Mandi Name */
+  .editorial-table th:first-child,
+  .editorial-table td:first-child,
+  .editorial-table-container .editorial-table th:first-child,
+  .editorial-table-container .editorial-table td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    background-color: #ffffff !important;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .editorial-table th:first-child,
+  .editorial-table-container .editorial-table th:first-child {
+    background-color: rgba(246, 244, 238, 0.98) !important;
+  }
+
+  /* 6. SajhaBazaar 3-Card Mobile Layout */
+  .sajha-card {
+    padding: var(--space-4) 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .sajha-farmer-strip {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sajha-savings-hero {
+    padding: var(--space-3) var(--space-4) !important;
+  }
+
+  .sajha-savings-val {
+    font-size: 1.55rem !important;
+  }
+
+  .sajha-comparison-row {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .sajha-comparison-box {
+    padding: 6px 4px !important;
+    text-align: center;
+  }
+
+  /* 7. Entry View 2-column feature cards collapse & editorial panel padding */
+  .entry-features-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .editorial-panel,
+  .editorial-panel-sage {
+    padding: var(--space-4) 14px !important;
+  }
+}

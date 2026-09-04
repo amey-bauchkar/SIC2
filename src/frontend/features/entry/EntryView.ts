@@ -223,7 +223,7 @@ export function renderEntryView(): HTMLElement {
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+        <div class="entry-features-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
           <div class="editorial-panel" style="padding: var(--space-4); background: #ffffff;">
             <div style="font-family: var(--font-family-heading); font-weight: 800; font-size: var(--font-size-sm); color: var(--color-text-main);">
               ${appLang === 'mr' ? 'टाइप नको, फक्त बोला' : (appLang === 'hi' ? 'टाइप नहीं, बोलकर बताएं' : 'Speak, Don\'t Type')}
