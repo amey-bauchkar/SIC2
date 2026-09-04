@@ -1,0 +1,15 @@
+{
+  "source": "CEDA",
+  "provenance": "OBSERVED",
+  "retrievedAt": "2026-09-04T05:39:07.015066",
+  "commodity": "Onion",
+  "market": "Maharashtra State",
+  "district": "Maharashtra",
+  "dateRange": {
+    "start": "2023-01-01",
+    "end": "2025-01-02"
+  },
+  "observations": 11,
+  "csvFile": "onion_maharashtra_state_ceda.csv",
+  "attribution": "CEDA Agri Market Data (CEDA-AMD), 2000-2023. Centre for Economic Data & Analysis, Ashoka University, https://ceda.ashoka.edu.in/agmarknet"
+}

@@ -45,7 +45,7 @@ export const config: SystemConfig = {
 
   defaultTransportCostPerKmPerQtl: parseFloat(process.env.DEFAULT_TRANSPORT_COST_PER_KM_QTL || '2.5'),
   defaultStorageCostPerDayPerQtl: parseFloat(process.env.DEFAULT_STORAGE_COST_PER_DAY_QTL || '0.45'),
-  decisionRiskK: parseFloat(process.env.DECISION_RISK_K || '1.0'),
+  decisionRiskK: parseFloat(process.env.DECISION_RISK_K || '0.5'),
   decisionGainThreshold: parseFloat(process.env.DECISION_GAIN_THRESHOLD || '20.0'),
   maxSearchRadiusKm: parseFloat(process.env.MAX_SEARCH_RADIUS_KM || '120.0'),
   roadDistanceFactor: parseFloat(process.env.ROAD_DISTANCE_FACTOR || '1.35'),

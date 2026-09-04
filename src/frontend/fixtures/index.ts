@@ -70,14 +70,19 @@ export const DEV_FIXTURE_EVALUATION_WAIT: EvaluateResponse = {
           { day: 1, expectedPrice: 2455.0 },
           { day: 2, expectedPrice: 2510.0 },
           { day: 3, expectedPrice: 2565.0 }
-        ]
+        ],
+        historySource: 'SYNTHETIC_DEMO',
+        historyObservationCount: 30,
+        isForecastEligible: true
       },
       netRealisationByDay: [
         { market: lasalgaonMarket, day: 0, expectedPrice: 2400.0, transportCostPerQtl: 127.5, waitingCostPerQtl: 0.0, netRealisation: 2272.5 },
         { market: lasalgaonMarket, day: 1, expectedPrice: 2455.0, transportCostPerQtl: 127.5, waitingCostPerQtl: 10.0, netRealisation: 2317.5 },
         { market: lasalgaonMarket, day: 2, expectedPrice: 2510.0, transportCostPerQtl: 127.5, waitingCostPerQtl: 20.0, netRealisation: 2362.5 },
         { market: lasalgaonMarket, day: 3, expectedPrice: 2565.0, transportCostPerQtl: 127.5, waitingCostPerQtl: 30.0, netRealisation: 2407.5 }
-      ]
+      ],
+      historySource: 'SYNTHETIC_DEMO',
+      historyObservationCount: 30
     },
     {
       market: pimpalgaonMarket,
@@ -97,14 +102,19 @@ export const DEV_FIXTURE_EVALUATION_WAIT: EvaluateResponse = {
           { day: 1, expectedPrice: 2365.0 },
           { day: 2, expectedPrice: 2380.0 },
           { day: 3, expectedPrice: 2395.0 }
-        ]
+        ],
+        historySource: 'SYNTHETIC_DEMO',
+        historyObservationCount: 30,
+        isForecastEligible: true
       },
       netRealisationByDay: [
         { market: pimpalgaonMarket, day: 0, expectedPrice: 2350.0, transportCostPerQtl: 93.0, waitingCostPerQtl: 0.0, netRealisation: 2257.0 },
         { market: pimpalgaonMarket, day: 1, expectedPrice: 2365.0, transportCostPerQtl: 93.0, waitingCostPerQtl: 10.0, netRealisation: 2262.0 },
         { market: pimpalgaonMarket, day: 2, expectedPrice: 2380.0, transportCostPerQtl: 93.0, waitingCostPerQtl: 20.0, netRealisation: 2267.0 },
         { market: pimpalgaonMarket, day: 3, expectedPrice: 2395.0, transportCostPerQtl: 93.0, waitingCostPerQtl: 30.0, netRealisation: 2272.0 }
-      ]
+      ],
+      historySource: 'SYNTHETIC_DEMO',
+      historyObservationCount: 30
     }
   ]
 };

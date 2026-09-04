@@ -18,10 +18,11 @@ import {
   StressTestResponse,
   BhedVivekRequestBody
 } from '../contracts/api';
-import { Market, MarketEvaluation, BacktestResult } from '../contracts/domain';
+import { Market, MarketEvaluation, BacktestResult, HistorySource, Forecast } from '../contracts/domain';
 import { getAllMarkets } from '../data-pipeline/registry';
 import { estimateRoadDistanceKm } from '../core/distance';
-import { generateForecast } from '../core/forecast';
+import { generateForecast, generateCurrentOnlyForecast, MIN_HISTORY_FOR_FORECAST } from '../core/forecast';
+import { readCedaObservedHistory } from './ceda-client';
 import { calculateNetRealisationForMarket } from '../core/net-realisation';
 import { evaluateDecisionPolicy } from '../core/decision';
 import { formatExplanationSummary } from '../core/explain';
@@ -80,11 +81,15 @@ interface MarketHistoryData {
   daysSinceLastReport: number;
   reportingDaysCountInLast30Days: number;
   latestPrice: number | null;
+  historySource: HistorySource;
+  observationCount: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 /**
- * Reads actual historical price series from disk to compute genuine
- * reporting gaps, coverage, and trailing observations without any synthetic manufacturing.
+ * Reads verified historical observations from disk (prioritizing CEDA observed history)
+ * without any synthetic manufacturing.
  */
 function getMarketHistoryFromCsv(
   commodity: string,
@@ -92,68 +97,24 @@ function getMarketHistoryFromCsv(
   referenceDate: Date = new Date('2026-09-03')
 ): MarketHistoryData | null {
   try {
-    const histDir = path.resolve(process.cwd(), 'data', 'historical');
-    if (!fs.existsSync(histDir)) return null;
-
-    const commLower = commodity.toLowerCase();
-    const mLower = marketName.toLowerCase();
-
-    const files = fs.readdirSync(histDir).filter(f => f.endsWith('.csv'));
-    const matchedFile = files.find(f => {
-      const fLower = f.toLowerCase();
-      const commMatch = (commLower.includes('onion') && fLower.includes('onion')) ||
-                        (commLower.includes('tomato') && fLower.includes('tomato')) ||
-                        (commLower.includes('soya') && fLower.includes('soya'));
-      const mMatch = (mLower.includes('lasalgaon') && fLower.includes('lasalgaon')) ||
-                     (mLower.includes('pimpalgaon') && fLower.includes('pimpalgaon')) ||
-                     (mLower.includes('manmad') && fLower.includes('manmad')) ||
-                     ((mLower.includes('narayangaon') || mLower.includes('junnar') || mLower.includes('pune')) && fLower.includes('narayangaon')) ||
-                     (mLower.includes('latur') && fLower.includes('latur'));
-      return commMatch && mMatch;
-    });
-
-    if (!matchedFile) return null;
-
-    const content = fs.readFileSync(path.join(histDir, matchedFile), 'utf-8');
-    const lines = content.trim().split('\n');
-    if (lines.length <= 1) return null;
-
-    const headers = lines[0].split(',').map(h => h.trim());
-    const dateIdx = headers.indexOf('date');
-    const modalIdx = headers.indexOf('modal_price');
-    if (dateIdx === -1 || modalIdx === -1) return null;
-
-    const records: { date: string; modalPrice: number }[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',');
-      if (parts.length > Math.max(dateIdx, modalIdx)) {
-        const dStr = parts[dateIdx].trim();
-        const price = parseFloat(parts[modalIdx].trim());
-        if (dStr && !isNaN(price)) {
-          records.push({ date: dStr, modalPrice: price });
-        }
-      }
+    // 1. First priority: verified CEDA observed history from data/historical/observed/
+    const cedaObserved = readCedaObservedHistory(commodity, marketName, referenceDate);
+    if (cedaObserved && cedaObserved.trailing7Prices.length >= 2) {
+      return {
+        trailing7Prices: cedaObserved.trailing7Prices,
+        daysSinceLastReport: cedaObserved.daysSinceLastReport,
+        reportingDaysCountInLast30Days: cedaObserved.reportingDaysCountInLast30Days,
+        latestPrice: cedaObserved.latestPrice,
+        historySource: 'CEDA_OBSERVED',
+        observationCount: cedaObserved.observationCount,
+        startDate: cedaObserved.startDate,
+        endDate: cedaObserved.endDate
+      };
     }
 
-    if (records.length === 0) return null;
-
-    const lastRec = records[records.length - 1];
-    const lastDate = new Date(lastRec.date);
-    const msDiff = referenceDate.getTime() - lastDate.getTime();
-    const daysSince = Math.max(0, Math.round(msDiff / (1000 * 60 * 60 * 24)));
-
-    const thirtyDaysAgo = new Date(referenceDate);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const count30d = records.filter(r => new Date(r.date) >= thirtyDaysAgo && new Date(r.date) <= referenceDate).length;
-
-    const trailing7 = records.slice(-7).map(r => r.modalPrice);
-
-    return {
-      trailing7Prices: trailing7,
-      daysSinceLastReport: daysSince,
-      reportingDaysCountInLast30Days: count30d,
-      latestPrice: lastRec.modalPrice
-    };
+    // 2. Note: Legacy synthetic series in data/historical/synthetic/ are NOT loaded in production
+    // to strictly prevent synthetic momentum from leaking into real farmer recommendations.
+    return null;
   } catch (err) {
     return null;
   }
@@ -212,11 +173,11 @@ function getFeedReferenceDate(): Date {
 
 /**
  * Builds canonical market evaluations using honest data sources:
- * - Modal price is resolved through the provenance ladder in price-resolver.ts. A mandi is only
- *   dropped when the commodity has NO observation anywhere in Maharashtra.
+ * - Modal price is resolved through the provenance ladder in price-resolver.ts.
  * - Data quality is computed from real reporting dates and the price provenance tier.
- * - Trailing prices come from the real historical series when one exists; otherwise the series is
- *   held flat so the forecast slope is honestly zero rather than manufactured.
+ * - Trailing prices come from verified CEDA historical observations when available.
+ * - When no verified history exists, CURRENT_ONLY is used: price held flat, zero slope, zero uncertainty.
+ * - Absolutely NO synthetic temporal momentum manufactured from marketIndex or noise.
  */
 function buildCandidateEvaluations(
   candidateMarkets: Market[],
@@ -233,8 +194,6 @@ function buildCandidateEvaluations(
     const resolved = resolveMarketPrice(ctx, market, referenceDate);
 
     // Prefer a directly observed price; a real historical series is used when the feed is silent.
-    // `effectiveResolution` records where the price ACTUALLY came from, so the data-quality
-    // assessment never mislabels a historical-series price as peer-calibrated (or vice versa).
     let basePrice: number | null = null;
     let effectiveResolution = resolved;
 
@@ -264,19 +223,39 @@ function buildCandidateEvaluations(
       continue;
     }
 
-    // Real trailing series where available; otherwise a flat series (slope = 0, no invented drift).
-    const trailingPrices = (history && history.trailing7Prices.length >= 2)
-      ? history.trailing7Prices
-      : new Array(7).fill(basePrice);
+    // Historical forecast provenance:
+    // Only permit temporal trend inference when verified CEDA historical observations exist
+    // and observation count meets the minimum threshold.
+    let forecast: Forecast;
+    let historySource: HistorySource = 'CURRENT_ONLY';
+    let historyObservationCount = 0;
 
-    const forecast = generateForecast(trailingPrices, basePrice);
-    const netRealisationByDay = calculateNetRealisationForMarket(market, forecast, transportCost, storageCost);
+    if (history && history.trailing7Prices.length >= 2 && history.observationCount >= MIN_HISTORY_FOR_FORECAST) {
+      historySource = history.historySource;
+      historyObservationCount = history.observationCount;
+      forecast = generateForecast(history.trailing7Prices, basePrice, {
+        historySource,
+        observationCount: historyObservationCount,
+        startDate: history.startDate,
+        endDate: history.endDate
+      });
+    } else {
+      // CURRENT_ONLY: Honest flat price path, 0 slope, 0 uncertainty.
+      // Decision is driven by spatial arbitrage and holding costs (storage, decay, freshness).
+      historySource = 'CURRENT_ONLY';
+      historyObservationCount = history ? history.observationCount : 0;
+      forecast = generateCurrentOnlyForecast(basePrice);
+    }
+
+    const netRealisationByDay = calculateNetRealisationForMarket(market, forecast, transportCost, storageCost, commodity);
 
     evaluations.push({
       market,
       dataQuality: quality,
       forecast,
-      netRealisationByDay
+      netRealisationByDay,
+      historySource,
+      historyObservationCount
     });
   }
 

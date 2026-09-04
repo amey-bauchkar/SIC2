@@ -617,8 +617,26 @@ export function assessDataQualityFromProvenance(
   resolved: ResolvedPrice,
   history: HistoryEvidence | null
 ): DataQualityAssessment {
-  // A real multi-day series always wins: use the frozen coverage rule verbatim.
-  if (history) {
+  // Directly observed in today's live Agmarknet feed:
+  // Live recency from the feed determines current price tier (GOOD if <= 2 days, MODERATE if <= 5 days).
+  if (resolved.provenance === 'AGMARKNET_MARKET_OBSERVED') {
+    const days = resolved.daysSinceLastReport;
+    const tier: DataQualityTier = days <= 2 ? 'GOOD' : days <= 5 ? 'MODERATE' : 'POOR';
+    return {
+      tier,
+      daysSinceLastReport: days === 999 ? 30 : days,
+      coverage30d: resolved.reportingDensityPct,
+      missingDays: Math.max(0, 30 - Math.round((resolved.reportingDensityPct / 100) * 30)),
+      isEligibleForRecommendation: tier !== 'POOR',
+      priceProvenance: 'AGMARKNET_MARKET_OBSERVED',
+      coverageSource: 'live-snapshot-recency',
+      observationCount: Math.max(resolved.observationCount, history ? history.reportingDaysCountInLast30Days : 0),
+      provenanceNote: resolved.note
+    };
+  }
+
+  // When no live feed price exists and we rely on a multi-day historical series for the price:
+  if (history && resolved.provenance === 'HISTORICAL_SERIES_OBSERVED') {
     const coverage30d = Math.min(100, Math.max(0, (history.reportingDaysCountInLast30Days / 30) * 100));
     let tier: DataQualityTier = 'POOR';
     if (history.daysSinceLastReport <= 2 && coverage30d >= 70) tier = 'GOOD';
@@ -629,7 +647,7 @@ export function assessDataQualityFromProvenance(
       coverage30d: Math.round(coverage30d * 10) / 10,
       missingDays: Math.max(0, 30 - history.reportingDaysCountInLast30Days),
       isEligibleForRecommendation: tier !== 'POOR',
-      priceProvenance: resolved.provenance === 'UNAVAILABLE' ? 'HISTORICAL_SERIES_OBSERVED' : resolved.provenance,
+      priceProvenance: 'HISTORICAL_SERIES_OBSERVED',
       coverageSource: 'historical-series',
       observationCount: Math.max(resolved.observationCount, history.reportingDaysCountInLast30Days),
       provenanceNote: resolved.note
@@ -641,7 +659,7 @@ export function assessDataQualityFromProvenance(
 
   if (resolved.provenance === 'UNAVAILABLE') {
     tier = 'POOR';
-  } else if (resolved.provenance === 'AGMARKNET_MARKET_OBSERVED' || resolved.provenance === 'HISTORICAL_SERIES_OBSERVED') {
+  } else if (resolved.provenance === 'HISTORICAL_SERIES_OBSERVED') {
     tier = days <= 2 ? 'GOOD' : days <= 5 ? 'MODERATE' : 'POOR';
   } else {
     // Peer-calibrated: never GOOD. Needs at least one real, fresh backing observation.
@@ -657,7 +675,7 @@ export function assessDataQualityFromProvenance(
     missingDays: Math.max(0, 30 - Math.round((resolved.reportingDensityPct / 100) * 30)),
     isEligibleForRecommendation: tier !== 'POOR',
     priceProvenance: resolved.provenance,
-    coverageSource: resolved.provenance === 'AGMARKNET_MARKET_OBSERVED' ? 'live-snapshot-recency' : 'peer-calibrated',
+    coverageSource: 'peer-calibrated',
     observationCount: resolved.observationCount,
     provenanceNote: resolved.note
   };

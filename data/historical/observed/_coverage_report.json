@@ -1,0 +1,102 @@
+{
+  "generatedAt": "2026-09-04T05:39:07.031851",
+  "dateRange": {
+    "start": "2025-01-01",
+    "end": "2025-06-30"
+  },
+  "totalCommoditiesCovered": 1,
+  "totalMarketsCovered": 8,
+  "totalPairs": 8,
+  "pairsWithSufficientHistory": 8,
+  "pairsWithInsufficientHistory": 0,
+  "details": [
+    {
+      "commodity": "Onion",
+      "market": "Maharashtra State",
+      "district": "Maharashtra",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_maharashtra_state_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Lasalgaon",
+      "district": "Nashik",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_lasalgaon_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Pimpalgaon Baswant",
+      "district": "Nashik",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_pimpalgaon_baswant_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Pune (Gultekdi)",
+      "district": "Pune",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_pune_gultekdi_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Mumbai (Vashi)",
+      "district": "Mumbai",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_mumbai_vashi_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Solapur",
+      "district": "Solapur",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_solapur_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Ahmednagar",
+      "district": "Ahmednagar",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_ahmednagar_ceda.csv"
+    },
+    {
+      "commodity": "Onion",
+      "market": "Yeola",
+      "district": "Nashik",
+      "observations": 11,
+      "dateRange": {
+        "start": "2023-01-01",
+        "end": "2025-01-02"
+      },
+      "csvFile": "onion_yeola_ceda.csv"
+    }
+  ]
+}

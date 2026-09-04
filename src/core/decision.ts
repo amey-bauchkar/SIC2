@@ -24,7 +24,17 @@ export function evaluateDecisionPolicy(
   threshold: number = config.decisionGainThreshold
 ): Recommendation {
   // 1. Filter to eligible markets only (Data quality !== 'POOR')
-  const eligibleEvaluations = evaluations.filter(ev => ev.dataQuality.isEligibleForRecommendation);
+  let eligibleEvaluations = evaluations.filter(ev => ev.dataQuality.isEligibleForRecommendation);
+
+  // Provenance Priority: When directly observed Agmarknet or CEDA historical mandis exist,
+  // prioritize them over peer-calibrated benchmark approximations.
+  const directlyObserved = eligibleEvaluations.filter(ev =>
+    ev.dataQuality.priceProvenance === 'AGMARKNET_MARKET_OBSERVED' ||
+    ev.dataQuality.priceProvenance === 'HISTORICAL_SERIES_OBSERVED'
+  );
+  if (directlyObserved.length > 0) {
+    eligibleEvaluations = directlyObserved;
+  }
 
   // 2. Abstention check: If no candidate market has acceptable data quality
   if (eligibleEvaluations.length === 0) {
@@ -114,6 +124,8 @@ export function evaluateDecisionPolicy(
       ]
     };
   } else {
+    const hasHistory = bestTodayOption.evaluation.forecast.isForecastEligible;
+    const day1HoldingCost = bestTodayOption.evaluation.netRealisationByDay.find(n => n.day === 1)?.waitingCostPerQtl || 10;
     return {
       action: 'SELL_TODAY',
       market: bestTodayOption.evaluation.market,
@@ -122,7 +134,9 @@ export function evaluateDecisionPolicy(
       riskAdjustedGainPerQtl: 0,
       reasons: [
         `Selling today at ${bestTodayOption.evaluation.market.name} secures optimal net return of ₹${bestTodayOption.net.netRealisation.toFixed(1)}/qtl.`,
-        `Projected future price appreciation does not sufficiently compensate for holding depreciation and price volatility buffer (₹${volatility.toFixed(1)}/qtl).`,
+        hasHistory
+          ? `Projected future price appreciation does not sufficiently compensate for holding depreciation and price volatility buffer (₹${volatility.toFixed(1)}/qtl).`
+          : `Single-day Agmarknet observation without verified historical time series — price held flat. Holding loses ₹${day1HoldingCost.toFixed(1)}/qtl/day to storage, spoilage and freshness degradation.`,
         `Road distance of ~${bestTodayOption.evaluation.market.estimatedRoadDistanceKm?.toFixed(1) || 0} km keeps haulage tariffs minimal at ₹${bestTodayOption.net.transportCostPerQtl.toFixed(1)}/qtl.`
       ]
     };

@@ -638,6 +638,7 @@ function renderAsliDaamTab(
           </div>
           <div style="font-family: var(--font-family-body); font-size: 0.68rem; color: #586B5E; margin-top: 2px;">
             ${I18N_DICTIONARY.hub.dataQualityLabel[currentLanguage]}: <strong>${recQuality?.tier || 'n/a'}</strong>${recQuality?.priceProvenance ? ` · ${recQuality.priceProvenance.replace(/_/g, ' ').toLowerCase()}` : ''}
+            ${recEval?.historySource ? ` · <span class="badge ${recEval.historySource === 'CEDA_OBSERVED' ? 'badge-sage' : 'badge-neutral'}" style="font-size: 0.62rem; padding: 2px 6px;">${recEval.historySource === 'CEDA_OBSERVED' ? (currentLanguage === 'mr' ? '🏛️ CEDA पडताळणी इतिहास' : (currentLanguage === 'hi' ? '🏛️ CEDA सत्यापित इतिहास' : '🏛️ CEDA Verified History')) : (recEval.historySource === 'CURRENT_ONLY' ? (currentLanguage === 'mr' ? 'केवळ थेट स्नॅपशॉट' : (currentLanguage === 'hi' ? 'केवल लाइव स्नैपशॉट' : 'Live Snapshot Only')) : recEval.historySource)}</span>` : ''}
           </div>
         </div>
 
@@ -645,28 +646,35 @@ function renderAsliDaamTab(
 
       <!-- Forecast basis strip -->
       <div style="display: flex; align-items: baseline; gap: 8px; background: #ffffff; border: 1px solid rgba(85, 65, 45, 0.12); padding: 8px 14px; border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+        <span style="font-size: 1rem;">${recEval?.forecast?.isForecastEligible ? '📈' : '⚖️'}</span>
         <div style="flex: 1; min-width: 240px; font-family: var(--font-family-body);">
           <span style="font-size: 0.8rem; font-weight: 700; color: #112A1B;">
             ${currentLanguage === 'mr'
-              ? `भावाचा अंदाज: ${hasRealSeries ? `७ दिवसांचा कल ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिवस (${translateMandiName(rec.market.name, currentLanguage)} प्रत्यक्ष भाव मालिका)` : 'स्थिर भाव — या बाजाराची बहु-दिवसीय मालिका उपलब्ध नाही'}`
+              ? (recEval?.forecast?.isForecastEligible
+                  ? `भावाचा अंदाज: CEDA पडताळणी ७ दिवसांचा कल ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिवस (${recEval.historyObservationCount ? toDevanagariDigits(recEval.historyObservationCount) : '७'} नोंदी, ${translateMandiName(rec.market.name, currentLanguage)})`
+                  : 'स्थिर भाव — एकाच दिवसाची ॲगमार्कनेट नोंद (शून्य काल्पनिक कल)')
               : (currentLanguage === 'hi'
-              ? `भाव का आधार: ${hasRealSeries ? `७ दिन का रुझान ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिन (${translateMandiName(rec.market.name, currentLanguage)} वास्तविक मंडी श्रृंखला)` : 'सपाट भाव — इस मंडी की बहु-दिवसीय श्रृंखला उपलब्ध नहीं'}`
-              : `Forecast basis: ${hasRealSeries ? `7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day from the real ${rec.market.name} price series.` : 'flat price path — no multi-day series exists for this mandi.'}`)}
+              ? (recEval?.forecast?.isForecastEligible
+                  ? `भाव का आधार: CEDA सत्यापित ७ दिन का रुझान ${forecastSlope >= 0 ? '+' : ''}${formatCurrency(forecastSlope, currentLanguage)}/दिन (${recEval.historyObservationCount ? toDevanagariDigits(recEval.historyObservationCount) : '७'} रिकॉर्ड, ${translateMandiName(rec.market.name, currentLanguage)})`
+                  : 'सपाट भाव — एकल दिवसीय एगमार्कनेट अवलोकन (शून्य काल्पनिक रुझान)')
+              : (recEval?.forecast?.isForecastEligible
+                  ? `Forecast basis: Verified CEDA 7-day OLS slope ${forecastSlope >= 0 ? '+' : ''}₹${forecastSlope.toFixed(2)}/day (${recEval.historyObservationCount} observations)`
+                  : 'Flat price path — Single-day Agmarknet observation (zero synthetic momentum)'))}
           </span>
           <span style="font-size: 0.74rem; color: #586B5E; line-height: 1.45; margin-left: 4px;">
             ${currentLanguage === 'mr'
-              ? (hasRealSeries
-                  ? `चढ-उतार मर्यादा ±${rs1(forecastUncertainty)}/क्विंटल (दैनिक चढ-उतार). अपेक्षित नफा हा या मर्यादेपेक्षा आणि साठवणूक खर्चापेक्षा जास्त असेल तरच माल थांबवण्याचा सल्ला दिला जातो.`
-                  : `या बाजारपेठेसाठी ॲगमार्कनेटवर एकाच दिवसाचा दर उपलब्ध आहे. काल्पनिक आकडे दाखवण्याऐवजी स्थिर भाव मानला जातो. वाढीची खात्री नसल्यास साठवणूक व ताजेपणा घट यामुळे नुकसान टाळण्यासाठी 'आजच विका' हा प्रामाणिक सल्ला.`
+              ? (recEval?.forecast?.isForecastEligible
+                  ? `चढ-उतार मर्यादा ±${rs1(forecastUncertainty)}/क्विंटल (CEDA दप्तरातील चढ-उतार). अपेक्षित नफा हा या मर्यादेपेक्षा आणि साठवणूक खर्चापेक्षा जास्त असेल तरच माल थांबवण्याचा सल्ला दिला जातो.`
+                  : `या बाजारासाठी थेट ॲगमार्कनेट भाव वापरला असून कोणताही काल्पनिक कल दाखवलेला नाही. साठवणूक भाडे, घट आणि ताजेपणा घसरणीमुळे होणारे नुकसान टाळण्यासाठी 'आजच विका' हा प्रामाणिक सल्ला.`
                 )
               : (currentLanguage === 'hi'
-              ? (hasRealSeries
-                  ? `उतार-चढ़ाव सीमा ±${rs1(forecastUncertainty)}/क्विंटल (दैनिक उतार-चढ़ाव). अनुमानित लाभ इस बफर और लागत से अधिक होने पर ही माल रोकने की सलाह दी जाती है.`
-                  : `इस मंडी हेतु एगमार्कनेट पर केवल एकल दिवस का डेटा उपलब्ध है। कोई काल्पनिक अनुमान लगाने के बजाय भाव स्थिर माना गया है।`
+              ? (recEval?.forecast?.isForecastEligible
+                  ? `उतार-चढ़ाव सीमा ±${rs1(forecastUncertainty)}/क्विंटल (CEDA संग्रह से दैनिक उतार-चढ़ाव). अनुमानित लाभ इस बफर और लागत से अधिक होने पर ही माल रोकने की सलाह दी जाती है.`
+                  : `इस मंडी हेतु वास्तविक एगमार्कनेट भाव लिया गया है और कोई कृत्रिम रुझान नहीं जोड़ा गया। भंडारण किराया व ताजेपन की गिरावट से बचने के लिए 'आज ही बेचें' का सटीक सुझाव.`
                 )
-              : (hasRealSeries
-                  ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes). Waiting is only advised when projected gain clears this buffer plus holding costs.`
-                  : `The Agmarknet pull is a single-day snapshot; MandiMitra holds price flat rather than inventing a trend.`
+              : (recEval?.forecast?.isForecastEligible
+                  ? `Volatility buffer ±${rs1(forecastUncertainty)}/qtl (empirical σ of daily % changes from CEDA archive). Waiting is only advised when the projected gain clears this buffer plus holding costs.`
+                  : `This mandi uses observed current Agmarknet prices with zero synthetic trend fallback. With prices held flat across day offsets, holding can only incur storage rent, biological decay and freshness degradation — hence advising optimal immediate sale.`
                 ))}
           </span>
         </div>
