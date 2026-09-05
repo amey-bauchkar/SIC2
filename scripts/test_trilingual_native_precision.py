@@ -9,11 +9,13 @@ with exact canonical slot matching, loanword transliterations, and unit conversi
 import json
 import urllib.request
 import sys
+import os
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-BASE_URL = "http://localhost:3000/api/voice/process"
+PORT = os.environ.get("PORT", "3001")
+BASE_URL = f"http://localhost:{PORT}/api/voice/process"
 
 TRILINGUAL_TEST_CASES = [
     # =========================================================================

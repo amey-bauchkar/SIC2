@@ -93,7 +93,7 @@ const ACCREDITED_STORAGE_FACILITIES: ColdStorageFacility[] = [
     isEnwrEligible: true
   },
   {
-    id: 'wh_nsk_pimpalgaon_01',
+    id: 'wh_cs_pimpalgaon_01',
     name: 'Pimpalgaon Agro Cold Chain & Pre-cooling Facility',
     district: 'Nashik',
     mandiVicinity: 'Pimpalgaon Baswant',

@@ -30,8 +30,8 @@ const app = express();
 
 app.use(cors());
 // Raw audio bodies for the Whisper speech-to-text path (must precede the JSON parser).
-app.use(express.raw({ type: ['audio/*', 'application/octet-stream'], limit: '25mb' }));
-app.use(express.json({ limit: '25mb' }));
+app.use(express.raw({ type: ['audio/*', 'application/octet-stream'], limit: '10mb' }));
+app.use(express.json({ limit: '2mb' }));
 
 import { 
   getFarmerPools, 

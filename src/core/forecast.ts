@@ -14,6 +14,7 @@
 
 import { Forecast, ModelVersion, DailyPriceForecast, HistorySource } from '../contracts/domain';
 import { config } from '../config';
+import { evaluateGbmClassifier, resolveGbmModelKey, buildFeatureVector } from './gbm-inference';
 
 /** Minimum number of distinct historical observations required for temporal trend inference. */
 export const MIN_HISTORY_FOR_FORECAST = 5;
@@ -213,16 +214,48 @@ export function generateCurrentOnlyForecast(currentPrice: number): Forecast {
 
 /**
  * Forecast dispatcher supporting the swappable model gate.
+ * When v1-gbm is enabled and a trained tree ensemble exists for the commodity,
+ * it runs the native TypeScript decision tree evaluator exported from Scikit-Learn.
  */
 export function generateForecast(
   recentPrices: number[],
   latestPrice: number,
   historyMeta: ForecastHistoryMeta,
-  preferredModel: ModelVersion = config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic'
+  preferredModel: ModelVersion = config.enableV1Gbm ? 'v1-gbm' : 'v0-heuristic',
+  commodity?: string,
+  weatherFeatures?: { tempMeanC?: number; precipMm?: number; humidityPct?: number; windSpeedKmh?: number }
 ): Forecast {
-  if (preferredModel === 'v1-gbm' && config.enableV1Gbm) {
-    // In hackathon v0 baseline, if v1 is toggled but not yet trained, log and gracefully fall back to v0
-    return generateV0Forecast(recentPrices, latestPrice, historyMeta);
+  const v0 = generateV0Forecast(recentPrices, latestPrice, historyMeta);
+
+  if ((preferredModel === 'v1-gbm' || config.enableV1Gbm) && v0.isForecastEligible) {
+    const commKey = resolveGbmModelKey(commodity || '');
+    if (commKey) {
+      const featVec = buildFeatureVector(recentPrices, weatherFeatures);
+      const gbmRes = evaluateGbmClassifier(commKey, featVec, latestPrice);
+      if (gbmRes) {
+        const slope = Math.round(((gbmRes.expectedPriceTrajectory[3] - latestPrice) / 3) * 100) / 100;
+        const uncertainty = slope === 0 ? 0 : Math.max(5.0, Math.round((100 - gbmRes.confidencePct) * 0.4 * 10) / 10);
+        return {
+          modelVersion: 'v1-gbm',
+          historicalSlope7d: slope,
+          uncertainty,
+          expectedPriceByDay: [
+            { day: 0, expectedPrice: Math.round(latestPrice * 10) / 10 },
+            { day: 1, expectedPrice: Math.round(Math.max(0, latestPrice + slope * 1) * 10) / 10 },
+            { day: 2, expectedPrice: Math.round(Math.max(0, latestPrice + slope * 2) * 10) / 10 },
+            { day: 3, expectedPrice: Math.round(Math.max(0, latestPrice + slope * 3) * 10) / 10 }
+          ],
+          historySource: historyMeta.historySource,
+          historyObservationCount: historyMeta.observationCount,
+          historyStartDate: historyMeta.startDate,
+          historyEndDate: historyMeta.endDate,
+          isForecastEligible: true,
+          forecastIneligibilityReason: undefined
+        };
+      }
+    }
   }
-  return generateV0Forecast(recentPrices, latestPrice, historyMeta);
+
+  return v0;
 }
+

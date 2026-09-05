@@ -9,11 +9,13 @@ spoken number word conversion, and multi-hypothesis scoring in MandiMitra's Voic
 import json
 import urllib.request
 import sys
+import os
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-BASE_URL = "http://localhost:3000/api/voice/process"
+PORT = os.environ.get("PORT", "3001")
+BASE_URL = f"http://localhost:{PORT}/api/voice/process"
 
 # Test cases testing real-world speech engine flaws:
 # 1. Phonetic misspellings from speech-to-text (कंधा, गोली, निफाद, बताता)

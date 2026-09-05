@@ -48,8 +48,21 @@ export interface PriceAlertRecord {
 }
 
 /**
+ * Masks phone numbers to prevent PII exposure while retaining dial-code recognition.
+ * e.g., "9822012345" -> "98220*****"
+ */
+export function maskPhoneNumber(phone: string): string {
+  const p = String(phone || '').trim();
+  if (p.length >= 10) {
+    return p.slice(0, 5) + '*****';
+  }
+  return '98220*****';
+}
+
+/**
  * Fetches active farmer pooling clusters from Supabase.
  * Falls back to data/farmer_pooling_profiles.json if Supabase is offline.
+ * Enforces strict PII phone number masking.
  */
 export async function getFarmerPools(): Promise<{ data: FarmerPoolRecord[]; source: 'supabase' | 'local_cache' }> {
   if (supabase) {
@@ -60,14 +73,18 @@ export async function getFarmerPools(): Promise<{ data: FarmerPoolRecord[]; sour
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        return { data: data as FarmerPoolRecord[], source: 'supabase' };
+        const masked = (data as FarmerPoolRecord[]).map(f => ({
+          ...f,
+          phone: maskPhoneNumber(f.phone)
+        }));
+        return { data: masked, source: 'supabase' };
       }
     } catch (err) {
       console.warn('[Supabase] Fetch farmer_pools failed, falling back to local cache:', err);
     }
   }
 
-  // Fallback to local verified farmer cluster
+  // Fallback to local verified farmer cluster with PII masking
   try {
     const localPath = path.resolve(process.cwd(), 'data', 'farmer_pooling_profiles.json');
     if (fs.existsSync(localPath)) {
@@ -75,7 +92,7 @@ export async function getFarmerPools(): Promise<{ data: FarmerPoolRecord[]; sour
       const fallbackRows: FarmerPoolRecord[] = (localJson.farmers || []).map((f: any) => ({
         id: f.farmer_id,
         farmer_name: f.name,
-        phone: '9822012345',
+        phone: maskPhoneNumber(f.phone || '9822012345'),
         village: f.village,
         taluka: f.taluka,
         crop: f.crop,
@@ -94,21 +111,33 @@ export async function getFarmerPools(): Promise<{ data: FarmerPoolRecord[]; sour
 
 /**
  * Inserts a new farmer into the shared pooling collective.
+ * Enforces strict schema validation against bot spam.
  */
 export async function insertFarmerPool(record: any): Promise<{ success: boolean; data?: any; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not configured' };
   }
 
+  const rawPhone = String(record.phone || record.farmer_phone || '').trim();
+  const cleanPhone = rawPhone.replace(/\D/g, '');
+  if (cleanPhone.length !== 10) {
+    return { success: false, error: 'Invalid phone number: exactly 10 digits required' };
+  }
+
+  const rawQty = Number(record.quantity_quintals || record.quantity);
+  if (!Number.isFinite(rawQty) || rawQty < 0.5 || rawQty > 1000) {
+    return { success: false, error: 'Invalid quantity: must be between 0.5 and 1000 quintals' };
+  }
+
   // Normalize incoming fields to match Supabase schema exactly
   const cleanRecord: FarmerPoolRecord = {
-    farmer_name: record.farmer_name || record.name || 'Farmer',
-    phone: record.phone || record.farmer_phone || '9822012345',
-    village: record.village || record.origin_village || 'Niphad',
-    taluka: record.taluka || 'Niphad',
-    crop: record.crop || record.commodity || 'Onion',
-    quantity_quintals: Number(record.quantity_quintals || record.quantity || 25),
-    target_mandi: record.target_mandi || record.destination_mandi || record.mandi || 'Lasalgaon',
+    farmer_name: String(record.farmer_name || record.name || 'Farmer').trim().slice(0, 60),
+    phone: cleanPhone,
+    village: String(record.village || record.origin_village || 'Niphad').trim().slice(0, 60),
+    taluka: String(record.taluka || 'Niphad').trim().slice(0, 60),
+    crop: String(record.crop || record.commodity || 'Onion').trim().slice(0, 40),
+    quantity_quintals: rawQty,
+    target_mandi: String(record.target_mandi || record.destination_mandi || record.mandi || 'Lasalgaon').trim().slice(0, 60),
     status: record.status || 'open'
   };
 
@@ -129,18 +158,30 @@ export async function insertFarmerPool(record: any): Promise<{ success: boolean;
 
 /**
  * Inserts a new farmer price trigger alert.
+ * Enforces strict schema validation.
  */
 export async function insertPriceAlert(alert: any): Promise<{ success: boolean; data?: any; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not configured' };
   }
 
+  const rawPhone = String(alert.phone || alert.farmer_phone || '').trim();
+  const cleanPhone = rawPhone.replace(/\D/g, '');
+  if (cleanPhone.length !== 10) {
+    return { success: false, error: 'Invalid phone number: exactly 10 digits required' };
+  }
+
+  const rawPrice = Number(alert.trigger_price || alert.threshold_price);
+  if (!Number.isFinite(rawPrice) || rawPrice <= 0 || rawPrice > 100000) {
+    return { success: false, error: 'Invalid trigger price: must be a positive number' };
+  }
+
   // Normalize incoming fields to match Supabase schema exactly
   const cleanAlert: PriceAlertRecord = {
-    phone: alert.phone || alert.farmer_phone || '9822012345',
-    crop: alert.crop || alert.commodity || 'Onion',
-    target_mandi: alert.target_mandi || alert.mandi || alert.market_id || 'lasalgaon',
-    trigger_price: Number(alert.trigger_price || alert.threshold_price || 3000),
+    phone: cleanPhone,
+    crop: String(alert.crop || alert.commodity || 'Onion').trim().slice(0, 40),
+    target_mandi: String(alert.target_mandi || alert.mandi || alert.market_id || 'lasalgaon').trim().slice(0, 60),
+    trigger_price: rawPrice,
     status: alert.status || 'active'
   };
 
@@ -160,7 +201,7 @@ export async function insertPriceAlert(alert: any): Promise<{ success: boolean; 
 }
 
 /**
- * Fetches all active price alerts.
+ * Fetches all active price alerts with PII phone masking.
  */
 export async function getPriceAlerts(): Promise<PriceAlertRecord[]> {
   if (!supabase) return [];
@@ -170,9 +211,15 @@ export async function getPriceAlerts(): Promise<PriceAlertRecord[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && data) return data as PriceAlertRecord[];
+    if (!error && data) {
+      return (data as PriceAlertRecord[]).map(a => ({
+        ...a,
+        phone: maskPhoneNumber(a.phone)
+      }));
+    }
   } catch (err) {
     console.warn('[Supabase] Fetch price_alerts error:', err);
   }
   return [];
 }
+
