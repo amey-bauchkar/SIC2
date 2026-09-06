@@ -164,11 +164,11 @@ $$\tilde{R}_{\text{km}, i} = R_{\text{km}} \times \left(1 + \delta_i\right), \qu
 
 The robustness score $\Omega$ is defined as the empirical probability of the recommended option maintaining economic supremacy:
 
-$$\Omega = \frac{1}{N} \sum_{i=1}^{N} \mathbb{I}\left[ \text{AsliDaam}_i(m^*, d^*) > \max_{(m, d) \neq (m^*, d^*)} \text{AsliDaam}_i(m, d) \right]$$
+$$\Omega = \frac{1}{N} \sum_{i=1}^{N} \mathbb{I}\left[ \text{AsliDaam}_i(m^{\star}, d^{\star}) > \max_{(m, d) \neq (m^{\star}, d^{\star})} \text{AsliDaam}_i(m, d) \right]$$
 
 The exact **Breakeven Transport Rate** $R_{\text{breakeven}}$ where the winner flips to runner-up $m_2$ on day $0$:
 
-$$R_{\text{breakeven}} = \frac{P_{\text{expected}}(m^*) - P_{\text{expected}}(m_2) - \Delta C_{\text{cess}}}{1.35 \times \left( D(m^*) - D(m_2) \right)}$$
+$$R_{\text{breakeven}} = \frac{P_{\text{expected}}(m^{\star}) - P_{\text{expected}}(m_2) - \Delta C_{\text{cess}}}{1.35 \times \left( D(m^{\star}) - D(m_2) \right)}$$
 
 ---
 
@@ -205,35 +205,50 @@ Unlike black-box models that claim impossible $>95\%$ accuracy on noisy APMC tim
 
 ```mermaid
 flowchart TD
-    subgraph DataIngestion ["1. Data Ingestion & Quality Layer (Zero-Mock)"]
-        A1["Agmarknet DMI Live API\n(Daily Price Feed)"] --> B1["Data Quality Gate\n(GOOD / MODERATE / POOR)"]
-        A2["CEDA Ashoka Archive\n(Multi-Year Cleaned)"] --> B1
-        A3["Open-Meteo Weather API\n(Precipitation & Temp)"] --> B1
-        B1 -- "Coverage < 40% or Stale > 5 Days" --> B2["CALIBRATED ABSTENTION\n(Refuses to Guess)"]
+    %% 1. Ingestion & Inputs (Top Layer)
+    subgraph S1 ["1. Data Sources & Farmer Voice Inputs (Zero-Mock)"]
+        direction TB
+        A1["🌾 Agmarknet DMI Live Feed\n(306 Maharashtra Mandis)"]
+        A2["📚 CEDA Ashoka Archive\n(Cleaned Multi-Year Series)"]
+        A3["🌦️ Open-Meteo Weather API\n(Live Rainfall & Temp)"]
+        IN_VOICE["🎙️ KisanVoice™ STT Engine\n(Marathi · Hindi · English)"]
+        
+        A1 --> GATE{"Data Quality Gate\n(Freshness & Continuity)"}
+        A2 --> GATE
+        A3 --> GATE
+        GATE -- "Stale (>5d) or Sparse (<40%)" --> ABSTAIN["⚠️ CALIBRATED ABSTENTION\n(Refuses to Guess on Poor Data)"]
     end
 
-    subgraph CoreEngines ["2. Core Intelligence Suite"]
-        B1 -- "Verified Data" --> C1["Dual-Path Forecaster\nv0 Heuristic / v1 GBM"]
-        C1 --> D1["🌾 AsliDaam™ Engine\n(Joint Mandi x 0-3 Day Net-Realisation)"]
-        D1 --> D2["🛡️ Nirnay Kawach™\n(1,000-Trial Monte Carlo Stress Test)"]
-        D1 --> D3["🚛 Bhed Vivek™\n(Spatial Yard Rush & Congestion Forecaster)"]
-        D1 --> D4["🤝 SajhaBazaar™\n(Smallholder Freight Pooling & Supabase Roster)"]
+    %% 2. Processing & Core Intelligence (Middle Layer)
+    subgraph S2 ["2. Processing & Core Intelligence Suite"]
+        direction TB
+        GATE -- "Verified Quality Data" --> FORECAST["Dual-Path Price Forecaster\n(v0 Heuristic / v1 LightGBM)"]
+        IN_VOICE --> ASLI
+        FORECAST --> ASLI["🌾 AsliDaam™ Engine\n(Joint Mandi x 0-3 Day Net Realisation)"]
+
+        ASLI --> KAWACH["🛡️ Nirnay Kawach™\n(1,000-Trial Monte Carlo Stress Test)"]
+        ASLI --> BHED["🚛 Bhed Vivek™\n(Spatial Yard Rush & Arrival Pressure)"]
+        ASLI --> SAJHA["🤝 SajhaBazaar™\n(Smallholder Freight Pooling Engine)"]
     end
 
-    subgraph UserExperience ["3. VerdaAgro Sage Green Cockpit"]
-        E1["🎙️ KisanVoice™ Interface\n(Marathi / Hindi / English STT)"] --> D1
-        D1 --> F1["Decision Hero Card\n(Action, Mandi, In-Hand ₹)"]
-        D2 --> F2["Decision Shield\n(Robustness %, Breakeven Diesel)"]
-        D3 --> F3["Mandi Radar & Heatmap\n(Arrival Pressure Outlook)"]
-        D4 --> F4["Pool Dispatch Roster\n(Live Cloud Pooling)"]
+    %% 3. Output Cockpit (Bottom Layer)
+    subgraph S3 ["3. VerdaAgro Sage Green Decision Cockpit"]
+        direction TB
+        ASLI --> OUT1["🏆 Decision Hero Card\n(Action · Target Mandi · Net ₹ Payout)"]
+        KAWACH --> OUT2["🛡️ Robustness Shield\n(Confidence % · Breakeven Diesel Haulage)"]
+        BHED --> OUT3["📡 Mandi Radar\n(Yard Arrival Pressure · Bottleneck Outlook)"]
+        SAJHA --> OUT4["👥 SajhaBazaar Cloud Dispatch\n(Fair-Share Split · Supabase Pool Roster)"]
     end
 
-    classDef green fill:#2d5a27,stroke:#1e3f1a,stroke-width:2px,color:#fff;
-    classDef orange fill:#d97706,stroke:#b45309,stroke-width:2px,color:#fff;
-    classDef blue fill:#1e40af,stroke:#1d4ed8,stroke-width:2px,color:#fff;
-    class F1,F2,F3,F4 green;
-    class B2 orange;
-    class D1,D2,D3,D4 blue;
+    classDef greenCard fill:#1b4332,stroke:#2d6a4f,stroke-width:2px,color:#fff;
+    classDef blueEngine fill:#1e3a8a,stroke:#2563eb,stroke-width:2px,color:#fff;
+    classDef warnNode fill:#78350f,stroke:#d97706,stroke-width:2px,color:#fff;
+    classDef feedNode fill:#1e293b,stroke:#475569,stroke-width:1px,color:#fff;
+
+    class OUT1,OUT2,OUT3,OUT4 greenCard;
+    class ASLI,KAWACH,BHED,SAJHA,FORECAST blueEngine;
+    class ABSTAIN warnNode;
+    class A1,A2,A3,IN_VOICE,GATE feedNode;
 ```
 
 ---
