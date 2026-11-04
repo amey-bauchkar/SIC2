@@ -38,6 +38,7 @@ export interface SajhaBazaarRequestBody {
   district?: string;
   quantityQuintals?: number;
   targetDate?: string;
+  clusterId?: string;
   radiusKm?: number;
   matchRadiusKm?: number;
   sellWindowToleranceDays?: number;
@@ -105,6 +106,7 @@ export async function sajhaBazaarEvaluateController(req: Request, res: Response)
         targetDate: body.targetDate || defaultTargetDate(),
         requesterName: body.requesterName,
         requesterVillage: body.requesterVillage,
+        clusterId: body.clusterId,
         matchRadiusKm: body.matchRadiusKm ?? DEFAULT_MATCH_RADIUS_KM,
         sellWindowToleranceDays: body.sellWindowToleranceDays ?? DEFAULT_SELL_WINDOW_TOLERANCE_DAYS,
         materialityThresholdPerQtl: body.materialityThresholdPerQtl ?? DEFAULT_MATERIALITY_THRESHOLD_PER_QTL,
@@ -131,6 +133,7 @@ export async function sajhaBazaarRosterController(_req: Request, res: Response):
     res.json({
       isSynthetic: true,
       syntheticNotice: getSyntheticRosterNotice(),
+      referenceDate: defaultTargetDate(),
       farmerCount: roster.length,
       crops: Array.from(new Set(roster.map(f => f.crop))),
       clusters: loadSajhaClusters(),

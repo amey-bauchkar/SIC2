@@ -29,6 +29,8 @@ export interface SajhaBazaarEvaluateParams {
   district?: string;
   quantityQuintals: number;
   targetDate?: string;
+  clusterId?: string;
+  allowSyntheticFallback?: boolean;
   radiusKm?: number;
   matchRadiusKm?: number;
   requesterName?: string;
@@ -40,6 +42,7 @@ export interface SajhaBazaarEvaluateParams {
 export interface SajhaRosterResponse {
   isSynthetic: boolean;
   syntheticNotice: string;
+  referenceDate?: string;
   farmerCount: number;
   crops: string[];
   clusters: SajhaClusterSummary[];

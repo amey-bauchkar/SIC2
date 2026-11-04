@@ -29,7 +29,7 @@ import {
 
 
 let rosterCache: SajhaRosterResponse | null = null;
-let originOverride: { lat: number; lon: number; label: string; district: string } | null = null;
+let originOverride: { lat: number; lon: number; label: string; district: string; clusterId?: string } | null = null;
 let quantityOverride: number | null = null;
 
 
@@ -113,8 +113,11 @@ function currentRequest() {
     latitude: originOverride?.lat ?? (state.userLocation?.lat || 19.9975),
     longitude: originOverride?.lon ?? (state.userLocation?.lon || 73.7898),
     district,
-    quantityQuintals: quantityOverride ?? (state.harvestQuantityQuintals || 25),
+    quantityQuintals: quantityOverride ?? (state.harvestQuantityQuintals || 5),
     radiusKm: state.costConfig.searchRadiusKm,
+    matchRadiusKm: 35.0,
+    clusterId: originOverride?.clusterId,
+    allowSyntheticFallback: true,
     transportCostPerKmPerQtl: state.costConfig.transportCostPerKmPerQtl,
     storageCostPerDayPerQtl: state.costConfig.storageCostPerDayPerQtl,
     requesterName: 'You',
@@ -303,15 +306,21 @@ export function renderSajhaBazaarTab(language: Language): HTMLElement {
       lat: c.centroidLatitude,
       lon: c.centroidLongitude,
       label: `${talukaName}, ${distName}`,
-      district: c.district
+      district: c.district,
+      clusterId: c.clusterId
     };
     cropSelect.value = c.crop;
     store.setSelectedCrop(c.crop);
     
-    // Auto-set a smallholder demo quantity (5q) so the pool matches effortlessly
-    qtyInput.value = formatNumber(5, currentLang);
-    quantityOverride = 5;
-    store.setHarvestQuantity(5);
+    // Auto-set a smallholder demo quantity (5q) if input is empty or large commercial default
+    const existingQty = parseDevanagariNumber(qtyInput.value);
+    if (!existingQty || existingQty > 20) {
+      qtyInput.value = formatNumber(5, currentLang);
+      quantityOverride = 5;
+      store.setHarvestQuantity(5);
+    } else {
+      quantityOverride = existingQty;
+    }
     
     refresh();
     buildChips(roster);
